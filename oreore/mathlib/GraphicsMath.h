@@ -1,37 +1,25 @@
-﻿#ifndef VECTOR_H
-#define VECTOR_H
+﻿#ifndef GRAPHICS_MATH_H
+#define GRAPHICS_MATH_H
 
-
-
-#include	<math.h>
-#include	<limits>
-
-
-#include	"./matrixlib/StaticMatrix.h"
-#include	"./mathlib/MathLib.h"
-#include	"./container/Array.h"
-#include	"./common/Utility.h"
+#include	"MathLib.h"
+#include	"../common/Utility.h"
+#include	"../container/Array.h"
 
 
 
 
+template< typename T > union	Vec2;
 
-template< typename T >
-using Vec2		= StaticMatrix<T, 1, 2>;
-//template< typename T > union	Vec2;
-
-using Vec2uc	= Vec2<unsigned char>;
-using Vec2s		= Vec2<short>;
-using Vec2us	= Vec2<unsigned short>;
-using Vec2i		= Vec2<int>;
-using Vec2ui	= Vec2<unsigned int>;
-using Vec2f		= Vec2<float>;
-using Vec2d		= Vec2<double>;
+typedef Vec2<unsigned char>		Vec2uc;
+typedef Vec2<short>				Vec2s;
+typedef Vec2<unsigned short>	Vec2us;
+typedef Vec2<int>				Vec2i;
+typedef Vec2<unsigned int>		Vec2ui;
+typedef Vec2<float>				Vec2f;
+typedef Vec2<double>			Vec2d;
 
 
-template< typename T >
-using Vec3		= StaticMatrix<T, 1, 3>;
-//template< typename T > union	Vec3;
+template< typename T > union	Vec3;
 
 typedef Vec3<unsigned char>		Vec3uc;
 typedef Vec3<short>				Vec3s;
@@ -42,9 +30,7 @@ typedef Vec3<float>				Vec3f;
 typedef Vec3<double>			Vec3d;
 
 
-template< typename T >
-using Vec4 = StaticMatrix<T, 1, 4>;
-//template< typename T > union	Vec4;
+template< typename T > union	Vec4;
 
 typedef Vec4<unsigned char>		Vec4uc;
 typedef Vec4<short>				Vec4s;
@@ -97,77 +83,184 @@ union ieee754
 
 
 
+
+
+//template< typename T >
+//inline bool IsPositive( const T& a )
+//{
+//	return	a > 0;
+//}
+//
+//
+//template< typename T >
+//inline bool IsNegative( const T& a )
+//{
+//	return	a < 0;
+//}
+//
+//
+//template< typename T >
+//inline const T Max( const T& a, const T& b )
+//{
+//	return a < b ? b : a;     // or: return comp(a,b)?b:a; for version (2)
+//}
+//
+//
+//template< typename T >
+//inline const T Min( const T& a, const T& b )
+//{
+//	return !( b<a )?a:b;
+//}
+//
+//
+//template< typename T >
+//inline const T Saturate( const T& a )
+//{
+//	return Min( Max( a, (T)0 ), (T)1 );
+//}
+//
+//
+//template< typename T >
+//inline const T Clamp( const T& x, const T& a, const T& b )
+//{
+//	return Min( Max( x, a ), b );
+//}
+//
+//
+//template< typename T >
+//inline void Lerp( T& out, const T& start, const T& end, T percent )
+//{
+//	out	= start + percent * ( end - start );
+//}
+//
+//
+//template< typename T >
+//inline const T TO_RADIAN( const T& degree )
+//{
+//	return	degree * ( T )0.01745329251;
+//}
+//
+//
+//template< typename T >
+//inline const T TO_DEGREE( const T& radian )
+//{
+//	return	radian * ( T )57.2957795131;
+//}
+//
+//
+//template< typename T >
+//inline const T Log( const T& a, const T& b )
+//{
+//	return	log( b ) / log( a );
+//}
+//#ifndef Log
+//#define	Log(a,b)	log(b) / log(a)
+//#endif // !Log
+//
+//
+//template< typename T >
+//inline const T Floor( const T& val, const T& unit )
+//{
+//	return	(T)floor( double( val ) / double( unit ) ) * double( unit );
+//}
+//#ifndef Floor
+//#define	Floor( val, unit )	floor( double(val) / double(unit) ) * double(unit)
+//#endif // !Floor
+//
+//
+//template< typename T >
+//inline const T Ceil( const T& val, const T& unit )
+//{
+//	return	(T)ceil( double( val ) / double( unit ) ) * double( unit );
+//}
+//#ifndef Ceil
+//#define	Ceil( val, unit )	ceil( double(val) / double(unit) ) * double(unit)
+//#endif // !Ceil
+//
+//
+//template< typename T >
+//inline const int fRound( const T& x )
+//{
+//	return	(int)rintf( x );
+//}
+//#ifndef fRound
+//#define fRound(x) (int)rintf(x)
+//#endif
+//
+//
+//
+//template< typename T >
+//inline const int DivUp( const T& a, const T& b )
+//{
+//	return	(int)( a%b==0 ? a/b : a/b+1 );
+//}
+//#ifndef DivUp
+//#define DivUp(a, b)( (((a)%(b))==0)?((a)/(b)):((a)/(b)+1) )
+//#endif
+
+
+
 //##############################################################################//
 //									2D Vector									//
 //##############################################################################//
 
 // 2次元ベクトル共用体
-//template< typename T >
-//union Vec2
-//{
-//
-//	struct { T x, y; };
-//	struct { T u, v; };
-//	T	xy[2];
-//	T	uv[2];
-//
-//	Vec2(): x( 0 ), y( 0 ) {}
-//	Vec2( T x_, T y_ ): x( x_ ), y( y_ ) {}
-//
-//	//=========== experimental implementation. 2018.10.14 ============//
-//	// Copy constructor
-//	Vec2( const Vec2& obj )
-//	{
-//		x = obj(0);
-//		y = obj(1);
-//	}
-//
-//	// Copy constructor
-//	~Vec2()
-//	{
-//	}
-//
-//	// Move constructor
-//	Vec2( Vec2&& obj )
-//	{
-//		x = obj(0);
-//		y = obj(1);
-//	}
-//
-//	// Copy assignment operator
-//	Vec2& operator=( const Vec2& obj )
-//	{
-//		if( this != &obj )
-//		{
-//			x = obj(0);
-//			y = obj(1);
-//		}
-//		return *this;
-//	}
-//
-//	// Move assignment opertor =
-//	Vec2& operator=( Vec2&& obj )
-//	{
-//		if( this != &obj )
-//		{
-//			x = obj(0);
-//			y = obj(1);
-//		}
-//		return *this;
-//	}
-//
-//	T& operator()( int i ) &
-//	{
-//		return xy[i];
-//	}
-//
-//	// Subscription operator. ( called by following cases: "T& a = Matrix<T>(10,10)(n)", "auto&& a = Matrix<T>(20,4)(n)" )
-//	T operator()( int i ) const&&
-//	{
-//		return std::move(xy[i]);
-//	}
-//
-//};
+template< typename T >
+union Vec2
+{
+
+	struct { T x, y; };
+	struct { T u, v; };
+	T	xy[2];
+	T	uv[2];
+
+	Vec2(): x( 0 ), y( 0 ) {}
+	Vec2( T x_, T y_ ): x( x_ ), y( y_ ) {}
+
+	//=========== experimental implementation. 2018.10.14 ============//
+	// Copy constructor
+	Vec2( const Vec2& obj )
+	{
+		x = obj.x;
+		y = obj.y;
+	}
+
+	// Copy constructor
+	~Vec2()
+	{
+	}
+
+	// Move constructor
+	Vec2( Vec2&& obj )
+	{
+		x = obj.x;
+		y = obj.y;
+	}
+
+	// Copy assignment operator
+	Vec2& operator=( const Vec2& obj )
+	{
+		if( this != &obj )
+		{
+			x = obj.x;
+			y = obj.y;
+		}
+		return *this;
+	}
+
+	// Move assignment opertor =
+	Vec2& operator=( Vec2&& obj )
+	{
+		if( this != &obj )
+		{
+			x = obj.x;
+			y = obj.y;
+		}
+		return *this;
+	}
+
+
+};
 
 
 
@@ -175,8 +268,8 @@ union ieee754
 template< typename T >
 void InitVec( Vec2<T>& inout, T x, T y )
 {
-	inout(0)	= x;
-	inout(1)	= y;
+	inout.x	= x;
+	inout.y	= y;
 }
 
 
@@ -184,8 +277,8 @@ void InitVec( Vec2<T>& inout, T x, T y )
 template< typename T >
 inline void InitVec( Vec2<T>& inout, T arr[2] )
 {
-	inout(0)	= arr[0];
-	inout(1)	= arr[1];
+	inout.x	= arr[0];
+	inout.y	= arr[1];
 }
 
 
@@ -193,8 +286,8 @@ inline void InitVec( Vec2<T>& inout, T arr[2] )
 template< typename T >
 void InitZero( Vec2<T>& inout )
 {
-	inout(0)	= 0;
-	inout(1)	= 0;
+	inout.x	= 0;
+	inout.y	= 0;
 }
 
 
@@ -202,8 +295,8 @@ void InitZero( Vec2<T>& inout )
 template< typename T >
 void Reverse( Vec2<T>& out, const Vec2<T>& in )
 {
-	out(0) = -in(0);
-	out(1) = -in(1);
+	out.x = -in.x;
+	out.y = -in.y;
 }
 
 
@@ -211,8 +304,8 @@ void Reverse( Vec2<T>& out, const Vec2<T>& in )
 template< typename T >
 void Reverse( Vec2<T>& inout )
 {
-	inout(0) = -inout(0);
-	inout(1) = -inout(1);
+	inout.x = -inout.x;
+	inout.y = -inout.y;
 }
 
 
@@ -220,16 +313,16 @@ void Reverse( Vec2<T>& inout )
 template< typename T >
 void Add( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	out(0)	= in1(0) + in2(0);
-	out(1)	= in1(1) + in2(1);
+	out.x	= in1.x + in2.x;
+	out.y	= in1.y + in2.y;
 }
 
 
 template< typename T >
 inline void Add( Vec2<T>& inout, const Vec2<T>& in )
 {
-	inout(0) += in(0);
-	inout(1) += in(1);
+	inout.x += in.x;
+	inout.y += in.y;
 }
 
 
@@ -237,16 +330,16 @@ inline void Add( Vec2<T>& inout, const Vec2<T>& in )
 template< typename T >
 void Subtract( Vec2<T> &out, const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	out(0)	= in1(0) - in2(0);
-	out(1)	= in1(1) - in2(1);
+	out.x	= in1.x - in2.x;
+	out.y	= in1.y - in2.y;
 }
 
 
 template< typename T >
 void Subtract( Vec2<T> &inout, const Vec2<T>& in )
 {
-	inout(0)	-= in(0);
-	inout(1)	-= in(1);
+	inout.x	-= in.x;
+	inout.y	-= in.y;
 }
 
 
@@ -254,7 +347,7 @@ void Subtract( Vec2<T> &inout, const Vec2<T>& in )
 template< typename T >
 inline T DotProduct( const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	return in1(0) * in2(0) + in1(1) * in2(1);
+	return in1.x * in2.x + in1.y * in2.y;
 }
 
 
@@ -262,9 +355,9 @@ inline T DotProduct( const Vec2<T>& in1, const Vec2<T>& in2 )
 template< typename T >
 inline void CrossProduct( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	out(0) = 0;
-	out(1) = 0;
-	out(2) = in1(0) * in2(1) - in1(1) * in2(0);
+	out.x = 0;
+	out.y = 0;
+	out.z = in1.x * in2.y - in1.y * in2.x;
 }
 
 
@@ -272,7 +365,7 @@ inline void CrossProduct( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
 template< typename T >
 inline T Length( const Vec2<T>& in )
 {
-	return sqrt( Max( in(0) * in(0) + in(1) * in(1), ( std::numeric_limits<T>::min )( ) ) );
+	return sqrt( Max( in.x * in.x + in.y * in.y, ( std::numeric_limits<T>::min )( ) ) );
 }
 
 
@@ -280,7 +373,7 @@ inline T Length( const Vec2<T>& in )
 template< typename T >
 inline T LengthSqrd( const Vec2<T>& in )
 {
-	return in(0) * in(0) + in(1) * in(1);
+	return in.x * in.x + in.y * in.y;
 }
 
 
@@ -288,8 +381,8 @@ inline T LengthSqrd( const Vec2<T>& in )
 template< typename T >
 inline T Distance( const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	const T dx	= in1(0) - in2(0);
-	const T dy	= in1(1) - in2(1);
+	const T dx	= in1.x - in2.x;
+	const T dy	= in1.y - in2.y;
 	return	sqrt( Max( dx * dx + dy * dy, ( std::numeric_limits<T>::min )( ) ) );
 }
 
@@ -298,8 +391,8 @@ inline T Distance( const Vec2<T>& in1, const Vec2<T>& in2 )
 template< typename T >
 inline T DistanceSqrd( const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	const T dx	= in1(0) - in2(0);
-	const T dy	= in1(1) - in2(1);
+	const T dx	= in1.x - in2.x;
+	const T dy	= in1.y - in2.y;
 	return	dx * dx + dy * dy;
 }
 
@@ -308,9 +401,9 @@ inline T DistanceSqrd( const Vec2<T>& in1, const Vec2<T>& in2 )
 template< typename T >
 inline void Normalize( Vec2<T>& inout )
 {
-	T length_inv	= ( T )1.0 / sqrt( Max( inout(0) * inout(0) + inout(1) * inout(1), ( std::numeric_limits<T>::min )( ) ) );
-	inout(0) *= length_inv;
-	inout(1) *= length_inv;
+	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y, ( std::numeric_limits<T>::min )( ) ) );
+	inout.x *= length_inv;
+	inout.y *= length_inv;
 }
 
 
@@ -318,32 +411,32 @@ inline void Normalize( Vec2<T>& inout )
 template< typename T >
 inline void Scale( Vec2<T>& inout, T scale )
 {
-	inout(0) *= scale;
-	inout(1) *= scale;
+	inout.x *= scale;
+	inout.y *= scale;
 }
 
 
 template< typename T >
 inline void Scale( Vec2<T>& out, const Vec2<T>& in, T scale )
 {
-	out(0) = in(0) * scale;
-	out(1) = in(1) * scale;
+	out.x = in.x * scale;
+	out.y = in.y * scale;
 }
 
 
 template< typename T >
 inline void Max( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	out(0)	= in1(0) > in2(0) ? in1(0) : in2(0);
-	out(1)	= in1(1) > in2(1) ? in1(1) : in2(1);
+	out.x	= in1.x > in2.x ? in1.x : in2.x;
+	out.y	= in1.y > in2.y ? in1.y : in2.y;
 }
 
 
 template< typename T >
 inline void Min( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	out(0)	= in1(0) < in2(0) ? in1(0) : in2(0);
-	out(1)	= in1(1) < in2(1) ? in1(1) : in2(1);
+	out.x	= in1.x < in2.x ? in1.x : in2.x;
+	out.y	= in1.y < in2.y ? in1.y : in2.y;
 }
 
 
@@ -351,8 +444,8 @@ inline void Min( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
 template< typename T >
 inline void Clamp( Vec2<T>& inout, const Vec2<T>& minVal, const Vec2<T>& maxVal )
 {
-	inout(0) = Max( Min( inout(0), maxVal(0) ), minVal(0) );
-	inout(1) = Max( Min( inout(1), maxVal(1) ), minVal(1) );
+	inout.x = Max( Min( inout.x, maxVal.x ), minVal.x );
+	inout.y = Max( Min( inout.y, maxVal.y ), minVal.y );
 }
 
 
@@ -360,8 +453,8 @@ inline void Clamp( Vec2<T>& inout, const Vec2<T>& minVal, const Vec2<T>& maxVal 
 template< typename T >
 inline void Lerp( Vec2<T>& out, const Vec2<T>& start, const Vec2<T>& end, T percent )
 {
-	out(0)	= start(0) + percent * ( end(0) - start(0) );
-	out(1)	= start(1) + percent * ( end(1) - start(1) );
+	out.x	= start.x + percent * ( end.x - start.x );
+	out.y	= start.y + percent * ( end.y - start.y );
 }
 
 
@@ -380,16 +473,16 @@ inline void Slerp( Vec2<T>& out, const Vec2<T>& start, const Vec2<T>& end, T per
 							   // start and the final result.
 	T theta = (T)acos( dot ) * percent;//Mathf.Acos(dot)*percent;
 	Vec2<T> RelativeVec; //Vector3 RelativeVec = end - start*dot;
-	RelativeVec(0) = end(0) - dot * start(0);
-	RelativeVec(1) = end(1) - dot * start(1);
+	RelativeVec.x = end.x - dot * start.x;
+	RelativeVec.y = end.y - dot * start.y;
 
 	Normalize( RelativeVec );//RelativeVec.Normalize();     // Orthonormal basis
 							 // The final result.
 							 //return ((start*Mathf.Cos(theta)) + (RelativeVec*Mathf.Sin(theta)));
 	T cos_theta = (T)cos( theta );
 	T sin_theta = (T)sin( theta );
-	out(0)	= start(0) * cos_theta +  RelativeVec(0) * sin_theta;
-	out(1)	= start(1) * cos_theta +  RelativeVec(1) * sin_theta;
+	out.x	= start.x * cos_theta +  RelativeVec.x * sin_theta;
+	out.y	= start.y * cos_theta +  RelativeVec.y * sin_theta;
 }
 
 
@@ -406,31 +499,31 @@ inline void Nlerp( Vec2<T>& out, const Vec2<T>& start, const Vec2<T>& end, T per
 template< typename T >
 inline bool IsSame( const Vec2<T>& in1, const Vec2<T>& in2 )
 {
-	return in1(0)==in2(0) && in1(1)==in2(1);
+	return in1.x==in2.x && in1.y==in2.y;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec2<T>& out, float coeff1, const Vec2<T>& in1, float coeff2, const Vec2<T>& in2 )
 {
-	out(0)	= coeff1 * in1(0) + coeff2 * in2(0);
-	out(1)	= coeff1 * in1(1) + coeff2 * in2(1);
+	out.x	= coeff1 * in1.x + coeff2 * in2.x;
+	out.y	= coeff1 * in1.y + coeff2 * in2.y;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec2<T>& out, const Vec2<T>& in1, float coeff2, const Vec2<T>& in2 )
 {
-	out(0)	= in1(0) + coeff2 * in2(0);
-	out(1)	= in1(1) + coeff2 * in2(1);
+	out.x	= in1.x + coeff2 * in2.x;
+	out.y	= in1.y + coeff2 * in2.y;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec2<T>& inout, const Vec2<T>& in, const T scale )
 {
-	inout(0) += in(0) * scale;
-	inout(1) += in(1) * scale;
+	inout.x += in.x * scale;
+	inout.y += in.y * scale;
 }
 
 
@@ -440,41 +533,29 @@ inline void AddScaled( Vec2<T>& inout, const Vec2<T>& in, const T scale )
 //									3D Vector									//
 //##############################################################################//
 
-//template< typename T >
-//union Vec3
-//{
-//	T	xyz[3];
-//	T	rgb[3];
-//	struct { T x, y, z; };
-//	struct { T r, g, b; };
-//
-//	Vec3()
-//	{
-//		x = 0;
-//		y = 0;
-//		z = 0;
-//	}
-//
-//	Vec3( T x_, T y_, T z_ )
-//	{
-//		x = x_;
-//		y = y_;
-//		z = z_;
-//	}
-//
-//
-//	T& operator()( int i ) &
-//	{
-//		return xyz[i];
-//	}
-//
-//	// Subscription operator. ( called by following cases: "T& a = Matrix<T>(10,10)(n)", "auto&& a = Matrix<T>(20,4)(n)" )
-//	T operator()( int i ) const&&
-//	{
-//		return std::move(xyz[i]);
-//	}
-//
-//};
+template< typename T >
+union Vec3
+{
+	T	xyz[3];
+	T	rgb[3];
+	struct { T x, y, z; };
+	struct { T r, g, b; };
+
+	Vec3()
+	{
+		x = 0;
+		y = 0;
+		z = 0;
+	}
+
+	Vec3( T x_, T y_, T z_ )
+	{
+		x = x_;
+		y = y_;
+		z = z_;
+	}
+
+};
 
 
 
@@ -484,9 +565,9 @@ inline void AddScaled( Vec2<T>& inout, const Vec2<T>& in, const T scale )
 template< typename T >
 void InitVec( Vec3<T>& inout, T x, T y, T z )
 {
-	inout(0)	= x;
-	inout(1)	= y;
-	inout(2)	= z;
+	inout.x	= x;
+	inout.y	= y;
+	inout.z	= z;
 }
 
 
@@ -494,9 +575,9 @@ void InitVec( Vec3<T>& inout, T x, T y, T z )
 template< typename T >
 inline void InitVec( Vec3<T>& inout, T arr[3] )
 {
-	inout(0)	= arr[0];
-	inout(1)	= arr[1];
-	inout(2)	= arr[2];
+	inout.x	= arr[0];
+	inout.y	= arr[1];
+	inout.z	= arr[2];
 }
 
 
@@ -504,9 +585,9 @@ inline void InitVec( Vec3<T>& inout, T arr[3] )
 template< typename T >
 void InitZero( Vec3<T>& inout )
 {
-	inout(0)	= 0;
-	inout(1)	= 0;
-	inout(2)	= 0;
+	inout.x	= 0;
+	inout.y	= 0;
+	inout.z	= 0;
 }
 
 
@@ -514,9 +595,9 @@ void InitZero( Vec3<T>& inout )
 template< typename T >
 void Reverse( Vec3<T>& out, const Vec3<T>& in )
 {
-	out(0) = -in(0);
-	out(1) = -in(1);
-	out(2) = -in(2);
+	out.x = -in.x;
+	out.y = -in.y;
+	out.z = -in.z;
 }
 
 
@@ -524,9 +605,9 @@ void Reverse( Vec3<T>& out, const Vec3<T>& in )
 template< typename T >
 void Reverse( Vec3<T>& inout )
 {
-	inout(0) = -inout(0);
-	inout(1) = -inout(1);
-	inout(2) = -inout(2);
+	inout.x = -inout.x;
+	inout.y = -inout.y;
+	inout.z = -inout.z;
 }
 
 
@@ -534,27 +615,27 @@ void Reverse( Vec3<T>& inout )
 template< typename T >
 inline void Add( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	out(0) = in1(0) + in2(0);
-	out(1) = in1(1) + in2(1);
-	out(2) = in1(2) + in2(2);
+	out.x = in1.x + in2.x;
+	out.y = in1.y + in2.y;
+	out.z = in1.z + in2.z;
 }
 
 
 template< typename T >
 inline void Add( Vec3<T>& inout, const Vec3<T>& in )
 {
-	inout(0) += in(0);
-	inout(1) += in(1);
-	inout(2) += in(2);
+	inout.x += in.x;
+	inout.y += in.y;
+	inout.z += in.z;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec3<T>& inout, const Vec3<T>& in, const T scale )
 {
-	inout(0) += in(0) * scale;
-	inout(1) += in(1) * scale;
-	inout(2) += in(2) * scale;
+	inout.x += in.x * scale;
+	inout.y += in.y * scale;
+	inout.z += in.z * scale;
 }
 
 
@@ -562,9 +643,9 @@ inline void AddScaled( Vec3<T>& inout, const Vec3<T>& in, const T scale )
 template< typename T >
 inline void Subtract( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	out(0) = in1(0) - in2(0);
-	out(1) = in1(1) - in2(1);
-	out(2) = in1(2) - in2(2);
+	out.x = in1.x - in2.x;
+	out.y = in1.y - in2.y;
+	out.z = in1.z - in2.z;
 }
 
 
@@ -572,9 +653,9 @@ inline void Subtract( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline void Multiply( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	out(0) = in1(0) * in2(0);
-	out(1) = in1(1) * in2(1);
-	out(2) = in1(2) * in2(2);
+	out.x = in1.x * in2.x;
+	out.y = in1.y * in2.y;
+	out.z = in1.z * in2.z;
 }
 
 
@@ -582,9 +663,9 @@ inline void Multiply( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline void Divide( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	out(0) = in1(0) / in2(0);
-	out(1) = in1(1) / in2(1);
-	out(2) = in1(2) / in2(2);
+	out.x = in1.x / in2.x;
+	out.y = in1.y / in2.y;
+	out.z = in1.z / in2.z;
 }
 
 
@@ -592,7 +673,7 @@ inline void Divide( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline T DotProduct( const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	return in1(0) * in2(0) + in1(1) * in2(1) + in1(2) * in2(2);
+	return in1.x * in2.x + in1.y * in2.y + in1.z * in2.z;
 }
 
 
@@ -600,9 +681,9 @@ inline T DotProduct( const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline void CrossProduct( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	out(0) = in1(1) * in2(2) - in1(2) * in2(1);
-	out(1) = in1(2) * in2(0) - in1(0) * in2(2);
-	out(2) = in1(0) * in2(1) - in1(1) * in2(0);
+	out.x = in1.y * in2.z - in1.z * in2.y;
+	out.y = in1.z * in2.x - in1.x * in2.z;
+	out.z = in1.x * in2.y - in1.y * in2.x;
 }
 
 
@@ -610,7 +691,7 @@ inline void CrossProduct( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline T Length( const Vec3<T>& in )
 {
-	return sqrt( Max( in(0) * in(0) + in(1) * in(1) + in(2) * in(2), ( std::numeric_limits<T>::min )( ) ) );
+	return sqrt( Max( in.x * in.x + in.y * in.y + in.z * in.z, ( std::numeric_limits<T>::min )( ) ) );
 }
 
 
@@ -618,7 +699,7 @@ inline T Length( const Vec3<T>& in )
 template< typename T >
 inline T LengthSqrd( const Vec3<T>& in )
 {
-	return in(0) * in(0) + in(1) * in(1) + in(2) * in(2);
+	return in.x * in.x + in.y * in.y + in.z * in.z;
 }
 
 
@@ -626,9 +707,9 @@ inline T LengthSqrd( const Vec3<T>& in )
 template< typename T >
 inline T Distance( const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	const T dx	= in1(0) - in2(0);
-	const T dy	= in1(1) - in2(1);
-	const T dz	= in1(2) - in2(2);
+	const T dx	= in1.x - in2.x;
+	const T dy	= in1.y - in2.y;
+	const T dz	= in1.z - in2.z;
 	return	sqrt( Max( dx * dx + dy * dy + dz * dz, ( std::numeric_limits<T>::min )( ) ) );
 }
 
@@ -637,9 +718,9 @@ inline T Distance( const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline T DistanceSqrd( const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	const T dx	= in1(0) - in2(0);
-	const T dy	= in1(1) - in2(1);
-	const T dz	= in1(2) - in2(2);
+	const T dx	= in1.x - in2.x;
+	const T dy	= in1.y - in2.y;
+	const T dz	= in1.z - in2.z;
 	return	dx * dx + dy * dy + dz * dz;
 }
 
@@ -648,10 +729,10 @@ inline T DistanceSqrd( const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline void Normalize( Vec3<T>& inout )
 {
-	T length_inv	= ( T )1.0 / sqrt( Max( inout(0) * inout(0) + inout(1) * inout(1) + inout(2) * inout(2), ( std::numeric_limits<T>::min )( ) ) );
-	inout(0) *= length_inv;
-	inout(1) *= length_inv;
-	inout(2) *= length_inv;
+	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y + inout.z * inout.z, ( std::numeric_limits<T>::min )( ) ) );
+	inout.x *= length_inv;
+	inout.y *= length_inv;
+	inout.z *= length_inv;
 }
 
 
@@ -659,36 +740,36 @@ inline void Normalize( Vec3<T>& inout )
 template< typename T >
 inline void Scale( Vec3<T>& inout, T scale )
 {
-	inout(0) *= scale;
-	inout(1) *= scale;
-	inout(2) *= scale;
+	inout.x *= scale;
+	inout.y *= scale;
+	inout.z *= scale;
 }
 
 
 template< typename T >
 inline void Scale( Vec3<T>& out, const Vec3<T>& in, T scale )
 {
-	out(0) = in(0) * scale;
-	out(1) = in(1) * scale;
-	out(2) = in(2) * scale;
+	out.x = in.x * scale;
+	out.y = in.y * scale;
+	out.z = in.z * scale;
 }
 
 
 template< typename T >
 inline void Max( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	out(0)	= in1(0) > in2(0) ? in1(0) : in2(0);
-	out(1)	= in1(1) > in2(1) ? in1(1) : in2(1);
-	out(2)	= in1(2) > in2(2) ? in1(2) : in2(2);
+	out.x	= in1.x > in2.x ? in1.x : in2.x;
+	out.y	= in1.y > in2.y ? in1.y : in2.y;
+	out.z	= in1.z > in2.z ? in1.z : in2.z;
 }
 
 
 template< typename T >
 inline void Min( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	out(0)	= in1(0) < in2(0) ? in1(0) : in2(0);
-	out(1)	= in1(1) < in2(1) ? in1(1) : in2(1);
-	out(2)	= in1(2) < in2(2) ? in1(2) : in2(2);
+	out.x	= in1.x < in2.x ? in1.x : in2.x;
+	out.y	= in1.y < in2.y ? in1.y : in2.y;
+	out.z	= in1.z < in2.z ? in1.z : in2.z;
 }
 
 
@@ -696,9 +777,9 @@ inline void Min( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline void Clamp( Vec3<T>& inout, const Vec3<T>& minVal, const Vec3<T>& maxVal )
 {
-	inout(0) = Max( Min( inout(0), maxVal(0) ), minVal(0) );
-	inout(1) = Max( Min( inout(1), maxVal(1) ), minVal(1) );
-	inout(2) = Max( Min( inout(2), maxVal(2) ), minVal(2) );
+	inout.x = Max( Min( inout.x, maxVal.x ), minVal.x );
+	inout.y = Max( Min( inout.y, maxVal.y ), minVal.y );
+	inout.z = Max( Min( inout.z, maxVal.z ), minVal.z );
 }
 
 
@@ -706,9 +787,9 @@ inline void Clamp( Vec3<T>& inout, const Vec3<T>& minVal, const Vec3<T>& maxVal 
 template< typename T >
 inline void Lerp( Vec3<T>& out, const Vec3<T>& start, const Vec3<T>& end, T percent )
 {
-	out(0)	= start(0) + percent * ( end(0) - start(0) );
-	out(1)	= start(1) + percent * ( end(1) - start(1) );
-	out(2)	= start(2) + percent * ( end(2) - start(2) );
+	out.x	= start.x + percent * ( end.x - start.x );
+	out.y	= start.y + percent * ( end.y - start.y );
+	out.z	= start.z + percent * ( end.z - start.z );
 }
 
 
@@ -727,18 +808,18 @@ inline void Slerp( Vec3<T>& out, const Vec3<T>& start, const Vec3<T>& end, T per
 							   // start and the final result.
 	T theta = (T)acos( dot ) * percent;//Mathf.Acos(dot)*percent;
 	Vec3<T>	RelativeVec; //Vector3 RelativeVec = end - start*dot;
-	RelativeVec(0) = end(0) - dot * start(0);
-	RelativeVec(1) = end(1) - dot * start(1);
-	RelativeVec(2) = end(2) - dot * start(2);
+	RelativeVec.x = end.x - dot * start.x;
+	RelativeVec.y = end.y - dot * start.y;
+	RelativeVec.z = end.z - dot * start.z;
 
 	Normalize( RelativeVec );//RelativeVec.Normalize();     // Orthonormal basis
 							 // The final result.
 							 //return ((start*Mathf.Cos(theta)) + (RelativeVec*Mathf.Sin(theta)));
 	T cos_theta = (T)cos( theta );
 	T sin_theta = (T)sin( theta );
-	out(0)	= start(0) * cos_theta +  RelativeVec(0) * sin_theta;
-	out(1)	= start(1) * cos_theta +  RelativeVec(1) * sin_theta;
-	out(2)	= start(2) * cos_theta +  RelativeVec(2) * sin_theta;
+	out.x	= start.x * cos_theta +  RelativeVec.x * sin_theta;
+	out.y	= start.y * cos_theta +  RelativeVec.y * sin_theta;
+	out.z	= start.z * cos_theta +  RelativeVec.z * sin_theta;
 }
 
 
@@ -755,25 +836,25 @@ inline void Nlerp( Vec3<T>& out, const Vec3<T>& start, const Vec3<T>& end, T per
 template< typename T >
 inline bool IsSame( const Vec3<T>& in1, const Vec3<T>& in2 )
 {
-	return in1(0)==in2(0) && in1(1)==in2(1) && in1(2)==in2(2);
+	return in1.x==in2.x && in1.y==in2.y && in1.z==in2.z;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec3<T>& out, float coeff1, const Vec3<T>& in1, float coeff2, const Vec3<T>& in2 )
 {
-	out(0)	= coeff1 * in1(0) + coeff2 * in2(0);
-	out(1)	= coeff1 * in1(1) + coeff2 * in2(1);
-	out(2)	= coeff1 * in1(2) + coeff2 * in2(2);
+	out.x	= coeff1 * in1.x + coeff2 * in2.x;
+	out.y	= coeff1 * in1.y + coeff2 * in2.y;
+	out.z	= coeff1 * in1.z + coeff2 * in2.z;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec3<T>& out, const Vec3<T>& in1, float coeff2, const Vec3<T>& in2 )
 {
-	out(0)	= in1(0) + coeff2 * in2(0);
-	out(1)	= in1(1) + coeff2 * in2(1);
-	out(2)	= in1(2) + coeff2 * in2(2);
+	out.x	= in1.x + coeff2 * in2.x;
+	out.y	= in1.y + coeff2 * in2.y;
+	out.z	= in1.z + coeff2 * in2.z;
 }
 
 
@@ -782,43 +863,32 @@ inline void AddScaled( Vec3<T>& out, const Vec3<T>& in1, float coeff2, const Vec
 //									4D Vector									//
 //##############################################################################//
 
-//template< typename T >
-//union Vec4
-//{
-//	T	xyzw[4];
-//	T	rgba[4];
-//	struct { T x, y, z, w; };
-//	struct { T r, g, b, a; };
-//	struct { Vec3<T>xyz; T w; };
-//
-//	Vec4() : xyz()
-//	{
-//		//x = 0;
-//		//y = 0;
-//		//z = 0;
-//		w = 0;
-//	}
-//
-//	Vec4( T x_, T y_, T z_, T w_ )
-//	{
-//		x = x_;
-//		y = y_;
-//		z = z_;
-//		w = w_;
-//	}
-//
-//	T& operator()( int i ) &
-//	{
-//		return xyzw[i];
-//	}
-//
-//	// Subscription operator. ( called by following cases: "T& a = Matrix<T>(10,10)(n)", "auto&& a = Matrix<T>(20,4)(n)" )
-//	T operator()( int i ) const&&
-//	{
-//		return std::move(xyzw[i]);
-//	}
-//
-//};
+template< typename T >
+union Vec4
+{
+	T	xyzw[4];
+	T	rgba[4];
+	struct { T x, y, z, w; };
+	struct { T r, g, b, a; };
+	struct { Vec3<T>xyz; T w; };
+
+	Vec4() : xyz()
+	{
+		//x = 0;
+		//y = 0;
+		//z = 0;
+		w = 0;
+	}
+
+	Vec4( T x_, T y_, T z_, T w_ )
+	{
+		x = x_;
+		y = y_;
+		z = z_;
+		w = w_;
+	}
+
+};
 
 
 
@@ -827,10 +897,10 @@ inline void AddScaled( Vec3<T>& out, const Vec3<T>& in1, float coeff2, const Vec
 template< typename T >
 void InitVec( Vec4<T>& inout, T x, T y, T z, T w )
 {
-	inout(0)	= x;
-	inout(1)	= y;
-	inout(2)	= z;
-	inout(3)	= w;
+	inout.x	= x;
+	inout.y	= y;
+	inout.z	= z;
+	inout.w	= w;
 }
 
 
@@ -838,10 +908,10 @@ void InitVec( Vec4<T>& inout, T x, T y, T z, T w )
 template< typename T >
 inline void InitVec( Vec4<T>& inout, T arr[4] )
 {
-	inout(0)	= arr[0];
-	inout(1)	= arr[1];
-	inout(2)	= arr[2];
-	inout(3)	= arr[3];
+	inout.x	= arr[0];
+	inout.y	= arr[1];
+	inout.z	= arr[2];
+	inout.w	= arr[3];
 }
 
 
@@ -849,10 +919,10 @@ inline void InitVec( Vec4<T>& inout, T arr[4] )
 template< typename T >
 void InitZero( Vec4<T>& inout )
 {
-	inout(0)	= 0;
-	inout(1)	= 0;
-	inout(2)	= 0;
-	inout(3)	= 0;
+	inout.x	= 0;
+	inout.y	= 0;
+	inout.z	= 0;
+	inout.w	= 0;
 }
 
 
@@ -860,10 +930,10 @@ void InitZero( Vec4<T>& inout )
 template< typename T >
 void Reverse( Vec4<T>& out, const Vec4<T>& in )
 {
-	out(0) = -in(0);
-	out(1) = -in(1);
-	out(2) = -in(2);
-	out(3) = -in(3);
+	out.x = -in.x;
+	out.y = -in.y;
+	out.z = -in.z;
+	out.w = -in.w;
 }
 
 
@@ -871,10 +941,10 @@ void Reverse( Vec4<T>& out, const Vec4<T>& in )
 template< typename T >
 void Reverse( Vec4<T>& inout )
 {
-	inout(0) = -inout(0);
-	inout(1) = -inout(1);
-	inout(2) = -inout(2);
-	inout(3) = -inout(3);
+	inout.x = -inout.x;
+	inout.y = -inout.y;
+	inout.z = -inout.z;
+	inout.w = -inout.w;
 }
 
 
@@ -882,20 +952,20 @@ void Reverse( Vec4<T>& inout )
 template< typename T >
 inline void Add( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	out(0) = in1(0) + in2(0);
-	out(1) = in1(1) + in2(1);
-	out(2) = in1(2) + in2(2);
-	out(3) = in1(3) + in2(3);
+	out.x = in1.x + in2.x;
+	out.y = in1.y + in2.y;
+	out.z = in1.z + in2.z;
+	out.w = in1.w + in2.w;
 }
 
 
 template< typename T >
 inline void Add( Vec4<T>& inout, const Vec4<T>& in )
 {
-	inout(0) += in(0);
-	inout(1) += in(1);
-	inout(2) += in(2);
-	inout(3) += in(3);
+	inout.x += in.x;
+	inout.y += in.y;
+	inout.z += in.z;
+	inout.w += in.w;
 }
 
 
@@ -903,10 +973,10 @@ inline void Add( Vec4<T>& inout, const Vec4<T>& in )
 template< typename T >
 inline void Subtract( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	out(0) = in1(0) - in2(0);
-	out(1) = in1(1) - in2(1);
-	out(2) = in1(2) - in2(2);
-	out(3) = in1(3) - in2(3);
+	out.x = in1.x - in2.x;
+	out.y = in1.y - in2.y;
+	out.z = in1.z - in2.z;
+	out.w = in1.w - in2.w;
 }
 
 
@@ -914,7 +984,7 @@ inline void Subtract( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
 template< typename T >
 inline T DotProduct( const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	return in1(0) * in2(0) + in1(1) * in2(1) + in1(2) * in2(2) + in1(3) * in2(3);
+	return in1.x * in2.x + in1.y * in2.y + in1.z * in2.z + in1.w * in2.w;
 }
 
 
@@ -922,9 +992,9 @@ inline T DotProduct( const Vec4<T>& in1, const Vec4<T>& in2 )
 //template< typename T >
 //inline void CrossProduct( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 ) 
 //{
-//	out(0) = in1(1) * in2(2) - in1(2) * in2(1);
-//	out(1) = in1(2) * in2(0) - in1(0) * in2(2);
-//	out(2) = in1(0) * in2(1) - in1(1) * in2(0);
+//	out.x = in1.y * in2.z - in1.z * in2.y;
+//	out.y = in1.z * in2.x - in1.x * in2.z;
+//	out.z = in1.x * in2.y - in1.y * in2.x;
 //}
 
 
@@ -932,7 +1002,7 @@ inline T DotProduct( const Vec4<T>& in1, const Vec4<T>& in2 )
 template< typename T >
 inline T Length( const Vec4<T>& in )
 {
-	return sqrt( Max( in(0) * in(0) + in(1) * in(1) + in(2) * in(2) + in(3) * in(3), ( std::numeric_limits<T>::min )( ) ) );
+	return sqrt( Max( in.x * in.x + in.y * in.y + in.z * in.z + in.w * in.w, ( std::numeric_limits<T>::min )( ) ) );
 }
 
 
@@ -940,7 +1010,7 @@ inline T Length( const Vec4<T>& in )
 template< typename T >
 inline T LengthSqrd( const Vec4<T>& in )
 {
-	return in(0) * in(0) + in(1) * in(1) + in(2) * in(2) + in(3) * in(3);
+	return in.x * in.x + in.y * in.y + in.z * in.z + in.w * in.w;
 }
 
 
@@ -948,10 +1018,10 @@ inline T LengthSqrd( const Vec4<T>& in )
 template< typename T >
 inline T Distance( const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	const T dx	= in1(0) - in2(0);
-	const T dy	= in1(1) - in2(1);
-	const T dz	= in1(2) - in2(2);
-	const T dw	= in1(3) - in2(3);
+	const T dx	= in1.x - in2.x;
+	const T dy	= in1.y - in2.y;
+	const T dz	= in1.z - in2.z;
+	const T dw	= in1.w - in2.w;
 	return	sqrt( Max( dx * dx + dy * dy + dz * dz + dw * dw, ( std::numeric_limits<T>::min )( ) ) );
 }
 
@@ -960,10 +1030,10 @@ inline T Distance( const Vec4<T>& in1, const Vec4<T>& in2 )
 template< typename T >
 inline T DistanceSqrd( const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	const T dx	= in1(0) - in2(0);
-	const T dy	= in1(1) - in2(1);
-	const T dz	= in1(2) - in2(2);
-	const T dw	= in1(3) - in2(3);
+	const T dx	= in1.x - in2.x;
+	const T dy	= in1.y - in2.y;
+	const T dz	= in1.z - in2.z;
+	const T dw	= in1.w - in2.w;
 	return	dx * dx + dy * dy + dz * dz + dw* dw;
 }
 
@@ -972,11 +1042,11 @@ inline T DistanceSqrd( const Vec4<T>& in1, const Vec4<T>& in2 )
 template< typename T >
 inline void Normalize( Vec4<T>& inout )
 {
-	T length_inv	= ( T )1.0 / sqrt( Max( inout(0) * inout(0) + inout(1) * inout(1) + inout(2) * inout(2) + inout(3) * inout(3), ( std::numeric_limits<T>::min )( ) ) );
-	inout(0) *= length_inv;
-	inout(1) *= length_inv;
-	inout(2) *= length_inv;
-	inout(3) *= length_inv;
+	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y + inout.z * inout.z + inout.w * inout.w, ( std::numeric_limits<T>::min )( ) ) );
+	inout.x *= length_inv;
+	inout.y *= length_inv;
+	inout.z *= length_inv;
+	inout.w *= length_inv;
 }
 
 
@@ -984,40 +1054,40 @@ inline void Normalize( Vec4<T>& inout )
 template< typename T >
 inline void Scale( Vec4<T>& inout, T scale )
 {
-	inout(0) *= scale;
-	inout(1) *= scale;
-	inout(2) *= scale;
-	inout(3) *= scale;
+	inout.x *= scale;
+	inout.y *= scale;
+	inout.z *= scale;
+	inout.w *= scale;
 }
 
 
 template< typename T >
 inline void Scale( Vec4<T>& out, const Vec4<T>& in, T scale )
 {
-	out(0) = in(0) * scale;
-	out(1) = in(1) * scale;
-	out(2) = in(2) * scale;
-	out(3) = in(3) * scale;
+	out.x = in.x * scale;
+	out.y = in.y * scale;
+	out.z = in.z * scale;
+	out.w = in.w * scale;
 }
 
 
 template< typename T >
 inline void Max( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	out(0)	= in1(0) > in2(0) ? in1(0) : in2(0);
-	out(1)	= in1(1) > in2(1) ? in1(1) : in2(1);
-	out(2)	= in1(2) > in2(2) ? in1(2) : in2(2);
-	out(3)	= in1(3) > in2(3) ? in1(3) : in2(3);
+	out.x	= in1.x > in2.x ? in1.x : in2.x;
+	out.y	= in1.y > in2.y ? in1.y : in2.y;
+	out.z	= in1.z > in2.z ? in1.z : in2.z;
+	out.w	= in1.w > in2.w ? in1.w : in2.w;
 }
 
 
 template< typename T >
 inline void Min( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	out(0)	= in1(0) < in2(0) ? in1(0) : in2(0);
-	out(1)	= in1(1) < in2(1) ? in1(1) : in2(1);
-	out(2)	= in1(2) < in2(2) ? in1(2) : in2(2);
-	out(3)	= in1(3) < in2(3) ? in1(3) : in2(3);
+	out.x	= in1.x < in2.x ? in1.x : in2.x;
+	out.y	= in1.y < in2.y ? in1.y : in2.y;
+	out.z	= in1.z < in2.z ? in1.z : in2.z;
+	out.w	= in1.w < in2.w ? in1.w : in2.w;
 }
 
 
@@ -1025,10 +1095,10 @@ inline void Min( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
 template< typename T >
 inline void Clamp( Vec4<T>& inout, const Vec4<T>& minVal, const Vec4<T>& maxVal )
 {
-	inout(0) = Max( Min( inout(0), maxVal(0) ), minVal(0) );
-	inout(1) = Max( Min( inout(1), maxVal(1) ), minVal(1) );
-	inout(2) = Max( Min( inout(2), maxVal(2) ), minVal(2) );
-	inout(3) = Max( Min( inout(3), maxVal(3) ), minVal(3) );
+	inout.x = Max( Min( inout.x, maxVal.x ), minVal.x );
+	inout.y = Max( Min( inout.y, maxVal.y ), minVal.y );
+	inout.z = Max( Min( inout.z, maxVal.z ), minVal.z );
+	inout.w = Max( Min( inout.w, maxVal.w ), minVal.w );
 }
 
 
@@ -1036,10 +1106,10 @@ inline void Clamp( Vec4<T>& inout, const Vec4<T>& minVal, const Vec4<T>& maxVal 
 template< typename T >
 inline void Lerp( Vec4<T>& out, const Vec4<T>& start, const Vec4<T>& end, T percent )
 {
-	out(0)	= start(0) + percent * ( end(0) - start(0) );
-	out(1)	= start(1) + percent * ( end(1) - start(1) );
-	out(2)	= start(2) + percent * ( end(2) - start(2) );
-	out(3)	= start(3) + percent * ( end(3) - start(3) );
+	out.x	= start.x + percent * ( end.x - start.x );
+	out.y	= start.y + percent * ( end.y - start.y );
+	out.z	= start.z + percent * ( end.z - start.z );
+	out.w	= start.w + percent * ( end.w - start.w );
 }
 
 
@@ -1058,20 +1128,20 @@ inline void Slerp( Vec4<T>& out, const Vec4<T>& start, const Vec4<T>& end, T per
 							   // start and the final result.
 	T theta = (T)acos( dot ) * percent;//Mathf.Acos(dot)*percent;
 	Vec4<T>	RelativeVec; //Vector3 RelativeVec = end - start*dot;
-	RelativeVec(0) = end(0) - dot * start(0);
-	RelativeVec(1) = end(1) - dot * start(1);
-	RelativeVec(2) = end(2) - dot * start(2);
-	RelativeVec(3) = end(3) - dot * start(3);
+	RelativeVec.x = end.x - dot * start.x;
+	RelativeVec.y = end.y - dot * start.y;
+	RelativeVec.z = end.z - dot * start.z;
+	RelativeVec.w = end.w - dot * start.w;
 
 	Normalize( RelativeVec );//RelativeVec.Normalize();     // Orthonormal basis
 							 // The final result.
 							 //return ((start*Mathf.Cos(theta)) + (RelativeVec*Mathf.Sin(theta)));
 	T cos_theta = (T)cos( theta );
 	T sin_theta = (T)sin( theta );
-	out(0)	= start(0) * cos_theta +  RelativeVec(0) * sin_theta;
-	out(1)	= start(1) * cos_theta +  RelativeVec(1) * sin_theta;
-	out(2)	= start(2) * cos_theta +  RelativeVec(2) * sin_theta;
-	out(3)	= start(3) * cos_theta +  RelativeVec(3) * sin_theta;
+	out.x	= start.x * cos_theta +  RelativeVec.x * sin_theta;
+	out.y	= start.y * cos_theta +  RelativeVec.y * sin_theta;
+	out.z	= start.z * cos_theta +  RelativeVec.z * sin_theta;
+	out.w	= start.w * cos_theta +  RelativeVec.w * sin_theta;
 }
 
 
@@ -1088,27 +1158,27 @@ inline void Nlerp( Vec4<T>& out, const Vec4<T>& start, const Vec4<T>& end, T per
 template< typename T >
 inline bool IsSame( const Vec4<T>& in1, const Vec4<T>& in2 )
 {
-	return in1(0)==in2(0) && in1(1)==in2(1) && in1(2)==in2(2) && in1(3)==in2(3);
+	return in1.x==in2.x && in1.y==in2.y && in1.z==in2.z && in1.w==in2.w;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec4<T>& out, float coeff1, const Vec4<T>& in1, float coeff2, const Vec4<T>& in2 )
 {
-	out(0)	= coeff1 * in1(0) + coeff2 * in2(0);
-	out(1)	= coeff1 * in1(1) + coeff2 * in2(1);
-	out(2)	= coeff1 * in1(2) + coeff2 * in2(2);
-	out(3)	= coeff1 * in1(3) + coeff2 * in2(3);
+	out.x	= coeff1 * in1.x + coeff2 * in2.x;
+	out.y	= coeff1 * in1.y + coeff2 * in2.y;
+	out.z	= coeff1 * in1.z + coeff2 * in2.z;
+	out.w	= coeff1 * in1.w + coeff2 * in2.w;
 }
 
 
 template< typename T >
 inline void AddScaled( Vec4<T>& out, const Vec4<T>& in1, float coeff2, const Vec4<T>& in2 )
 {
-	out(0)	= in1(0) + coeff2 * in2(0);
-	out(1)	= in1(1) + coeff2 * in2(1);
-	out(2)	= in1(2) + coeff2 * in2(2);
-	out(3)	= in1(3) + coeff2 * in2(3);
+	out.x	= in1.x + coeff2 * in2.x;
+	out.y	= in1.y + coeff2 * in2.y;
+	out.z	= in1.z + coeff2 * in2.z;
+	out.w	= in1.w + coeff2 * in2.w;
 }
 
 
@@ -1391,23 +1461,23 @@ inline void Subtract( Mat4<T>& out, const Mat4<T>& in1, const Mat4<T>& in2 )
 }
 
 
-// note: in(3) is assumed to be 1.0
+// note: in.w is assumed to be 1.0
 template< typename T >
 inline void Multiply( Vec3<T>& out, const Mat4<T>& mat, const Vec3<T>& in )
 {
-	out(0)	= mat.m00 * in(0) +  mat.m01 * in(1) +  mat.m02 * in(2) + mat.m03;
-	out(1)	= mat.m10 * in(0) +  mat.m11 * in(1) +  mat.m12 * in(2) + mat.m13;
-	out(2)	= mat.m20 * in(0) +  mat.m21 * in(1) +  mat.m22 * in(2) + mat.m23;
+	out.x	= mat.m00 * in.x +  mat.m01 * in.y +  mat.m02 * in.z + mat.m03;
+	out.y	= mat.m10 * in.x +  mat.m11 * in.y +  mat.m12 * in.z + mat.m13;
+	out.z	= mat.m20 * in.x +  mat.m21 * in.y +  mat.m22 * in.z + mat.m23;
 }
 
 
 template< typename T >
 inline void Multiply( Vec4<T>& out, const Mat4<T>& mat, const Vec3<T>& in )
 {
-	out(0)	= mat.m00 * in(0) +  mat.m01 * in(1) +  mat.m02 * in(2) + mat.m03;
-	out(1)	= mat.m10 * in(0) +  mat.m11 * in(1) +  mat.m12 * in(2) + mat.m13;
-	out(2)	= mat.m20 * in(0) +  mat.m21 * in(1) +  mat.m22 * in(2) + mat.m23;
-	out(3)	= mat.m30 * in(0) +  mat.m31 * in(1) +  mat.m32 * in(2) + mat.m33;
+	out.x	= mat.m00 * in.x +  mat.m01 * in.y +  mat.m02 * in.z + mat.m03;
+	out.y	= mat.m10 * in.x +  mat.m11 * in.y +  mat.m12 * in.z + mat.m13;
+	out.z	= mat.m20 * in.x +  mat.m21 * in.y +  mat.m22 * in.z + mat.m23;
+	out.w	= mat.m30 * in.x +  mat.m31 * in.y +  mat.m32 * in.z + mat.m33;
 }
 
 
@@ -1415,10 +1485,10 @@ inline void Multiply( Vec4<T>& out, const Mat4<T>& mat, const Vec3<T>& in )
 template< typename T >
 inline void Multiply( Vec4<T>& out, const Mat4<T>& mat, const Vec4<T>& in )
 {
-	out(0)	= mat.m00 * in(0) +  mat.m01 * in(1) +  mat.m02 * in(2) + mat.m03 * in(3);
-	out(1)	= mat.m10 * in(0) +  mat.m11 * in(1) +  mat.m12 * in(2) + mat.m13 * in(3);
-	out(2)	= mat.m20 * in(0) +  mat.m21 * in(1) +  mat.m22 * in(2) + mat.m23 * in(3);
-	out(3)	= mat.m30 * in(0) +  mat.m31 * in(1) +  mat.m32 * in(2) + mat.m33 * in(3);
+	out.x	= mat.m00 * in.x +  mat.m01 * in.y +  mat.m02 * in.z + mat.m03 * in.w;
+	out.y	= mat.m10 * in.x +  mat.m11 * in.y +  mat.m12 * in.z + mat.m13 * in.w;
+	out.z	= mat.m20 * in.x +  mat.m21 * in.y +  mat.m22 * in.z + mat.m23 * in.w;
+	out.w	= mat.m30 * in.x +  mat.m31 * in.y +  mat.m32 * in.z + mat.m33 * in.w;
 }
 
 
@@ -1454,9 +1524,9 @@ inline void Multiply( Mat4<T>& out, const Mat4<T>& in1, const Mat4<T>& in2 )
 template< typename T >
 inline void MatScale( Mat4<T>& out, const Vec3<T>& scale )
 {
-	out.m00 = scale(0);	out.m01 = 0;		out.m02 = 0;		out.m03 = 0;
-	out.m10 = 0;		out.m11 = scale(1);	out.m12 = 0;		out.m13 = 0;
-	out.m20 = 0;		out.m21 = 0;		out.m22 = scale(2);	out.m23 = 0;
+	out.m00 = scale.x;	out.m01 = 0;		out.m02 = 0;		out.m03 = 0;
+	out.m10 = 0;		out.m11 = scale.y;	out.m12 = 0;		out.m13 = 0;
+	out.m20 = 0;		out.m21 = 0;		out.m22 = scale.z;	out.m23 = 0;
 	out.m30 = 0;		out.m31 = 0;		out.m32 = 0;		out.m33 = 1;
 }
 
@@ -1474,9 +1544,9 @@ inline void MatScale( Mat4<T>& out, T sx, T sy, T sz )
 template< typename T >
 inline void MatTranslation( Mat4<T>& out, const Vec3<T>& vec )
 {
-	out.m00 = 1; out.m01 = 0; out.m02 = 0; out.m03 = vec(0);
-	out.m10 = 0; out.m11 = 1; out.m12 = 0; out.m13 = vec(1);
-	out.m20 = 0; out.m21 = 0; out.m22 = 1; out.m23 = vec(2);
+	out.m00 = 1; out.m01 = 0; out.m02 = 0; out.m03 = vec.x;
+	out.m10 = 0; out.m11 = 1; out.m12 = 0; out.m13 = vec.y;
+	out.m20 = 0; out.m21 = 0; out.m22 = 1; out.m23 = vec.z;
 	out.m30 = 0; out.m31 = 0; out.m32 = 0; out.m33 = 1;
 }
 
@@ -1526,9 +1596,9 @@ inline void MatRotationZ( Mat4<T>& mat, T theta )
 template< typename T >
 inline void MatViewGL( Mat4<T>& out, const Vec3<T>& u, const Vec3<T>& v, const Vec3<T>& n, const Vec3<T>& c )
 {
-	out.m00 = -u(0);		out.m01 = -u(1);		out.m02 = -u(2);		out.m03 = DotProduct( u, c );
-	out.m10 = v(0);		out.m11 = v(1);		out.m12 = v(2);		out.m13 = -DotProduct( v, c );
-	out.m20 = -n(0);		out.m21 = -n(1);		out.m22 = -n(2);		out.m23 = DotProduct( n, c );
+	out.m00 = -u.x;		out.m01 = -u.y;		out.m02 = -u.z;		out.m03 = DotProduct( u, c );
+	out.m10 = v.x;		out.m11 = v.y;		out.m12 = v.z;		out.m13 = -DotProduct( v, c );
+	out.m20 = -n.x;		out.m21 = -n.y;		out.m22 = -n.z;		out.m23 = DotProduct( n, c );
 	out.m30 = 0;		out.m31 = 0;		out.m32 = 0;		out.m33 = 1;
 }
 
@@ -1536,9 +1606,9 @@ inline void MatViewGL( Mat4<T>& out, const Vec3<T>& u, const Vec3<T>& v, const V
 template< typename T >
 inline void MatView( Mat4<T>& out, const Vec3<T>& u, const Vec3<T>& v, const Vec3<T>& n, const Vec3<T>& pos )
 {
-	out.m00 = u(0);	out.m01 = u(1);	out.m02 = u(2);	out.m03 = DotProduct( u, pos );
-	out.m10 = v(0);	out.m11 = v(1);	out.m12 = v(2);	out.m13 = DotProduct( v, pos );
-	out.m20 = n(0);	out.m21 = n(1);	out.m22 = n(2);	out.m23 = DotProduct( n, pos );
+	out.m00 = u.x;	out.m01 = u.y;	out.m02 = u.z;	out.m03 = DotProduct( u, pos );
+	out.m10 = v.x;	out.m11 = v.y;	out.m12 = v.z;	out.m13 = DotProduct( v, pos );
+	out.m20 = n.x;	out.m21 = n.y;	out.m22 = n.z;	out.m23 = DotProduct( n, pos );
 	out.m30 = 0;	out.m31 = 0;	out.m32 = 0;	out.m33 = 1;
 }
 
@@ -1601,16 +1671,16 @@ inline void InitQuat( Vec4f& quat, float angle, float x, float y, float z )
 {
 	const float theta = angle * 0.5f;
 	const float sine_theta = sin( theta );
-	quat(3)	= cos( theta );
-	quat(0)	= x * sine_theta;
-	quat(1)	= y * sine_theta;
-	quat(2)	= z * sine_theta;
+	quat.w	= cos( theta );
+	quat.x	= x * sine_theta;
+	quat.y	= y * sine_theta;
+	quat.z	= z * sine_theta;
 }
 
 
 inline float length( Vec4f quat )
 {
-	return sqrt( quat(0)*quat(0) + quat(1)*quat(1) +quat(2)*quat(2) + quat(3)*quat(3) );
+	return sqrt( quat.x*quat.x + quat.y*quat.y +quat.z*quat.z + quat.w*quat.w );
 }
 
 
@@ -1618,10 +1688,10 @@ inline Vec4f normalize( Vec4f quat )
 {
 	float L_inv = 1.0f / length( quat );
 
-	quat(0) *= L_inv;
-	quat(1) *= L_inv;
-	quat(2) *= L_inv;
-	quat(3) *= L_inv;
+	quat.x *= L_inv;
+	quat.y *= L_inv;
+	quat.z *= L_inv;
+	quat.w *= L_inv;
 
 	return quat;
 }
@@ -1629,9 +1699,9 @@ inline Vec4f normalize( Vec4f quat )
 
 inline Vec4f conjugate( Vec4f quat )
 {
-	quat(0) = -quat(0);
-	quat(1) = -quat(1);
-	quat(2) = -quat(2);
+	quat.x = -quat.x;
+	quat.y = -quat.y;
+	quat.z = -quat.z;
 	return quat;
 }
 
@@ -1642,10 +1712,10 @@ inline void rm_cal_err_qt( Vec4f quat )
 
 	float s = length( quat );
 	if( s <= 0.0f ) return;
-	quat(0) /= s;
-	quat(1) /= s;
-	quat(2) /= s;
-	quat(3) /= s;
+	quat.x /= s;
+	quat.y /= s;
+	quat.z /= s;
+	quat.w /= s;
 }
 
 
@@ -1654,10 +1724,10 @@ inline Vec4f mult( Vec4f A, Vec4f B )
 {
 	Vec4f C;
 
-	C(0) = A(3)*B(0) + A(0)*B(3) + A(1)*B(2) - A(2)*B(1);
-	C(1) = A(3)*B(1) - A(0)*B(2) + A(1)*B(3) + A(2)*B(0);
-	C(2) = A(3)*B(2) + A(0)*B(1) - A(1)*B(0) + A(2)*B(3);
-	C(3) = A(3)*B(3) - A(0)*B(0) - A(1)*B(1) - A(2)*B(2);
+	C.x = A.w*B.x + A.x*B.w + A.y*B.z - A.z*B.y;
+	C.y = A.w*B.y - A.x*B.z + A.y*B.w + A.z*B.x;
+	C.z = A.w*B.z + A.x*B.y - A.y*B.x + A.z*B.w;
+	C.w = A.w*B.w - A.x*B.x - A.y*B.y - A.z*B.z;
 
 
 	return C;
@@ -1672,13 +1742,13 @@ inline Vec4f mult( Vec4f A, Vec4f B )
 //    float pw, px, py, pz;
 //    float qw, qx, qy, qz;
 //
-//    pw = lpP(3); px = lpP(0); py = lpP(1); pz = lpP(2);
-//    qw = lpQ(3); qx = lpQ(0); qy = lpQ(1); qz = lpQ(2);
+//    pw = lpP.w; px = lpP.x; py = lpP.y; pz = lpP.z;
+//    qw = lpQ.w; qx = lpQ.x; qy = lpQ.y; qz = lpQ.z;
 //
-//    lpR(3) = pw * qw - px * qx - py * qy - pz * qz;
-//    lpR(0) = pw * qx + px * qw + py * qz - pz * qy;
-//    lpR(1) = pw * qy - px * qz + py * qw + pz * qx;
-//    lpR(2) = pw * qz + px * qy - py * qx + pz * qw;
+//    lpR.w = pw * qw - px * qx - py * qy - pz * qz;
+//    lpR.x = pw * qx + px * qw + py * qz - pz * qy;
+//    lpR.y = pw * qy - px * qz + py * qw + pz * qx;
+//    lpR.z = pw * qz + px * qy - py * qx + pz * qw;
 //
 //	return lpR;
 //}
@@ -1694,11 +1764,11 @@ inline Vec4f mult( Vec4f A, Vec4f B )
 
 
 
-//template< typename T >
-//union Quaternion
-//{
-//	struct { T w, x, y, z; };
-//};
+template< typename T >
+union Quaternion
+{
+	struct { T w, x, y, z; };
+};
 
 
 
@@ -1711,10 +1781,10 @@ inline void InitQuat( Quaternion<T>& quat, T angle, T x, T y, T z )
 	Vec3f axis			={ x, y, z };
 	Normalize( axis );
 
-	quat(3)	= (T)cos( theta );
-	quat(0)	= axis(0) * sine_theta;
-	quat(1)	= axis(1) * sine_theta;
-	quat(2)	= axis(2) * sine_theta;
+	quat.w	= (T)cos( theta );
+	quat.x	= axis.x * sine_theta;
+	quat.y	= axis.y * sine_theta;
+	quat.z	= axis.z * sine_theta;
 }
 
 
@@ -1723,46 +1793,46 @@ inline void InitQuat( Quaternion<T>& quat, T angle, const Vec3<T>& axis )
 {
 	const double theta = (double)angle * 0.5;
 	const T sine_theta = (T)sin( theta );
-	quat(3)	= (T)cos( theta );
-	quat(0)	= axis(0) * sine_theta;
-	quat(1)	= axis(1) * sine_theta;
-	quat(2)	= axis(2) * sine_theta;
+	quat.w	= (T)cos( theta );
+	quat.x	= axis.x * sine_theta;
+	quat.y	= axis.y * sine_theta;
+	quat.z	= axis.z * sine_theta;
 }
 
 
 template< typename T >
 inline void QuatIdentity( Quaternion<T>& quat )
 {
-	quat(3)	= (T)1;
-	quat(0)	= 0;
-	quat(1)	= 0;
-	quat(2)	= 0;
+	quat.w	= (T)1;
+	quat.x	= 0;
+	quat.y	= 0;
+	quat.z	= 0;
 }
 
 
 template< typename T >
 inline void QuatConjugate( Quaternion<T>& quat )
 {
-	quat(0) = -quat(0);
-	quat(1) = -quat(1);
-	quat(2) = -quat(2);
+	quat.x = -quat.x;
+	quat.y = -quat.y;
+	quat.z = -quat.z;
 }
 
 
 template< typename T >
 inline void QuatConjugate( Quaternion<T>& out, const Quaternion<T>& quat )
 {
-	out(3)	= quat(3);
-	out(0)	= -quat(0);
-	out(1)	= -quat(1);
-	out(2)	= -quat(2);
+	out.w	= quat.w;
+	out.x	= -quat.x;
+	out.y	= -quat.y;
+	out.z	= -quat.z;
 }
 
 
 template< typename T >
 inline T Length( const Quaternion<T>& quat )
 {
-	return sqrt( quat(3)*quat(3) + quat(0)*quat(0) + quat(1)*quat(1) +quat(2)*quat(2) );
+	return sqrt( quat.w*quat.w + quat.x*quat.x + quat.y*quat.y +quat.z*quat.z );
 }
 
 
@@ -1771,10 +1841,10 @@ inline void Normalize( Quaternion<T>& quat )
 {
 	float L_inv = ( T )1.0 / Length( quat );
 
-	quat(3) *= L_inv;
-	quat(0) *= L_inv;
-	quat(1) *= L_inv;
-	quat(2) *= L_inv;
+	quat.w *= L_inv;
+	quat.x *= L_inv;
+	quat.y *= L_inv;
+	quat.z *= L_inv;
 }
 
 
@@ -1785,10 +1855,10 @@ inline void rm_cal_err_qt( Quaternion<T>& quat )
 	T s = Length( quat );
 	if( s <= (T)0 ) return;
 
-	quat(3) /= s;
-	quat(0) /= s;
-	quat(1) /= s;
-	quat(2) /= s;
+	quat.w /= s;
+	quat.x /= s;
+	quat.y /= s;
+	quat.z /= s;
 }
 
 
@@ -1796,10 +1866,10 @@ inline void rm_cal_err_qt( Quaternion<T>& quat )
 template< typename T >
 inline void Multiply( Quaternion<T>& C, const Quaternion<T>& A, const Quaternion<T>& B )
 {
-	C(0) = A(3)*B(0) + A(0)*B(3) + A(1)*B(2) - A(2)*B(1);
-	C(1) = A(3)*B(1) - A(0)*B(2) + A(1)*B(3) + A(2)*B(0);
-	C(2) = A(3)*B(2) + A(0)*B(1) - A(1)*B(0) + A(2)*B(3);
-	C(3) = A(3)*B(3) - A(0)*B(0) - A(1)*B(1) - A(2)*B(2);
+	C.x = A.w*B.x + A.x*B.w + A.y*B.z - A.z*B.y;
+	C.y = A.w*B.y - A.x*B.z + A.y*B.w + A.z*B.x;
+	C.z = A.w*B.z + A.x*B.y - A.y*B.x + A.z*B.w;
+	C.w = A.w*B.w - A.x*B.x - A.y*B.y - A.z*B.z;
 }
 
 // Quaternionの乗算. lpPの右にlpQをかける.lpQ回転が最初に作用して、次にlpP回転が作用する
@@ -1809,13 +1879,13 @@ inline void Multiply_( Quaternion<T>& lpR, const Quaternion<T>& lpP, const Quate
 	T pw, px, py, pz;
 	T qw, qx, qy, qz;
 
-	pw = lpP(3); px = lpP(0); py = lpP(1); pz = lpP(2);
-	qw = lpQ(3); qx = lpQ(0); qy = lpQ(1); qz = lpQ(2);
+	pw = lpP.w; px = lpP.x; py = lpP.y; pz = lpP.z;
+	qw = lpQ.w; qx = lpQ.x; qy = lpQ.y; qz = lpQ.z;
 
-	lpR(3) = pw * qw - px * qx - py * qy - pz * qz;
-	lpR(0) = pw * qx + px * qw + py * qz - pz * qy;
-	lpR(1) = pw * qy - px * qz + py * qw + pz * qx;
-	lpR(2) = pw * qz + px * qy - py * qx + pz * qw;
+	lpR.w = pw * qw - px * qx - py * qy - pz * qz;
+	lpR.x = pw * qx + px * qw + py * qz - pz * qy;
+	lpR.y = pw * qy - px * qz + py * qw + pz * qx;
+	lpR.z = pw * qz + px * qy - py * qx + pz * qw;
 }
 
 
@@ -1824,7 +1894,7 @@ template< typename T >
 inline void Rotate( Vec3<T>& inout, const Quaternion<T>& quat )
 {
 	Quaternion<T>	q1, quatConjugate, result;
-	Quaternion<T>	quat_inout ={ 0, inout(0), inout(1), inout(2) };
+	Quaternion<T>	quat_inout ={ 0, inout.x, inout.y, inout.z };
 
 	QuatConjugate( quatConjugate, quat );
 
@@ -1832,9 +1902,9 @@ inline void Rotate( Vec3<T>& inout, const Quaternion<T>& quat )
 	Multiply( q1, quat, quat_inout );
 	Multiply( result, q1, quatConjugate );
 
-	inout(0) = result(0);
-	inout(1) = result(1);
-	inout(2) = result(2);
+	inout.x = result.x;
+	inout.y = result.y;
+	inout.z = result.z;
 }
 
 
@@ -1889,17 +1959,17 @@ inline void QuaternionLookAt( Quaternion<T>& out, const Vec3<T>& forward, const 
 template< typename T >
 inline void Quat2Mat( Mat4<T>& out, const Quaternion<T>& quat )
 {
-	T x2_2 = quat(0) * quat(0) * 2;
-	T xy_2 = quat(0) * quat(1) * 2;
-	T xz_2 = quat(0) * quat(2) * 2;
-	T wx_2 = quat(0) * quat(3) * 2;
+	T x2_2 = quat.x * quat.x * 2;
+	T xy_2 = quat.x * quat.y * 2;
+	T xz_2 = quat.x * quat.z * 2;
+	T wx_2 = quat.x * quat.w * 2;
 
-	T y2_2 = quat(1) * quat(1) * 2;
-	T yz_2 = quat(1) * quat(2) * 2;
-	T wy_2 = quat(1) * quat(3) * 2;
+	T y2_2 = quat.y * quat.y * 2;
+	T yz_2 = quat.y * quat.z * 2;
+	T wy_2 = quat.y * quat.w * 2;
 
-	T z2_2 = quat(2) * quat(2) * 2;
-	T zw_2 = quat(2) * quat(3) * 2;
+	T z2_2 = quat.z * quat.z * 2;
+	T zw_2 = quat.z * quat.w * 2;
 
 	out.m00	= 1-y2_2-z2_2;	out.m01 = xy_2-zw_2;	out.m02 = xz_2+wy_2;	out.m03 = 0;
 	out.m10 = xy_2 + zw_2;	out.m11 = 1-x2_2-z2_2;	out.m12 = yz_2-wx_2;	out.m13 = 0;
@@ -1910,4 +1980,4 @@ inline void Quat2Mat( Mat4<T>& out, const Quaternion<T>& quat )
 
 
 
-#endif /* VECTOR_H */
+#endif // GRAPHICS_MATH_H
