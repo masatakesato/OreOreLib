@@ -4,8 +4,9 @@
 #include	<math.h>
 #include	<limits>
 
-#include	"../memory/Memory.h"
 #include	"../common/Utility.h"
+#include	"../common/TString.h"
+#include	"../memory/Memory.h"
 
 
 
