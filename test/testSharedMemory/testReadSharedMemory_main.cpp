@@ -1,11 +1,13 @@
 ﻿#include	<Windows.h>
 #include	<iostream>
 
+#include	<oreore/common/TString.h>
+
 
 
 int main()
 {
-	auto name = "Hoge";
+	auto name = _T("Hoge");
 	auto size = 4;
 
 
@@ -27,7 +29,7 @@ int main()
 
 	for( int i=0; i<10; ++i )
 	{
-		std::cout << *reinterpret_cast<int *>(pMemory) << std::endl;
+		tcout << *reinterpret_cast<int *>(pMemory) << tendl;
 		Sleep( 1000 );
 	}
 

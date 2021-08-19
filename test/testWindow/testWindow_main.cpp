@@ -5,9 +5,9 @@
 #endif
 
 #include	<oreore/common/TString.h>
-#include	<oreore/Window.h>
-#include	<oreore/WindowProcedure.h>
-#include	<oreore/Controller.h>
+#include	<oreore/ui/win/Window.h>
+#include	<oreore/ui/win/WindowProcedure.h>
+#include	<oreore/ui/win/Controller.h>
 
 
 

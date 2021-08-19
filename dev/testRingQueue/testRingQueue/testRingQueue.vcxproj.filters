@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\testRingQueue\testRingQueue_main.cpp">
+    <ClCompile Include="..\..\..\test\testRingQueue\testRingQueue_main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\RingQueue.h">
+    <ClInclude Include="..\..\..\oreore\RingQueue.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,9 +2,13 @@
 #include	<iostream>
 
 
-#include	<oreore/Vector.h>
+#include	<oreore/common/TString.h>
+#include	<oreore/container/Array.h>
 #include	<oreore/memory/UniquePtr.h>
 using namespace OreOreLib;
+
+
+using fArray = Array<float>;
 
 
 class AAA

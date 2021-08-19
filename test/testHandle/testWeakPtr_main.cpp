@@ -1,11 +1,13 @@
 ﻿#include	<crtdbg.h>
 
-#include	<oreore/Vector.h>
+#include	<oreore/common/TString.h>
+#include	<oreore/container/Array.h>
 #include	<oreore/memory/SharedPtr.h>
 #include	<oreore/memory/WeakPtr.h>
 using namespace OreOreLib;
 
 
+using fArray = Array<float>;
 
 int main()
 {

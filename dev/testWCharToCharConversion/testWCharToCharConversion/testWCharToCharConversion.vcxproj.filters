@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\testWCharToCharConversion\testWCharToCharConversion_main.cpp">
+    <ClCompile Include="..\..\..\test\testWCharToCharConversion\testWCharToCharConversion_main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

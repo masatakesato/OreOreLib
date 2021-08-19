@@ -23,12 +23,13 @@ namespace OreOreLib
 		T data;
 
 
-		//ListNode()
-		//	: next( nullptr )
-		//	, prev( nullptr )
-		//{
-		//	tcout << _T( "ListNode default constructor...\n" );
-		//}
+		ListNode()
+			: next( nullptr )
+			, prev( nullptr )
+			, data()
+		{
+			//tcout << _T( "ListNode default constructor...\n" );
+		}
 
 
 		//// Constructor with data copy

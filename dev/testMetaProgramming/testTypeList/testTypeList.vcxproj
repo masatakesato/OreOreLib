@@ -51,7 +51,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>
       </LanguageStandard>
-      <AdditionalIncludeDirectories>../../../../Common/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -67,7 +67,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>
       </LanguageStandard>
-      <AdditionalIncludeDirectories>../../../../Common/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -76,10 +76,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\testMetaProgramming\testTypeList_main.cpp" />
+    <ClCompile Include="..\..\..\test\testMetaProgramming\testTypeList_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\meta\TypeList.h" />
+    <ClInclude Include="..\..\..\oreore\meta\TypeList.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

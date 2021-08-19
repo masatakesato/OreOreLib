@@ -1,13 +1,10 @@
 ﻿#include	<chrono>
 #include	<crtdbg.h>
 
-
 #include	<oreore/common/TString.h>
-#include	<oreore/Vector.h>
-
-
 #include	<oreore/memory/TLSF.h>
 using namespace OreOreLib;
+
 
 
 const uint32 g_MemorySize = 4294967295/2;//300;//65536;//

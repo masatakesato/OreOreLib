@@ -11,13 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Common\include\oreore\memory\BoundaryTagBlock.cpp" />
-    <ClCompile Include="..\..\..\..\Common\include\oreore\memory\TLSF.cpp" />
-    <ClCompile Include="..\..\..\Source\testMemory\testMemoryCompaction_main.cpp" />
+    <ClCompile Include="..\..\..\oreore\memory\BoundaryTagBlock.cpp" />
+    <ClCompile Include="..\..\..\oreore\memory\TLSF.cpp" />
+    <ClCompile Include="..\..\..\test\testMemory\testMemoryCompaction_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\memory\BoundaryTagBlock.h" />
-    <ClInclude Include="..\..\..\..\Common\include\oreore\memory\TLSF.h" />
+    <ClInclude Include="..\..\..\oreore\memory\BoundaryTagBlock.h" />
+    <ClInclude Include="..\..\..\oreore\memory\TLSF.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{502FF69C-CA5F-4AB9-B67E-172476D347D2}</ProjectGuid>
@@ -64,7 +64,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../../../Common/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,7 +80,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../../../Common/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\testNewDeleteOverload\testNewDeleteOverload_main.cpp">
+    <ClCompile Include="..\..\..\test\testNewDeleteOverload\testNewDeleteOverload_main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

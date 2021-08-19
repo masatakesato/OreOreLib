@@ -15,24 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\testWindow\testWindow_main.cpp">
+    <ClCompile Include="..\..\..\test\testWindow\testWindow_main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Common\include\oreore\Window.cpp">
+    <ClCompile Include="..\..\..\oreore\ui\win\WindowProcedure.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Common\include\oreore\WindowProcedure.cpp">
+    <ClCompile Include="..\..\..\oreore\ui\win\Window.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\Window.h">
+    <ClInclude Include="..\..\..\oreore\ui\win\WindowProcedure.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\WindowProcedure.h">
+    <ClInclude Include="..\..\..\oreore\ui\win\Window.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\Controller.h">
+    <ClInclude Include="..\..\..\oreore\ui\win\Controller.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

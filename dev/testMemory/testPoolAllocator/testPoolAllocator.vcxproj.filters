@@ -15,24 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Common\include\oreore\memory\PoolAllocator.cpp">
+    <ClCompile Include="..\..\..\test\testMemory\testPoolAllocator_main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Source\testMemory\testPoolAllocator_main.cpp">
+    <ClCompile Include="..\..\..\oreore\os\OSAllocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Common\include\oreore\os\OSAllocator.cpp">
+    <ClCompile Include="..\..\..\oreore\memory\PoolAllocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\memory\PoolAllocator.h">
+    <ClInclude Include="..\..\..\oreore\common\BitOperations.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\common\BitOperations.h">
+    <ClInclude Include="..\..\..\oreore\os\OSAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\os\OSAllocator.h">
+    <ClInclude Include="..\..\..\oreore\memory\PoolAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

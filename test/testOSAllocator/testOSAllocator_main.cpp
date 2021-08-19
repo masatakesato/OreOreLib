@@ -43,12 +43,12 @@ void* SearchPage( void* ptr, size_t alignment )
 	size_t alignedPageSize = RoundUp( alignment, OSAllocator::PageSize() );
 
 	// Align ptr position using aligned page size.
-	uintptr alignedptr = Round( (size_t)ptr, (size_t)alignedPageSize );
+	size_t alignedptr = Round( (size_t)ptr, (size_t)alignedPageSize );
 
 	tcout << "Query Address: " << (uintptr*)ptr << tendl;
 	tcout << "BaseAddress:   " << (uintptr*)alignedptr << tendl;
 
-	return &alignedptr;
+	return (void*)alignedptr;
 }
 
 
@@ -124,7 +124,7 @@ int main()
 		size_t m_vmPageSize = RoundUp( m_PageSize, OSAllocator::PageSize() );
 
 		tcout << "//================================ ????????????????????? =================================//\n";
-		uint8* reserved = (uint8*)OSAllocator::ReserveUncommited( sizeof( uint8 )*/*PAGE_SIZE*17*/4194304 );
+		uint8* reserved = (uint8*)OSAllocator::ReserveUncommited( sizeof( uint8 ) * 4194304 /*PAGE_SIZE*17*/ );
 
 		VirtualQuery( reserved, &meminfo, sizeof( MEMORY_BASIC_INFORMATION ) );
 		DisplayMemInfo( meminfo );
@@ -143,13 +143,13 @@ int main()
 		tcout << "page info...\n";
 		DisplayMemInfo( meminfo );
 
-		SearchPage(page, m_PageSize );
+		SearchPage( page, m_PageSize );
 
 
 		uint8* ptr = &page[ 8192 +55];//		size_t startOffset = m_PageSize;
 
 		// assuming jump to "NEXT" 8192 page block
-		SearchPage(ptr, m_PageSize );
+		SearchPage( ptr, m_PageSize );
 		//                        addressOffset =Floor( 6114*2, vmPageSize )
 		//                              |--------page-------|           *&page[8192]
 		// |--------------|-------------|--------------|---- ...    ---|

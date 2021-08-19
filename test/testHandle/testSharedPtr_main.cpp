@@ -2,11 +2,12 @@
 #include	<iostream>
 
 
-//#include	<oreore/mathlib/MathLib.h>
-#include	<oreore/Vector.h>
+#include	<oreore/common/TString.h>
+#include	<oreore/container/Array.h>
 #include	<oreore/memory/SharedPtr.h>
 using namespace OreOreLib;
 
+using fArray = Array<float>;
 
 
 auto g_LambdaDeleter = [](int* p) { tcout << _T("Lambda deleter.\n"); delete p; };

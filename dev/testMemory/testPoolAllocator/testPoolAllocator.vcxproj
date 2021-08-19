@@ -49,7 +49,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../../../Common/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -63,7 +63,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../../../Common/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -72,14 +72,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Common\include\oreore\memory\PoolAllocator.cpp" />
-    <ClCompile Include="..\..\..\..\Common\include\oreore\os\OSAllocator.cpp" />
-    <ClCompile Include="..\..\..\Source\testMemory\testPoolAllocator_main.cpp" />
+    <ClCompile Include="..\..\..\oreore\memory\PoolAllocator.cpp" />
+    <ClCompile Include="..\..\..\oreore\os\OSAllocator.cpp" />
+    <ClCompile Include="..\..\..\test\testMemory\testPoolAllocator_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Common\include\oreore\common\BitOperations.h" />
-    <ClInclude Include="..\..\..\..\Common\include\oreore\memory\PoolAllocator.h" />
-    <ClInclude Include="..\..\..\..\Common\include\oreore\os\OSAllocator.h" />
+    <ClInclude Include="..\..\..\oreore\common\BitOperations.h" />
+    <ClInclude Include="..\..\..\oreore\memory\PoolAllocator.h" />
+    <ClInclude Include="..\..\..\oreore\os\OSAllocator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
