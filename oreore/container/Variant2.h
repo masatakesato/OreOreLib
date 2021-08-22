@@ -3,7 +3,7 @@
 
 #include	"../common/Utility.h"
 
-
+#include	<typeinfo>
 
 namespace OreOreLib
 {
@@ -24,12 +24,15 @@ namespace OreOreLib
 		{
 		public:
 
+			const std::type_info& TypeInfo;
+
+			IValManager( const std::type_info& info ) : TypeInfo( info ){}
+
 			virtual ~IValManager() {}
 			virtual void SetObjectPointer( void* pobj ) = 0;
 			virtual void* CreateObject() const = 0;
 			virtual void ReleaseObject() = 0;
 			virtual IValManager* Clone() const = 0;
-			virtual const std::type_info& GetType() const = 0;// override
 			virtual size_t Size() const = 0;
 
 		};
@@ -41,7 +44,8 @@ namespace OreOreLib
 		{
 			// Constructor
 			ValManager( T* pobj )
-				: m_refValue( pobj )
+				: IValManager( typeid(T) )
+				, m_refValue( pobj )
 			{
 				//tcout << _T( "ValManager constructor...\n" );
 			}
@@ -49,7 +53,7 @@ namespace OreOreLib
 
 			// Copy constructor
 			ValManager( const ValManager &obj )
-				: IValManager( obj )
+				: IValManager( obj.TypeInfo )
 				, m_refValue( obj.m_refValue )
 			{
 				//tcout << _T( "ValManager copy constructoor...\n" );
@@ -86,12 +90,6 @@ namespace OreOreLib
 			virtual void SetObjectPointer( void* pobj )
 			{
 				m_refValue = (T*)pobj;
-			}
-
-
-			virtual const std::type_info& GetType() const
-			{
-				return typeid( T );
 			}
 
 
@@ -133,7 +131,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		template<typename T>
+		template < typename T >
 		Variant2( const T& val )
 			: m_pValue( new T( val ) )
 			, m_pManager( new detail::ValManager<T>( (T*)m_pValue ) )
@@ -143,7 +141,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		template<typename T>
+		template < typename T >
 		Variant2( T&& val )
 			: m_pValue( new T( (T&&)val ) )
 			, m_pManager( new detail::ValManager<T>( (T*)m_pValue ) )
@@ -185,16 +183,18 @@ namespace OreOreLib
 
 
 		// 型変換キャスト演算子
-		template<typename T>
+		template < typename T >
 		inline constexpr operator T&() const
 		{
+			assert( typeid(T) == m_pManager->TypeInfo );
 			return *(T*)m_pValue;
 		}
 
 
-		template<typename T>
+		template < typename T >
 		inline constexpr operator T*() const
 		{
+			assert( typeid(T) == m_pManager->TypeInfo );
 			return (T*)m_pValue;
 		}
 
@@ -249,7 +249,7 @@ namespace OreOreLib
 					m_pValue	= new T( obj );
 					m_pManager	= new detail::ValManager<T>( (T*)m_pValue );
 				}
-				else if( typeid( T ) != m_pManager->GetType() )
+				else if( typeid( T ) != m_pManager->TypeInfo )
 				{
 					//tcout << _T( "   Variant2 type changed. reallocating...\n" );
 					SafeDelete( m_pManager );
@@ -280,7 +280,7 @@ namespace OreOreLib
 					m_pValue	= new T( (T&&)obj );
 					m_pManager	= new detail::ValManager<T>( (T*)m_pValue );
 				}
-				else if( typeid( T ) != m_pManager->GetType() )
+				else if( typeid( T ) != m_pManager->TypeInfo )
 				{
 					//tcout << _T( "   Variant2 type changed. reallocating...\n" );
 					SafeDelete( m_pManager );
@@ -334,7 +334,7 @@ namespace OreOreLib
 		//			m_pValue	= new SharedPtr<T>( std::move( obj ) );
 		//			m_pManager	= new detail::ValManager<SharedPtr<T>>( (SharedPtr<T>*)m_pValue );
 		//		}
-		//		else if( typeid( SharedPtr<T> ) != m_pManager->GetType() )
+		//		else if( typeid( SharedPtr<T> ) != m_pManager->TypeInfo )
 		//		{
 		//			//tcout << _T( "   Variant2 type changed. reallocating...\n" );
 		//			SafeDelete( m_pManager );
@@ -366,7 +366,7 @@ namespace OreOreLib
 		//			m_pValue	= new SharedPtr<T>( std::move( obj ) );
 		//			m_pManager	= new detail::ValManager<SharedPtr<T>>( (SharedPtr<T>*)m_pValue );
 		//		}
-		//		else if( typeid( SharedPtr<T> ) != m_pManager->GetType() )
+		//		else if( typeid( SharedPtr<T> ) != m_pManager->TypeInfo )
 		//		{
 		//			//tcout << _T( "   Variant2 type changed. reallocating...\n" );
 		//			SafeDelete( m_pManager );
@@ -399,7 +399,7 @@ namespace OreOreLib
 		//			m_pValue	= new WeakPtr<T>( obj );
 		//			m_pManager	= new detail::ValManager<WeakPtr<T>>( (WeakPtr<T>*)m_pValue );
 		//		}
-		//		else if( typeid( WeakPtr<T> ) != m_pManager->GetType() )
+		//		else if( typeid( WeakPtr<T> ) != m_pManager->TypeInfo )
 		//		{
 		//			//tcout << _T( "   Variant2 type changed. reallocating...\n" );
 		//			SafeDelete( m_pManager );

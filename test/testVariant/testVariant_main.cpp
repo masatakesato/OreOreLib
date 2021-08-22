@@ -13,6 +13,13 @@ using namespace std;
 
 
 
+auto Add( int a, int b )
+{
+	return a + b;
+}
+
+
+
 
 
 int main()
@@ -75,8 +82,16 @@ int main()
 //	tcout << *SharedPtr<int>(var) << tendl;
 
 
-	Variant2 var2 = SharedPtr<int>( new int(888888888) );//6.5666f;
-	tcout << *(SharedPtr<int>)var2 << tendl;
+	Variant2 var2 = SharedPtr<int>( new int(88888888) );//6.5666f;
+	tcout << "var2 = " << *(SharedPtr<int>)var2 << tendl;
+
+
+
+	Variant2 var3 = -66666666;
+	tcout << "var3 = " << (int)var3 << tendl;
+
+	tcout << "Add( *(SharedPtr<int>)var2, var3 ) = " << Add( *(SharedPtr<int>)var2, var3 ) << tendl;
+
 
 	return 0;
 }
