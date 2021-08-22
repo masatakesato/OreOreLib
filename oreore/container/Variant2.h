@@ -132,7 +132,7 @@ namespace OreOreLib
 
 		// Constructor
 		template < typename T >
-		Variant2( const T& val )
+		Variant2( /*const*/ T& val )
 			: m_pValue( new T( val ) )
 			, m_pManager( new detail::ValManager<T>( (T*)m_pValue ) )
 		{
@@ -189,14 +189,54 @@ namespace OreOreLib
 			assert( typeid(T) == m_pManager->TypeInfo );
 			return *(T*)m_pValue;
 		}
+		/*
+		template < typename REF, std::enable_if_t< std::is_reference_v<REF> >* = nullptr >
+		inline constexpr operator REF() const
+		{
+			tcout << typeid(std::remove_reference<REF>::type).name() << tendl;
+
+//			assert( typeid(T) == m_pManager->TypeInfo );
+			return (REF)m_pValue;
+		}
+		*/
 
 
+		
 		template < typename T >
 		inline constexpr operator T*() const
 		{
 			assert( typeid(T) == m_pManager->TypeInfo );
 			return (T*)m_pValue;
 		}
+		/*
+		template < typename PTR, std::enable_if_t< std::is_pointer_v<PTR> >* = nullptr >
+		inline constexpr operator PTR() const
+		{
+			tcout << typeid(PTR).name() << tendl;
+//			assert( typeid(PTR) == m_pManager->TypeInfo );
+			return (PTR)m_pValue;
+		}
+
+		*/
+
+//		template < typename T >//, std::enable_if_t< (!std::is_reference_v<T> && !std::is_pointer_v<T>) >* = nullptr >
+//		inline constexpr operator T() //const
+//		{
+//			//tcout << typeid(T).name() << tendl;
+////			assert( typeid(T) == m_pManager->TypeInfo );
+//			return *(T*)m_pValue;
+//		}
+
+
+		template < typename T >
+		inline constexpr operator T*()
+		{
+			assert( typeid(T*) == m_pManager->TypeInfo );
+			return *(T**)m_pValue;
+		}
+
+
+
 
 
 		// Copy assignment operator for Variant2

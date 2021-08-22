@@ -20,6 +20,13 @@ auto Add( int a, int b )
 
 
 
+void func( int& val )
+{
+
+	val++;
+}
+
+
 
 
 int main()
@@ -39,11 +46,82 @@ int main()
 
 
 
+	{
+
+		tcout << "//====================== Pointer test ===================//\n";
+		int* a = new int(999);
+
+		Variant2 refa;//( a );
+		//refa = a;// Variant2& operator=( T& obj )
+		refa = a;
+		
+		//func( (int*)refa );
+
+		//refa = -111;
+		tcout << "---------- *a = 4; ---------\n";
+		*a = 4;
+		//*(int*)refa = 10;
+
+		tcout << "a = " << *a << tendl;
+		tcout << "refa = " << *((int*)refa) << tendl;
+
+
+		tcout << "---------- *(int*)refa = 777; ---------\n";
+
+		*(int*)refa = 777;
+
+		tcout << "a = " << *a << tendl;
+		tcout << "refa = " << *(int*)refa << tendl;
+
+		SafeDelete( a );
+
+//		return 0;
+	}
+
+	tcout << tendl;
+
+	{
+
+		tcout << "//====================== Reference test ===================//\n";
+		int a = 999;
+
+		Variant2 refa( a );
+		//refa = a;// Variant2& operator=( T& obj )
+		refa = &a;
+		
+		//func( (int*)refa );
+
+		//refa = -111;
+		a = 4;
+		//*(int*)refa = 10;
+
+		int& p = *(int*)refa;
+
+		tcout << "a = " << a << tendl;
+		tcout << "refa = " << *(int*)refa << tendl;
+
+
+//		return 0;
+	}
+
+
+	tcout << tendl;
+
+
+	tcout << "//======================  ===================//\n";
+
+
 	Variant2 var;
+
+	var = tstring( _T("Hello World") );
+
+	tcout << ((tstring)var).c_str()<< tendl;
 
 	//while(1)
 	{
 		var = string("Hello World");
+		tcout << ((string)var).c_str() << tendl;
+
 		tcout << ((string)var).c_str() << tendl;
 
 
@@ -79,7 +157,7 @@ int main()
 
 	}
 
-//	tcout << *SharedPtr<int>(var) << tendl;
+	//tcout << *WeakPtr<int>(var) << tendl;
 
 
 	Variant2 var2 = SharedPtr<int>( new int(88888888) );//6.5666f;
