@@ -182,63 +182,6 @@ namespace OreOreLib
 		}
 
 
-		// 型変換キャスト演算子
-		template < typename T >
-		inline constexpr operator T&() const
-		{
-			assert( typeid(T) == m_pManager->TypeInfo );
-			return *(T*)m_pValue;
-		}
-		/*
-		template < typename REF, std::enable_if_t< std::is_reference_v<REF> >* = nullptr >
-		inline constexpr operator REF() const
-		{
-			tcout << typeid(std::remove_reference<REF>::type).name() << tendl;
-
-//			assert( typeid(T) == m_pManager->TypeInfo );
-			return (REF)m_pValue;
-		}
-		*/
-
-
-		
-		template < typename T >
-		inline constexpr operator T*() const
-		{
-			assert( typeid(T) == m_pManager->TypeInfo );
-			return (T*)m_pValue;
-		}
-		/*
-		template < typename PTR, std::enable_if_t< std::is_pointer_v<PTR> >* = nullptr >
-		inline constexpr operator PTR() const
-		{
-			tcout << typeid(PTR).name() << tendl;
-//			assert( typeid(PTR) == m_pManager->TypeInfo );
-			return (PTR)m_pValue;
-		}
-
-		*/
-
-//		template < typename T >//, std::enable_if_t< (!std::is_reference_v<T> && !std::is_pointer_v<T>) >* = nullptr >
-//		inline constexpr operator T() //const
-//		{
-//			//tcout << typeid(T).name() << tendl;
-////			assert( typeid(T) == m_pManager->TypeInfo );
-//			return *(T*)m_pValue;
-//		}
-
-
-		template < typename T >
-		inline constexpr operator T*()
-		{
-			assert( typeid(T*) == m_pManager->TypeInfo );
-			return *(T**)m_pValue;
-		}
-
-
-
-
-
 		// Copy assignment operator for Variant2
 		inline Variant2& operator=( const Variant2& obj )
 		{
@@ -339,7 +282,55 @@ namespace OreOreLib
 		}
 
 
-		// Indirection operator
+		// Copy assignment operator for other types
+		template< typename T >
+		inline Variant2& operator=( T* obj )
+		{
+			if( m_pValue != obj )
+			{
+				SafeDelete( m_pManager );
+				m_pValue	= obj;
+				m_pManager	= nullptr;
+			}
+
+			return *this;
+		}
+
+
+		//======================================== Cast Operators ========================================//
+
+		template < typename T >
+		inline constexpr operator T&() const
+		{
+			assert( typeid(T) == ( m_pManager ? m_pManager->TypeInfo : typeid(T) ) );
+			return *(T*)m_pValue;
+		}
+
+
+		template < typename T >
+		inline constexpr operator T*&()
+		{
+			//tcout << typeid(T*).hash_code() << tendl;
+			//tcout <<  m_pManager->TypeInfo.hash_code() << tendl;
+			assert( typeid(T*&) == ( m_pManager ? m_pManager->TypeInfo : typeid(T*&) ) );
+			return (T*&)m_pValue;//*(T*&)m_pValue;
+		}
+
+		
+		//template < typename T >
+		//inline constexpr operator T*() const
+		//{
+		//	//tcout << typeid(T*).hash_code() << tendl;
+		//	//tcout <<  m_pManager->TypeInfo.hash_code() << tendl;
+		//	assert( typeid(T*) == ( m_pManager ? m_pManager->TypeInfo : typeid(T*) ) );
+		//	return *(T**)m_pValue;
+		//}
+
+
+
+		//====================================== Indirection Operators ===================================//
+
+		// non-const object
 		template< typename T >
 		T& operator*()
 		{
@@ -348,7 +339,7 @@ namespace OreOreLib
 		}
 
 
-		// Indirection operator( const object )
+		// const object
 		template< typename T >
 		const T& operator*() const
 		{
@@ -358,11 +349,16 @@ namespace OreOreLib
 
 
 
+	private:
+
+		void*					m_pValue;
+		detail::IValManager*	m_pManager;
 
 
 
-// Deprecated. Variant2& operator=( T& obj ) can handle SharedPtr
 
+
+		//################# Deprecated. Variant2& operator=( T& obj ) can handle SharedPtr ##############//
 		//template< typename T >
 		//inline Variant2& operator=( SharedPtr<T>& obj )
 		//{
@@ -394,7 +390,7 @@ namespace OreOreLib
 		//}
 
 
-// Deprecated. Variant2& operator=( T&& obj ) can handle SharedPtr
+		//################# Deprecated. Variant2& operator=( T&& obj ) can handle SharedPtr #################//
 		//template< typename T >
 		//inline Variant2& operator=( SharedPtr<T>&& obj )
 		//{
@@ -425,9 +421,7 @@ namespace OreOreLib
 		//}
 
 
-
-// Deprecated. Variant2& operator=( T&& obj ) can handle WeakPtr
-
+		//################# Deprecated. Variant2& operator=( T&& obj ) can handle WeakPtr #################//
 		//template< typename T >
 		//inline Variant2& operator=( WeakPtr<T>&& obj )
 		//{
@@ -458,16 +452,10 @@ namespace OreOreLib
 		//}
 
 
-
-	private:
-
-		void*					m_pValue;
-		detail::IValManager*	m_pManager;
-
 	};
 
 
-}
+}// end of namespace
 
 
 

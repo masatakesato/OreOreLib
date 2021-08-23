@@ -57,25 +57,29 @@ int main()
 		
 		//func( (int*)refa );
 
-		//refa = -111;
+		
 		tcout << "---------- *a = 4; ---------\n";
 		*a = 4;
-		//*(int*)refa = 10;
-
 		tcout << "a = " << *a << tendl;
 		tcout << "refa = " << *((int*)refa) << tendl;
 
 
 		tcout << "---------- *(int*)refa = 777; ---------\n";
-
-		*(int*)refa = 777;
-
+		(int&)refa = 777;//*(int*)refa = 777;
 		tcout << "a = " << *a << tendl;
-		tcout << "refa = " << *(int*)refa << tendl;
+		tcout << "refa = " << (int)refa << tendl;
+
+
+		auto& ppp = (int&)refa;
+		ppp = -111;
+		tcout << "a = " << *a << tendl;
+		tcout << "refa = " << (int)refa << tendl;
+		tcout << "refa = " << (int*)refa << tendl;
+
 
 		SafeDelete( a );
 
-//		return 0;
+		//return 0;
 	}
 
 	tcout << tendl;
@@ -91,15 +95,23 @@ int main()
 		
 		//func( (int*)refa );
 
-		//refa = -111;
+		tcout << "---------- a = 4; ---------\n";
 		a = 4;
-		//*(int*)refa = 10;
 
-		int& p = *(int*)refa;
+		//int& p = *(int*)refa;
 
 		tcout << "a = " << a << tendl;
 		tcout << "refa = " << *(int*)refa << tendl;
+		tcout << "refa = " << (int*)refa << tendl;
 
+		//const int* ffff = (int*)refa;
+
+
+		tcout << "---------- refa = 777; ---------\n";
+		*(int*)refa = 777;//*(int*)refa = 777;// (int&)refa = 777;
+
+		tcout << "a = " << a << tendl;
+		tcout << "refa = " << *(int*)refa << tendl;
 
 //		return 0;
 	}
@@ -113,17 +125,14 @@ int main()
 
 	Variant2 var;
 
-	var = tstring( _T("Hello World") );
+	var = tstring( _T("TestString") );
 
 	tcout << ((tstring)var).c_str()<< tendl;
 
-	//while(1)
+	while(1)
 	{
 		var = string("Hello World");
 		tcout << ((string)var).c_str() << tendl;
-
-		tcout << ((string)var).c_str() << tendl;
-
 
 		auto tmp_str = string("Hello World2");
 		var = (string&&)tmp_str;
@@ -162,8 +171,6 @@ int main()
 
 	Variant2 var2 = SharedPtr<int>( new int(88888888) );//6.5666f;
 	tcout << "var2 = " << *(SharedPtr<int>)var2 << tendl;
-
-
 
 	Variant2 var3 = -66666666;
 	tcout << "var3 = " << (int)var3 << tendl;
