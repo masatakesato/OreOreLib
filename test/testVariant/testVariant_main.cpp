@@ -45,6 +45,15 @@ int main()
 	//return 0;
 
 
+	Variant2 vvv;
+
+	vvv = 6;
+
+	tcout << (short)vvv << tendl;
+
+
+	return 0;
+
 
 	{
 
@@ -56,6 +65,10 @@ int main()
 		refa = a;
 		
 		//func( (int*)refa );
+
+		int* b = new int(9999);
+		Variant2 refb = b;
+		tcout << ( (int)refa!=(int)refb) << tendl;
 
 		
 		tcout << "---------- *a = 4; ---------\n";

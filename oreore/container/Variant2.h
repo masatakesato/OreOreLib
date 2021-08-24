@@ -101,6 +101,8 @@ namespace OreOreLib
 
 			T*	m_refValue;
 
+
+
 			friend class Variant2;
 
 		};
@@ -150,6 +152,16 @@ namespace OreOreLib
 		}
 
 
+		// Constructor
+		template < typename T >
+		Variant2( T* val )
+			: m_pValue( val )
+			, m_pManager( nullptr )
+		{
+			//tcout << _T( "Variant2 constructor...\n" );
+		}
+
+
 		// Copy constructor
 		Variant2( const Variant2& obj )
 		{
@@ -182,8 +194,10 @@ namespace OreOreLib
 		}
 
 
+		//======================================== Assignment Operators ========================================//
+
 		// Copy assignment operator for Variant2
-		inline Variant2& operator=( const Variant2& obj )
+		inline Variant2& operator =( const Variant2& obj )
 		{
 			if( this != &obj )
 			{
@@ -201,7 +215,7 @@ namespace OreOreLib
 
 
 		// Move asignment operator for Variant2
-		inline Variant2& operator=( Variant2&& obj )
+		inline Variant2& operator =( Variant2&& obj )
 		{
 			if( this != &obj )
 			{
@@ -221,7 +235,7 @@ namespace OreOreLib
 
 		// Copy assignment operator for other types
 		template< typename T >
-		inline Variant2& operator=( T& obj )
+		inline Variant2& operator =( T& obj )
 		{
 
 			if( m_pValue != &obj )
@@ -253,7 +267,7 @@ namespace OreOreLib
 
 
 		template< typename T >
-		inline Variant2& operator=( T&& obj )
+		inline Variant2& operator =( T&& obj )
 		{
 			if( m_pValue != &obj )
 			{	
@@ -284,7 +298,7 @@ namespace OreOreLib
 
 		// Copy assignment operator for other types
 		template< typename T >
-		inline Variant2& operator=( T* obj )
+		inline Variant2& operator =( T* obj )
 		{
 			if( m_pValue != obj )
 			{
@@ -331,20 +345,100 @@ namespace OreOreLib
 		//====================================== Indirection Operators ===================================//
 
 		// non-const object
-		template< typename T >
-		T& operator*()
+		template < typename T >
+		inline T& operator *()
 		{
 			//tcout << "T& operator*();\n";
-			return *(T*)m_pValue;
+			return  *(T*)m_pValue;
 		}
 
 
 		// const object
-		template< typename T >
-		const T& operator*() const
+		template < typename T >
+		inline const T& operator *() const
 		{
 			//tcout << "const T& operator*() const;\n";
 			return *(T*)m_pValue;
+		}
+
+
+		//======================================== Comparison Operators ========================================//
+		
+		template < typename T >
+		inline bool operator ==( const T& rhs ) const
+		{
+			return *(T*)m_pValue == rhs;
+		}
+
+
+		inline bool operator ==( const Variant2& rhs ) const
+		{
+			return size_t(m_pValue) == size_t(rhs.m_pValue);
+		}
+
+
+		template < typename T >
+		inline bool operator !=( const T& rhs ) const
+		{
+			return *(T*)m_pValue != rhs;
+		}
+
+
+		inline bool operator !=( const Variant2& rhs ) const
+		{
+			return size_t(m_pValue) != size_t(rhs.m_pValue);
+		}
+
+
+		template < typename T >
+		inline bool operator <( const T& rhs ) const
+		{
+			return *(T*)m_pValue < rhs;
+		}
+
+
+		inline bool operator <( const Variant2& rhs ) const
+		{
+			return size_t(m_pValue) < size_t(rhs.m_pValue);
+		}
+
+
+		template < typename T >
+		inline bool operator >( const T& rhs ) const
+		{
+			return *(T*)m_pValue > rhs;
+		}
+
+
+		inline bool operator >( const Variant2& rhs ) const
+		{
+			return size_t(m_pValue) > size_t(rhs.m_pValue);
+		}
+
+
+		template < typename T >
+		inline bool operator <=( const T& rhs ) const
+		{
+			return *(T*)m_pValue <= rhs;
+		}
+
+
+		inline bool operator <=( const Variant2& rhs ) const
+		{
+			return size_t(m_pValue) <= size_t(rhs.m_pValue);
+		}
+
+
+		template < typename T >
+		inline bool operator >=( const T& rhs ) const
+		{
+			return *(T*)m_pValue >= rhs;
+		}
+
+
+		inline bool operator >=( const Variant2& rhs ) const
+		{
+			return size_t(m_pValue) >= size_t(rhs.m_pValue);
 		}
 
 
