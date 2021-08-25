@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testStaticArray", "testStat
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDArray", "testNDArray\testNDArray.vcxproj", "{9517359D-AA32-4FDA-8A5A-8431763D3B64}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testMemoryView", "testMemoryView\testMemoryView.vcxproj", "{A43E81EE-36EC-4DB1-BFE4-5416F8FFD6E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testArrayView", "testArrayView\testArrayView.vcxproj", "{A43E81EE-36EC-4DB1-BFE4-5416F8FFD6E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

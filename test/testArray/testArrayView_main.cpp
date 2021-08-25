@@ -7,7 +7,7 @@
 #include <vector>
 
 #include	<oreore/common/TString.h>
-#include	<oreore/memory/MemoryView.h>
+#include	<oreore/container/ArrayView.h>
 #include	<oreore/container/Array.h>
 
 
@@ -26,12 +26,12 @@ int main()
 
 
 
-	OreOreLib::MemoryView<float> memview( arr.begin(), 4 );
+	OreOreLib::ArrayView<float> arrview( arr.begin(), 4 );
 
 
-	tcout << memview[1] << tendl;
+	tcout << arrview[1] << tendl;
 
-	memview[1] *= -1.0f;
+	arrview[1] *= -1.0f;
 
 	tcout << arr[1] << tendl;
 

@@ -2,8 +2,7 @@
 #define	ARRAY_VIEW_H
 
 #include	"../common/TString.h"
-//#include	"Array.h"
-//#include	"StaticArray.h"
+#include	"../memory/Memory.h"
 
 
 
@@ -13,23 +12,22 @@ namespace OreOreLib
 	// https://www.codeproject.com/Articles/848746/ArrayView-StringView
 
 	template< typename T >
-	class ArrayView
+	class ArrayView : public Memory<T>
 	{
-		using Ptr = const T*;
+		using Ptr = T*;
+		using ConstPtr = const T*;
 
 	public:
 
 		ArrayView()
-			: m_refData( nullptr )
-			, m_Length( 0 )
+			: Memory()
 		{
 		}
 
 
-		ArrayView( const Ptr pdata, int length )
-			: m_refData( pdata )
-			, m_Length( length )
+		ArrayView( ConstPtr const pdata, int length )
 		{
+			Init( pdata, length );
 		}
 
 
@@ -41,98 +39,46 @@ namespace OreOreLib
 
 		// copy constructor
 		ArrayView( const ArrayView& obj )
-			: m_refData(obj.pdata)
-			, m_Length(obj.m_Length)
 		{
-
+			this->m_pData		= obj.m_pData;
+			this->m_Length		= obj.m_Length;
+			this->m_AllocSize	= 0;
 		}
 
 
-		void Init( const Ptr pdata, int length )
+		void Init( ConstPtr const pdata, int length )
 		{
-			m_refData	= pdata;
-			m_Length	= length;
+			this->m_pData		= (Ptr)pdata;
+			this->m_Length		= length;
+			this->m_AllocSize	= 0;
 		}
 
 
 		void Release()
 		{
-			m_refData = nullptr;
-			m_Length = 0;
-		}
-
-
-		void Clear()
-		{
-			memset( m_refData, 0, sizeof(T) * m_Length );
-		}
-
-
-		// Subscription operator for read only.( called if MemoryView is )
-		inline const T& operator[]( std::size_t n ) const&
-		{
-			return m_refData[n];
-		}
-
-
-		// Subscription operator for read-write.( called if MemoryView if non-const )
-		inline T& operator[]( std::size_t n ) &
-		{
-			return const_cast<T&>(m_refData[n]);
-		}
-
-
-		// Subscription operator. ( called by following cases: "T& a = MemoryView(data,10)[n]", "auto&& a = MemoryView(data,20)[n]" )
-		inline T operator[]( std::size_t n ) const&&
-		{
-			return std::move(m_refData[n]);
-		}
-
-
-		int Length() const
-		{
-			return m_Length;
-		}
-
-
-		// begin / end overload for "range-based for loop"
-		inline T* begin()
-		{
-			return m_refData;
-		}
-
-		inline const T* begin() const
-		{
-			return m_refData;
-		}
-
-		inline T* end()
-		{
-			return begin() + m_Length;
-		}
-
-		inline const T* end() const
-		{
-			return begin() + m_Length;
+			this->m_pData = nullptr;
+			this->m_Length = 0;
 		}
 
 
 		void Display() const
 		{
-			tcout << typeid(*this).name() << _T("[ ") << m_Length << _T(" ]:\n" );
+			tcout << typeid(*this).name() << _T("[ ") << this->m_Length << _T(" ]:\n" );
 
-			for( int i=0; i<m_Length; ++i )
-				tcout << _T("  [") << i << _T("]: ") << m_refData[i] << tendl;
+			for( int i=0; i<this->m_Length; ++i )
+				tcout << _T("  [") << i << _T("]: ") << this->m_pData[i] << tendl;
 
 			tcout << tendl;
 		}
-
+		
 
 
 	private:
 
-		Ptr	m_refData;
-		int	m_Length;
+		bool Extend( int ) = delete;//using Memory<T>::Extend;
+		bool Resize( int ) = delete;//using Memory<T>::Resize;
+		bool Shrink( int ) = delete;//using Memory<T>::Shrink;
+
 
 	};
 

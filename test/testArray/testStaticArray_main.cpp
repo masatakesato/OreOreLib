@@ -10,7 +10,6 @@
 #include	<oreore/container/Array.h>
 #include	<oreore/container/StaticArray.h>
 #include	<oreore/container/ArrayView.h>
-#include	<oreore/memory/MemoryView.h>
 
 
 
@@ -110,7 +109,7 @@ int main()
 
 
 
-	OreOreLib::MemoryView<float> view3( arr2.begin()+3, 5 );
+	OreOreLib::ArrayView<float> view3( arr2.begin()+3, 5 );
 
 	view3.Display();
 
