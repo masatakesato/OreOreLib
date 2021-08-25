@@ -6,11 +6,17 @@
 
 #include	"../common/TString.h"
 #include	"../memory/Memory.h"
+#include	"../mathlib/Random.h"
 
 
 
 namespace OreOreLib
 {
+	//######################################################################//
+	//																		//
+	//						Array class implementation						//
+	//																		//
+	//######################################################################//
 
 	template< typename T >
 	class Array : public Memory<T>
@@ -214,6 +220,72 @@ namespace OreOreLib
 		}
 
 	};
+
+
+
+
+	//######################################################################//
+	//																		//
+	//							Helper functions							//
+	//																		//
+	//######################################################################//
+
+	template < typename T >
+	inline void Shuffle( Array<T>& arr )
+	{
+		for( int i=0; i<arr.Length(); ++i )
+		{
+			int j = int( genrand_real2() * arr.Length() );
+			T temp	= arr[i];
+			arr[i]	= arr[j];
+			arr[j]	= temp;
+		}// end of i loop
+
+	}
+
+
+
+	template < typename T >
+	inline int64 Find( const Array<T>& arr, const T& item )
+	{
+		for( const auto& elm : arr )
+		{
+			if( elm == item )
+				return &elm - &arr[0];
+		}
+
+		return -1;
+	}
+
+
+
+	template < typename T >
+	inline bool Exists( const Array<T>& arr, const T& item )
+	{
+		for( const auto& elm : arr )
+		{
+			if( elm == item )
+				return true;
+		}
+
+		return false;
+	}
+
+
+
+	template < typename T >
+	inline bool Exists( int numelms, const T data[], const T& item )
+	{
+		for( int i=0; i<numelms; ++i )
+		{
+			if( data[i] == item )
+				return true;
+		}
+
+		return false;
+	}
+
+
 
 
 }// end of namespace
