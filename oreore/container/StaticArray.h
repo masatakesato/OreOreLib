@@ -22,6 +22,10 @@ namespace OreOreLib
 		// Default constructor
 		StaticArray()
 		{
+			this->m_pData		= m_Data;
+			this->m_Length		= Size;
+			this->m_AllocSize	= sizeof(T) * Size;
+
 			memset( m_Data, 0, sizeof(T) * Size );
 		}
 
@@ -29,17 +33,44 @@ namespace OreOreLib
 		// Constructor with external buffer
 		StaticArray( int len, T* pdata )
 		{
+			this->m_pData		= m_Data;
+			this->m_Length		= Size;
+			this->m_AllocSize	= sizeof(T) * Size;
+
 			memset( m_Data, 0, sizeof(T) * Size );
-			memcpy_s( m_Data, sizeof(T) * Size, pdata, sizeof(T) * len );
+			MemCopy( m_Data, pdata, len );
 		}
 
 
 		// Constructor
-		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-		StaticArray( Args const & ... args )
-			: m_Data{ args... }
+		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
+		//StaticArray( Args const & ... args )
+		//	: m_Data{ args... }
+		//{
+		//	
+		//}
+
+
+		// Constructor
+		StaticArray( std::initializer_list<T> ilist )
 		{
-			
+			this->m_pData		= m_Data;
+			this->m_Length		= Size;
+			this->m_AllocSize	= sizeof(T) * Size;
+
+			auto p = m_Data;
+			for( const auto& val : ilist )
+			{
+				if( p==end() )	break;
+				*(p++) = val;
+			}
+		}
+
+
+		// Destructor
+		~StaticArray()
+		{
+			this->m_pData = nullptr;
 		}
 
 
