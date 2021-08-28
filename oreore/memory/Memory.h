@@ -143,12 +143,9 @@ namespace OreOreLib
 
 
 
-
-
-
 	//##############################################################################################################//
 	//																												//
-	//										Memory class implementation												//
+	//											Memory class implementation											//
 	//																												//
 	//##############################################################################################################//
 
@@ -479,6 +476,53 @@ namespace OreOreLib
 	};
 
 
+
+
+	//##############################################################################################################//
+	//																												//
+	//												Helper funcitions												//
+	//																												//
+	//##############################################################################################################//
+
+	template < typename T >
+	inline int64 Find( const Memory<T>& arr, const T& item )
+	{
+		for( const auto& elm : arr )
+		{
+			if( elm == item )
+				return &elm - &arr[0];
+		}
+
+		return -1;
+	}
+
+
+
+	template < typename T >
+	inline bool Exists( const Memory<T>& arr, const T& item )
+	{
+		for( const auto& elm : arr )
+		{
+			if( elm == item )
+				return true;
+		}
+
+		return false;
+	}
+
+
+
+	template < typename T >
+	inline bool Exists( int numelms, const T data[], const T& item )
+	{
+		for( int i=0; i<numelms; ++i )
+		{
+			if( data[i] == item )
+				return true;
+		}
+
+		return false;
+	}
 
 
 
