@@ -54,6 +54,12 @@ namespace OreOreLib
 		}
 
 
+		void Init( std::initializer_list<T> ilist )
+		{
+			MemCopy( this->begin(), ilist.begin(), Min( ilist.size(), this->m_Length ) );
+		}
+
+
 		void Release()
 		{
 			this->m_pData = nullptr;
@@ -75,8 +81,11 @@ namespace OreOreLib
 
 	private:
 
-		bool Extend( int ) = delete;//using Memory<T>::Extend;
+		using Memory<T>::Init;
+		using Memory<T>::Release;
+
 		bool Resize( int ) = delete;//using Memory<T>::Resize;
+		bool Extend( int ) = delete;//using Memory<T>::Extend;
 		bool Shrink( int ) = delete;//using Memory<T>::Shrink;
 
 
