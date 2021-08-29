@@ -304,9 +304,21 @@ namespace OreOreLib
 		}
 
 
-		operator bool() const
+		inline operator bool() const
 		{
 			return m_pData != nullptr;
+		}
+
+
+		inline bool operator==( const Memory& rhs ) const
+		{
+			return m_pData == rhs.m_pData;
+		}
+
+
+		inline bool operator !=( const Memory& rhs ) const
+		{
+			return m_pData != rhs.m_pData;
 		}
 
 

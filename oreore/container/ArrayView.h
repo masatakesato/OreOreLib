@@ -19,25 +19,35 @@ namespace OreOreLib
 
 	public:
 
+		// Default constructor
 		ArrayView()
 			: Memory()
 		{
 		}
 
 
+		// Constructor
 		ArrayView( ConstPtr const pdata, int length )
 		{
 			Init( pdata, length );
 		}
 
 
+		// Constructor
+		ArrayView( const Memory<T>& obj )
+		{
+			Init( obj );
+		}
+
+
+		// Destructor
 		~ArrayView()
 		{
 			Release();
 		}
 
 
-		// copy constructor
+		// Copy constructor
 		ArrayView( const ArrayView& obj )
 		{
 			this->m_pData		= obj.m_pData;
@@ -46,10 +56,19 @@ namespace OreOreLib
 		}
 
 
+
 		void Init( ConstPtr const pdata, int length )
 		{
 			this->m_pData		= (Ptr)pdata;
 			this->m_Length		= length;
+			this->m_AllocSize	= 0;
+		}
+
+
+		void Init( const Memory<T>& obj )
+		{
+			this->m_pData		= (T*)obj.begin();
+			this->m_Length		= obj.Length();
 			this->m_AllocSize	= 0;
 		}
 
