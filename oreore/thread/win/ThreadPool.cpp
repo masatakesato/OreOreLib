@@ -1,8 +1,11 @@
 ﻿#include	"ThreadPool.h"
 
 
-#include	<iostream>
-using namespace std;
+//#include	<iostream>
+//using namespace std;
+#include	"../../common/TString.h"
+
+
 
 // デフォルトコンストラクタ
 ThreadPool::ThreadPool()
@@ -18,9 +21,9 @@ ThreadPool::ThreadPool(int nMaxNumberThreads)
 
 	m_nMaxNumThreads = nMaxNumberThreads;
 
-	hEmptySlot	= CreateSemaphore(NULL, MAXQUEUE, MAXQUEUE, "EmptySlot");// 待ち行列が空いている状態（値MAXQUEUEのシグナル状態）でセマフォ作成
-	hWorkToDo	= CreateSemaphore(NULL, 0, MAXQUEUE, "WorkToDo");		// 実行可能スレッド数ゼロ（値ゼロの非シグナル状態）でセマフォ作成
-	hExit		= CreateEvent(NULL, TRUE, FALSE, "Exit");				// インスタンス消去フラグを非シグナル状態で初期化
+	hEmptySlot	= CreateSemaphore(NULL, MAXQUEUE, MAXQUEUE, _T("EmptySlot") );// 待ち行列が空いている状態（値MAXQUEUEのシグナル状態）でセマフォ作成
+	hWorkToDo	= CreateSemaphore(NULL, 0, MAXQUEUE, _T("WorkToDo") );		// 実行可能スレッド数ゼロ（値ゼロの非シグナル状態）でセマフォ作成
+	hExit		= CreateEvent(NULL, TRUE, FALSE, _T("Exit") );				// インスタンス消去フラグを非シグナル状態で初期化
 	InitializeCriticalSection(&CriticalSection);// クリティカルセクションの初期化
 	
 	m_threadhandles = new HANDLE[m_nMaxNumThreads];
