@@ -316,7 +316,7 @@ namespace OreOreLib
 		template < typename T >
 		inline constexpr operator T&() const
 		{
-			assert( typeid(T) == ( m_pManager ? m_pManager->TypeInfo : typeid(T) ) );
+			ASSERT( typeid(T) == ( m_pManager ? m_pManager->TypeInfo : typeid(T) ) );
 			return *(T*)m_pValue;
 		}
 
@@ -326,7 +326,7 @@ namespace OreOreLib
 		{
 			//tcout << typeid(T*).hash_code() << tendl;
 			//tcout <<  m_pManager->TypeInfo.hash_code() << tendl;
-			assert( typeid(T*&) == ( m_pManager ? m_pManager->TypeInfo : typeid(T*&) ) );
+			ASSERT( typeid(T*&) == ( m_pManager ? m_pManager->TypeInfo : typeid(T*&) ) );
 			return (T*&)m_pValue;//*(T*&)m_pValue;
 		}
 
@@ -336,7 +336,7 @@ namespace OreOreLib
 		//{
 		//	//tcout << typeid(T*).hash_code() << tendl;
 		//	//tcout <<  m_pManager->TypeInfo.hash_code() << tendl;
-		//	assert( typeid(T*) == ( m_pManager ? m_pManager->TypeInfo : typeid(T*) ) );
+		//	ASSERT( typeid(T*) == ( m_pManager ? m_pManager->TypeInfo : typeid(T*) ) );
 		//	return *(T**)m_pValue;
 		//}
 

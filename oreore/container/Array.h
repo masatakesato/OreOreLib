@@ -163,6 +163,17 @@ namespace OreOreLib
 			if( this->m_Length==0 )
 				this->Release();
 		}
+
+		//inline void FastRemove( const T& item )// 削除対象の要素を配列最後尾要素で上書きする & メモリ確保サイズ自体は変更せずlenghデクリメントする
+		//{
+		//	auto index = Find( this, item );
+
+		//	if( index==-1 )
+		//		return;
+
+		//	FastRemove( index );
+		//}
+
 		
 		inline void Remove( int elm )
 		{
@@ -175,6 +186,17 @@ namespace OreOreLib
 			if( this->m_Length==0 )
 				this->Release();
 		}
+
+		//inline void Remove( const T& item )
+		//{
+		//	auto index = Find( this, item );
+
+		//	if( index==-1 )
+		//		return;
+
+		//	Remove( index );
+		//}
+
 
 		inline void Swap( int i, int j )
 		{

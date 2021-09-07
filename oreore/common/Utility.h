@@ -206,27 +206,44 @@ namespace MaxPrecision
 
 
 #ifdef _DEBUG
-#define HANDLE_EXCEPTION() \
-			try { \
-				throw; \
-			} \
-			catch( const std::exception &e ) { \
-				tcout << e.what() << _T( "\n" ); \
-			} \
-			catch( const int i ) { \
-				tcout << i << _T( "\n" ); \
-			} \
-			catch( const long l ) { \
-				tcout << l << _T( "\n" ); \
-			} \
-			catch( const char *p ) { \
-				tcout << p << _T( "\n" ); \
-			} \
-			catch( ... ) { \
-				tcout << _T( "unknown exception occured...\n" ); \
-			}
+
+	#define HANDLE_EXCEPTION() \
+		try { \
+			throw; \
+		} \
+		catch( const std::exception &e ) { \
+			tcout << e.what() << _T( "\n" ); \
+		} \
+		catch( const int i ) { \
+			tcout << i << _T( "\n" ); \
+		} \
+		catch( const long l ) { \
+			tcout << l << _T( "\n" ); \
+		} \
+		catch( const char *p ) { \
+			tcout << p << _T( "\n" ); \
+		} \
+		catch( ... ) { \
+			tcout << _T( "unknown exception occured...\n" ); \
+		}
+
+
+
+	#define ASSERT( expression ) \
+		!(expression) && tcerr << _T( "Assertion Failed: "#expression", " ) << __FILE__ << _T("(") << __LINE__ << _T(")") << tendl;
+		//(!(expr) && printf("Assertion Failed: "#expr", %s(%d)\n", __FILE__, __LINE__, __VA_ARGS__) /*&& internal::abort()*/)
+
+
+
 #else
-#define HANDLE_EXCEPTION()
+
+	#define HANDLE_EXCEPTION()
+
+
+	#define my_assert( ... )
+
+
+
 #endif
 // https://stackoverflow.com/questions/3641737/c-get-description-of-an-exception-caught-in-catch-block
 

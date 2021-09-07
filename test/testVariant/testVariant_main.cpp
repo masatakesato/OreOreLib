@@ -28,6 +28,15 @@ void func( int& val )
 
 
 
+auto Add_( const Variant2& a, const Variant2& b )
+{
+	Variant2 c =a;
+//	return a + b;
+}
+
+
+
+
 
 int main()
 {
@@ -45,14 +54,11 @@ int main()
 	//return 0;
 
 
+	// unsafe cast example. Causes assertion failure.
 	Variant2 vvv;
-
 	vvv = 6;
-
 	tcout << (short)vvv << tendl;
-
-
-	return 0;
+	//return 0;
 
 
 	{
@@ -142,7 +148,7 @@ int main()
 
 	tcout << ((tstring)var).c_str()<< tendl;
 
-	while(1)
+//	while(1)
 	{
 		var = string("Hello World");
 		tcout << ((string)var).c_str() << tendl;
@@ -190,6 +196,8 @@ int main()
 
 	tcout << "Add( *(SharedPtr<int>)var2, var3 ) = " << Add( *(SharedPtr<int>)var2, var3 ) << tendl;
 
+
+	 Add_( *(SharedPtr<int>)var2, var3 );
 
 	return 0;
 }

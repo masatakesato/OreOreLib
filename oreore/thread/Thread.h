@@ -23,9 +23,8 @@ namespace OreOreLib
 		Thread();	// default constructor
 		~Thread();	// destructor
 
-		void Init( int& val );
 		void Init( IRunnable* );
-
+		void Release();
 
 		void Play();	// start/resume thread
 		void Pause();	// suspend

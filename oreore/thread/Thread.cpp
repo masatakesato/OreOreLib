@@ -37,25 +37,35 @@ namespace OreOreLib
 
 
 
-	void Thread::Init( int& val )
-	{
-		m_hPauseEvent	= false;
-		m_hEndEvent		= false;
-		m_Thread		= std::thread( ThreadFunc, std::ref(val) );
-	}
-
-
-
 	void Thread::Init( IRunnable* runnable )
 	{
+		Release();
+
+		std::unique_lock<std::mutex> lock(m_Mutex);//m_Mutex.lock();
+
 		m_pRunnable		= runnable;
 		m_hPauseEvent	= false;
 		m_hEndEvent		= false;
 		m_Thread		= std::thread( &IRunnable::Run, m_pRunnable );
+
+//		m_Mutex.unlock();
 	}
 
 
-	
+
+	void Thread::Release()
+	{
+		std::unique_lock<std::mutex> lock(m_Mutex);
+
+		if( m_Thread.joinable() )
+			m_Thread.join();
+
+		m_pRunnable = nullptr;
+
+	}
+
+
+
 
 	void Thread::Play()
 	{
