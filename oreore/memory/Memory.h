@@ -496,6 +496,7 @@ namespace OreOreLib
 	//																												//
 	//##############################################################################################################//
 
+
 	template < typename T >
 	inline int64 Find( const Memory<T>& arr, const T& item )
 	{
@@ -535,6 +536,25 @@ namespace OreOreLib
 
 		return false;
 	}
+
+
+
+
+	template < typename T, typename Predicate >
+	inline int64 FindIf( const Memory<T>& arr, Predicate pred )
+	{
+		auto first = arr.begin();
+		const auto last = arr.end();
+
+		for(; first != last; ++first )
+		{
+			if( pred(*first) )
+				return first - arr.begin();
+		}
+
+		return -1;
+	}
+
 
 
 
