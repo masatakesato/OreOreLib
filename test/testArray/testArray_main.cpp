@@ -8,16 +8,27 @@
 
 #include	<oreore/common/TString.h>
 #include	<oreore/container/Array.h>
+#include	<oreore/container/StaticArray.h>
 #include	<oreore/container/ArrayView.h>
 
 
 
 using fArray = OreOreLib::Array<float>;
+using fSArray16 = OreOreLib::StaticArray<float, 16>;
+
 
 
 int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+
+
+	//fSArray16 pp;
+
+	//fArray a0(5);
+
+	//a0 = pp;
+
 
 
 	fArray	arr1{ 0.5f, 0.1f, 0.3f, 0.6f, 0.8f, 0.9f, 1.1f, -5.5f, 9.6f, 0.0f };
