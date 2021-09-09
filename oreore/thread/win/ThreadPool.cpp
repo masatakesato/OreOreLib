@@ -17,7 +17,7 @@ ThreadPool::ThreadPool()
 // コンストラクタ
 ThreadPool::ThreadPool(int nMaxNumberThreads)
 {
-//cout << "Initializing ThreadPool..." << endl;
+//tcout << _T("Initializing ThreadPool...") << tendl;
 
 	m_nMaxNumThreads = nMaxNumberThreads;
 
