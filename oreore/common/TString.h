@@ -54,13 +54,14 @@ typedef std::basic_ofstream<TCHAR>		tofstream;
 #pragma warning( disable : 4996 )
 
 
-inline static void CharToTChar( const char* src, size_t size, TCHAR*& dst )
+inline static void CharToTChar( const char* src, size_t numchars, TCHAR*& dst )
 {
 
 #if defined(UNICODE) || defined(_UNICODE)
 
-	dst = new TCHAR[ size + 1 ];
-	mbstowcs( dst, src, size + 1 );
+	dst = new TCHAR[ numchars + 1 ];
+	mbstowcs( dst, src, numchars );
+	dst[ numchars ] = _T('\0');
 
 #else
 
@@ -73,13 +74,14 @@ inline static void CharToTChar( const char* src, size_t size, TCHAR*& dst )
 
 
 
-inline static TCHAR* CharToTChar( const char* src, size_t size )
+inline static TCHAR* CharToTChar( const char* src, size_t numchars )
 {
 
 #if defined(UNICODE) || defined(_UNICODE)
 
-	TCHAR* tchars = new TCHAR[ size + 1 ];
-	mbstowcs( tchars, src, size + 1 );
+	TCHAR* tchars = new TCHAR[ numchars + 1 ];
+	mbstowcs( tchars, src, numchars );
+	tchars[ numchars ] = _T('\0');
 
 #else
 
@@ -94,12 +96,13 @@ inline static TCHAR* CharToTChar( const char* src, size_t size )
 
 
 
-inline static void TCharToChar( const TCHAR* src, size_t size, char*& dst )
+inline static void TCharToChar( const TCHAR* src, size_t numchars, char*& dst )
 {
 #if defined(UNICODE) || defined(_UNICODE)
 
-	dst = new char[ size - 1 ];
-	wcstombs( dst, src, size - 1 );
+	dst = new char[ numchars + 1 ];// character length + '\0' space
+	wcstombs( dst, src, numchars );
+	dst[ numchars ] = '\0';
 
 #else
 
@@ -112,12 +115,14 @@ inline static void TCharToChar( const TCHAR* src, size_t size, char*& dst )
 
 
 
-inline static char* TCharToChar( const TCHAR* src, size_t size )
+
+inline static char* TCharToChar( const TCHAR* src, size_t numchars )
 {
 #if defined(UNICODE) || defined(_UNICODE)
 
-	char* chars = new char[ size - 1 ];
-	wcstombs( chars, src, size - 1 );
+	char* chars = new char[ numchars + 1 ];// character length + '\0' space
+	wcstombs( chars, src, numchars );// copy characters from src
+	chars[ numchars ] = '\0';// put '\0' at the end of chars
 
 #else
 
@@ -148,7 +153,7 @@ inline static tstring CharToTString( const char* src, size_t size )
 
 inline static char* TStringToChar( const tstring& tstr )
 {
-	return TCharToChar( tstr.c_str(), tstr.length() );
+	return TCharToChar( tstr.c_str(), tstr.length() + 1 );
 }
 
 
