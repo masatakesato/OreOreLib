@@ -65,8 +65,8 @@ inline static void CharToTChar( const char* src, size_t numchars, TCHAR*& dst )
 
 #else
 
-	dst = new TCHAR[ size ];
-	memcpy( dst, src, size );
+	dst = new TCHAR[ numchars ];
+	memcpy( dst, src, numchars );
 
 #endif
 
@@ -85,8 +85,8 @@ inline static TCHAR* CharToTChar( const char* src, size_t numchars )
 
 #else
 
-	TCHAR* tchars = new TCHAR[ size ];
-	memcpy( tchars, src, size );
+	TCHAR* tchars = new TCHAR[ numchars ];
+	memcpy( tchars, src, numchars );
 
 #endif
 
@@ -106,8 +106,8 @@ inline static void TCharToChar( const TCHAR* src, size_t numchars, char*& dst )
 
 #else
 
-	dst = new char[ size ];
-	memcpy( dst, src, size );
+	dst = new char[ numchars ];
+	memcpy( dst, src, numchars );
 
 #endif
 
@@ -126,8 +126,8 @@ inline static char* TCharToChar( const TCHAR* src, size_t numchars )
 
 #else
 
-	char* chars = new char[ size ];
-	memcpy( chars, src, size );
+	char* chars = new char[ numchars ];
+	memcpy( chars, src, numchars );
 
 #endif
 
