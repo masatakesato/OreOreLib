@@ -81,7 +81,7 @@ auto ToTuple( Args ...args ) -> std::tuple<Args...>
 }
 
 
-// for_each for tuple
+// for_each for tuple. c++17 or later required.
 template <typename F, typename ... Args>
 void for_each( std::tuple<Args...> const& t, F f )
 {

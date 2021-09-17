@@ -24,7 +24,16 @@ namespace OreOreLib
 		template < typename T, typename... Ts >
 		using all_same = all_true< std::is_same<T, Ts>... >;
 
+
+		template < typename... Ts >
+		using all_integral = all_true< std::is_integral<Ts>... >;
+
+
+		template < typename T, typename... Ts >
+		using all_convertible = all_true< std::is_convertible<T, Ts>... >;
+
 	}
+
 
 }
 
