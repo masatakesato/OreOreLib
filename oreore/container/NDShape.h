@@ -22,9 +22,9 @@ namespace OreOreLib
 		NDShape( Args ... args )
 			: m_Shape{ uint64(args)... }
 		{
-			m_Offsets[0] = m_Shape[0];
+			m_Strides[0] = m_Shape[0];
 			for( int i=1; i<N; ++i )
-				m_Offsets[i] = m_Shape[i] * m_Offsets[i-1];
+				m_Strides[i] = m_Shape[i] * m_Strides[i-1];
 		}
 
 
@@ -36,9 +36,9 @@ namespace OreOreLib
 			for( const auto& val : { args... } )
 				*(p++) = val;
 
-			m_Offsets[0] = m_Shape[0];
+			m_Strides[0] = m_Shape[0];
 			for( int i=1; i<N; ++i )
-				m_Offsets[i] = m_Shape[i] * m_Offsets[i-1];
+				m_Strides[i] = m_Shape[i] * m_Strides[i-1];
 
 			//m_DimCoeff[0]	= m_Shape[0];
 			//m_DimCoeff[1]	= m_Shape[0] * m_Shape[1];
@@ -48,54 +48,63 @@ namespace OreOreLib
 		}
 
 
-		// 1D to ND index conversion
+		//=============== 1D to ND index conversion ===============//
+		// indexND[3]	= ( id / m_Strides[2] );
+		// indexND[2]	= ( id % m_Strides[2] ) / m_Strides[1];
+		// indexND[1]	= ( id % m_Strides[2] ) % m_Strides[1] / m_Strides[0];
+		// indexND[0]	= ( id % m_Strides[2] ) % m_Strides[1] % m_Strides[0];
+		// ...
+
 		template < typename T >
 		std::enable_if_t< std::is_convertible_v<T, uint64>, void >
-		ToND( T (&indexND)[N], uint64 id ) const
+		ToND( uint64 id, T (&indexND)[N] ) const
 		{
 			indexND[N-1] = (T)id;
 			for( int i=N-2; i>=0; --i )
-				indexND[i] = indexND[i+1] % (T)m_Offsets[i];
+				indexND[i] = indexND[i+1] % (T)m_Strides[i];
 
 			for( int i=N-1; i>=1; --i )
-				indexND[i] /= (T)m_Offsets[i-1];
-
-			//indexND[3]	= ( id / m_Offsets[2] );
-			//indexND[2]	= ( id % m_Offsets[2] ) / m_Offsets[1];
-			//indexND[1]	= ( id % m_Offsets[2] ) % m_Offsets[1] / m_Offsets[0];
-			//indexND[0]	= ( id % m_Offsets[2] ) % m_Offsets[1] % m_Offsets[0];
+				indexND[i] /= (T)m_Strides[i-1];
 		}
 
 
-		// ND to 1D index conversion
+		//============== ND to 1D index conversion ===============//
+		// indexND[0] +				// x
+		// indexND[1] * m_Strides[0] +	// y
+		// indexND[2] * m_Strides[1] +	// z
+		// indexND[3] * m_Strides[2];	// w
+		// ...
+
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, int64 >
 		To1D( Args ... args )// x, y, z, w...
 		{
 			auto indexND = { args... };
 			auto itr = std::begin( indexND );
-			auto end = std::end( indexND );
 
 			uint64 index = *(itr++);
-			auto offset = m_Offsets;
+			auto offset = m_Strides;
 
-			for( ; itr!=end; ++itr )
-				index += *itr * *(offset++);
-
-			//tcout << "index = " << index << tendl;
+			while( itr !=std::end( indexND ) )
+				index += *(itr++) * *(offset++);
 
 			return index;
-
-
-			//indexND[0] * m_Offsets[2] +
-			//indexND[1] * m_Offsets[1] +
-			//indexND[2] * m_Offsets[0] +
-			//indexND[3];
 		}
-	//	inline uint64 ArrayIdx1D( uint64 x, uint64 y, uint64 z, uint32 w ) const
-	//	{
-	//		return indices[0] * m_Offsets[2] + indices[1] * m_Offsets[1] + indices[2] * m_Offsets[0] + indices[3];
-	//	}
+
+
+		template < typename T >
+		std::enable_if_t< std::is_convertible_v<T, uint64>, int64 >
+		To1D( const T (&indexND)[N] ) const
+		{
+			int64 index = indexND[0];
+			for( int i=1; i<N; ++i )	index += indexND[i] * m_Strides[i-1];
+			return index;
+
+			//indexND[0] +					// x
+			//indexND[1] * m_Strides[0] +	// y
+			//indexND[2] * m_Strides[1] +	// z
+			//indexND[3] * m_Strides[2];	// w
+		}
 
 
 		uint64 NumDims() const
@@ -112,7 +121,7 @@ namespace OreOreLib
 
 		uint64 Size() const
 		{
-			return m_Offsets[ N-1 ];
+			return m_Strides[ N-1 ];
 		}
 
 
@@ -129,7 +138,7 @@ namespace OreOreLib
 	private:
 
 		uint64	m_Shape[ N ];
-		uint64	m_Offsets[ N ];
+		uint64	m_Strides[ N ];// strides for multidimensional element access.
 
 	};
 

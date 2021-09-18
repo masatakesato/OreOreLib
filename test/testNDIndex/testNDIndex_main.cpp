@@ -18,7 +18,8 @@ int main()
 		{
 			for( int x=0; x<idx.Dim(0); ++x )
 			{
-				auto idx1d = idx.To1D( x, y, z );
+				int index[3] = {x, y, z };
+				auto idx1d = idx.To1D( x, y, z );//idx.To1D( index );//
 				tcout << "(" << x << ", " << y << ", " << z << ") -> (" << idx1d << ")\n";
 			}
 		}
@@ -28,7 +29,7 @@ int main()
 	for(int i=0; i<27; ++i )
 	{
 		int idx_[3];
-		idx.ToND( idx_, i );
+		idx.ToND( i, idx_ );
 
 		tcout << "(" << i << ") -> (" << idx_[0] << ", " << idx_[1] << ", " << idx_[2] << ")\n";
 	}
