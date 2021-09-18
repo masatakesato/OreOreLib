@@ -93,6 +93,23 @@ namespace OreOreLib
 
 
 		template < typename T >
+		std::enable_if_t< std::is_convertible<uint64, T>::value, int64 >
+		To1D( std::initializer_list<T> indexND )// x, y, z, w...
+		{
+			auto itr = std::begin( indexND );
+
+			uint64 index = *(itr++);
+			auto offset = m_Strides;
+
+			while( itr !=std::end( indexND ) )
+				index += *(itr++) * *(offset++);
+
+			return index;
+		}
+
+
+
+		template < typename T >
 		std::enable_if_t< std::is_convertible_v<T, uint64>, int64 >
 		To1D( const T (&indexND)[N] ) const
 		{
@@ -105,6 +122,16 @@ namespace OreOreLib
 			//indexND[2] * m_Strides[1] +	// z
 			//indexND[3] * m_Strides[2];	// w
 		}
+
+
+		template < typename T >
+		std::enable_if_t< std::is_convertible_v<T, uint64>, int64 >
+		From3DTo1D( const T& x, const T& y, const T& z ) const
+		{
+			return z * m_Strides[1] + y * m_Strides[0] + x;
+		}
+
+
 
 
 		uint64 NumDims() const
