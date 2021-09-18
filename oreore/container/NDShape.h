@@ -1,5 +1,5 @@
-﻿#ifndef ND_INDEX_H
-#define	ND_INDEX_H
+﻿#ifndef ND_SHAPE_H
+#define	ND_SHAPE_H
 
 #include	"../common/TString.h"
 #include	"../common/Utility.h"
@@ -14,21 +14,17 @@ namespace OreOreLib
 	// https://stackoverflow.com/questions/32921192/c-variadic-template-limit-number-of-args
 
 	template < uint64 N >
-	class NDIndex
+	class NDShape
 	{
 	public:
 		
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		NDIndex( Args ... args )
+		NDShape( Args ... args )
 			: m_Shape{ uint64(args)... }
 		{
-
-			for( int i=0; i<N; ++i )
-			{
-				m_Offsets[i] = m_Shape[i];
-				if( i>0 )  m_Offsets[i] *= m_Offsets[i-1];
-			}
-
+			m_Offsets[0] = m_Shape[0];
+			for( int i=1; i<N; ++i )
+				m_Offsets[i] = m_Shape[i] * m_Offsets[i-1];
 		}
 
 
@@ -52,15 +48,17 @@ namespace OreOreLib
 		}
 
 
-		// convert 1d-index to Nd-index
-		void ArrayIdx4D( uint64 indexND[], uint64 id ) const
+		// 1D to ND index conversion
+		template < typename T >
+		std::enable_if_t< std::is_convertible_v<T, uint64>, void >
+		ToND( T (&indexND)[N], uint64 id ) const
 		{
-			indexND[N-1] = id;
+			indexND[N-1] = (T)id;
 			for( int i=N-2; i>=0; --i )
-				indexND[i] = indexND[i+1] % m_Offsets[i];
+				indexND[i] = indexND[i+1] % (T)m_Offsets[i];
 
 			for( int i=N-1; i>=1; --i )
-				indexND[i] /= m_Offsets[i-1];
+				indexND[i] /= (T)m_Offsets[i-1];
 
 			//indexND[3]	= ( id / m_Offsets[2] );
 			//indexND[2]	= ( id % m_Offsets[2] ) / m_Offsets[1];
@@ -69,11 +67,53 @@ namespace OreOreLib
 		}
 
 
+		// ND to 1D index conversion
+		template < typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, int64 >
+		To1D( Args ... args )// x, y, z, w...
+		{
+			auto indexND = { args... };
+			auto itr = std::begin( indexND );
+			auto end = std::end( indexND );
+
+			uint64 index = *(itr++);
+			auto offset = m_Offsets;
+
+			for( ; itr!=end; ++itr )
+				index += *itr * *(offset++);
+
+			//tcout << "index = " << index << tendl;
+
+			return index;
+
+
+			//indexND[0] * m_Offsets[2] +
+			//indexND[1] * m_Offsets[1] +
+			//indexND[2] * m_Offsets[0] +
+			//indexND[3];
+		}
 	//	inline uint64 ArrayIdx1D( uint64 x, uint64 y, uint64 z, uint32 w ) const
 	//	{
-	//		return w * m_Offsets[3] + z * m_Offsets[2] + y * m_Offsets[1] + x;
+	//		return indices[0] * m_Offsets[2] + indices[1] * m_Offsets[1] + indices[2] * m_Offsets[0] + indices[3];
 	//	}
 
+
+		uint64 NumDims() const
+		{
+			return N;
+		}
+
+
+		uint64 Dim( uint64 i ) const
+		{
+			return i<N ? m_Shape[ i ] : 0;
+		}
+
+
+		uint64 Size() const
+		{
+			return m_Offsets[ N-1 ];
+		}
 
 
 		void Disiplay()
@@ -83,8 +123,6 @@ namespace OreOreLib
 			for( int i=0; i<N; ++i )
 				tcout << m_Shape[i] << ( i==N-1 ? _T("];\n") : _T(", ") );
 		}
-
-
 
 
 
@@ -323,4 +361,4 @@ namespace OreOreLib
 
 
 
-#endif // !ND_INDEX_H
+#endif // !ND_SHAPE_H

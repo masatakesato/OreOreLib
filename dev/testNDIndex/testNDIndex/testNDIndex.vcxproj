@@ -72,11 +72,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\oreore\container\NDIndex.cpp" />
     <ClCompile Include="..\..\..\test\testNDIndex\testNDIndex_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\oreore\container\NDIndex.h" />
+    <ClInclude Include="..\..\..\oreore\container\NDShape.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
