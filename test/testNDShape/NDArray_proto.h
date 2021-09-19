@@ -1,5 +1,5 @@
-﻿#ifndef NDARRAY_PROTO_H
-#define NDARRAY_PROTO_H
+﻿#ifndef ND_ARRAY_PROTO_H
+#define ND_ARRAY_PROTO_H
 
 #include	<math.h>
 #include	<limits>
@@ -36,27 +36,24 @@ namespace OreOreLib
 		
 		}
 
+
 		// Constructor
-//		NDArray_proto( int len ) : Array<T>(len) {}
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
 		NDArray_proto( Args const & ... args )
 			: m_Shape( args... )
 		{
-			this->Init( int(m_Shape.Size()) );
+			Memory<T>::Init( int(m_Shape.Size()) );
 		}
 
 
-		// Constructor
-//		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-//		NDArray_proto( Args const & ... args ) : Memory<T>( args ...) {}
-
 		// Constructor with initializer list
-//		NDArray_proto( std::initializer_list<T> ilist ) : Array<T>( ilist ) {}
+		template < typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value >* = nullptr >
+		NDArray_proto( std::initializer_list<T_INDEX> ilist )
+			: m_Shape( ilist )
+		{
+			Memory<T>::Init( int(m_Shape.Size()) );
+		}
 
-
-
-		// Constructor with external buffer
-//		NDArray_proto( int len, T* pdata ): Array<T>( len, pdata ) {}
 
 		// Constructor using Memory
 		NDArray_proto( const Memory<T>& obj )
@@ -111,6 +108,39 @@ namespace OreOreLib
 		}
 
 
+
+		void Init( const Memory<T>& obj )
+		{
+			Array<T>::Init( obj );
+			m_Shape.Init( obj.Length() );
+		}
+
+
+		template < typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
+		Init( const T* const pdata, const Args& ... args )
+		{
+			m_Shape.Init( args... );
+			Memory<T>::Init( m_Shape.Size(), pdata );
+		}
+
+
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
+		Init( std::initializer_list<T_INDEX> ilist )
+		{
+			m_Shape.Init( ilist );
+			Memory<T>::Init( int(m_Shape.Size()) );
+		}
+
+
+		void Release()
+		{
+			Array<T>::Release();
+			m_Shape.Release();
+		}
+
+
 		inline void Swap( int i, int j )
 		{
 			assert( i>=0 && i<this->m_Length && j>=0 && j<this->m_Length );
@@ -128,7 +158,7 @@ namespace OreOreLib
 		// Read only.( called if NDArray is const )
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, const T& >
-		operator()( Args ... args ) const&// x, y, z, w...
+		operator()( const Args& ... args ) const&// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( args... ) ];
 		}
@@ -137,7 +167,7 @@ namespace OreOreLib
 		// Read-write.( called if NDArray is non-const )
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T& >
-		operator()( Args ... args ) &// x, y, z, w...
+		operator()( const Args& ... args ) &// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( args... ) ];
 		}
@@ -146,7 +176,7 @@ namespace OreOreLib
 		// Subscription operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)(x, y)", "auto&& a = NDArray<T, 2>(10,10)(x, y)" )
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T >
-		operator()( Args ... args ) const&&// x, y, z, w...
+		operator()( const Args& ... args ) const&&// x, y, z, w...
 		{
 			return (T&&)this->m_pData[ m_Shape.To1D( args... ) ];
 		}
@@ -155,24 +185,27 @@ namespace OreOreLib
 		//================= Subscription operators(initializer list) ===================//
 
 		// Read only.( called if NDArray is const )
-		std::enable_if_t< std::is_convertible<uint64, T>::value, const T& >
-		operator()( std::initializer_list<T> indexND ) const&// x, y, z, w...
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, const T& >
+		operator()( std::initializer_list<T_INDEX> indexND ) const&// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( indexND ) ];
 		}
 
 
 		// Read-write.( called if NDArray is non-const )
-		std::enable_if_t< std::is_convertible<uint64, T>::value, T& >
-		operator()( std::initializer_list<T> indexND ) &// x, y, z, w...
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T& >
+		operator()( std::initializer_list<T_INDEX> indexND ) &// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( indexND ) ];
 		}
 
 
 		// Subscription operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)({x, y})", "auto&& a = NDArray<T, 2>(10,10)({x, y})" )
-		std::enable_if_t< std::is_convertible<uint64, T>::value, T >
-		operator()( std::initializer_list<T> indexND ) const&&// x, y, z, w...
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T >
+		operator()( std::initializer_list<T_INDEX> indexND ) const&&// x, y, z, w...
 		{
 			return (T&&)this->m_pData[ m_Shape.To1D( indexND ) ];
 		}
@@ -196,6 +229,7 @@ namespace OreOreLib
 
 		NDShape<N> m_Shape;
 
+
 	};
 
 
@@ -203,4 +237,4 @@ namespace OreOreLib
 }// end of namespace
 
 
-#endif /* NDARRAY_PROTO_H */
+#endif /* ND_ARRAY_PROTO_H */

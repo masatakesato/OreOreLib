@@ -23,5 +23,11 @@
     <ClInclude Include="..\..\..\test\testNDShape\NDArray_proto.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\test\testNDShape\NDArrayView_proto.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\test\testNDShape\NDStaticArray_proto.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

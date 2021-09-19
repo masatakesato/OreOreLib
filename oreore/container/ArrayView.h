@@ -26,7 +26,7 @@ namespace OreOreLib
 
 		// Default constructor
 		ArrayBase()
-			: Memory()
+			: Memory<T>()
 		{
 		}
 

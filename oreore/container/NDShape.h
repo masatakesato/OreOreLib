@@ -18,21 +18,36 @@ namespace OreOreLib
 	{
 	public:
 
+		// Default constructor
 		NDShape()
-			: m_Shape {0} 
-			, m_Strides {0} 
+			: m_Shape{ 0 } 
+			, m_Strides{ 0 } 
 		{
 		
 		}
 
-		
+
+		// Constructor(variadic tempaltes)
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		NDShape( Args ... args )
+		NDShape( Args ... args )// x, y, z, w...
 			: m_Shape{ uint64(args)... }
 		{
-			m_Strides[0] = m_Shape[0];
-			for( int i=1; i<N; ++i )
-				m_Strides[i] = m_Shape[i] * m_Strides[i-1];
+			InitStrides();
+		}
+
+
+		// Constructor(initializer list)
+		template < typename T, std::enable_if_t< std::is_convertible<uint64, T>::value >* = nullptr >
+		NDShape( std::initializer_list<T> indexND )// x, y, z, w...
+		{
+			Init( indexND );
+		}
+
+
+		// Destructor
+		~NDShape()
+		{
+			Release();
 		}
 
 
@@ -44,16 +59,28 @@ namespace OreOreLib
 			for( const auto& val : { args... } )
 				*(p++) = val;
 
-			m_Strides[0] = m_Shape[0];
-			for( int i=1; i<N; ++i )
-				m_Strides[i] = m_Shape[i] * m_Strides[i-1];
-
-			//m_DimCoeff[0]	= m_Shape[0];
-			//m_DimCoeff[1]	= m_Shape[0] * m_Shape[1];
-			//m_DimCoeff[2]	= m_Shape[0] * m_Shape[1] * m_Shape[2];
-			//m_DimCoeff[3]	= m_Shape[0] * m_Shape[1] * m_Shape[2] * m_Shape[3];
-			//...
+			InitStrides();
 		}
+
+
+		template < typename T >
+		std::enable_if_t< std::is_convertible<uint64, T>::value, void >
+		Init( std::initializer_list<T> indexND )
+		{
+			auto p = m_Shape;
+			for( const auto& val : indexND )
+				*(p++) = val;
+
+			InitStrides();
+		}
+
+
+		void Release()
+		{
+			for( int i=1; i<N; ++i )
+				m_Shape[i] = m_Strides[i] = 0;
+		}
+
 
 
 		//=============== 1D to ND index conversion ===============//
@@ -174,6 +201,20 @@ namespace OreOreLib
 
 		uint64	m_Shape[ N ];
 		uint64	m_Strides[ N ];// strides for multidimensional element access.
+
+
+		const void InitStrides()
+		{
+			m_Strides[0] = m_Shape[0];
+			for( int i=1; i<N; ++i )	m_Strides[i] = m_Shape[i] * m_Strides[i-1];
+
+			//m_Strides[0]	= m_Shape[0];
+			//m_Strides[1]	= m_Shape[0] * m_Shape[1];
+			//m_Strides[2]	= m_Shape[0] * m_Shape[1] * m_Shape[2];
+			//m_Strides[3]	= m_Shape[0] * m_Shape[1] * m_Shape[2] * m_Shape[3];
+			//...
+		}
+
 
 	};
 
