@@ -17,6 +17,14 @@ namespace OreOreLib
 	class NDShape
 	{
 	public:
+
+		NDShape()
+			: m_Shape {0} 
+			, m_Strides {0} 
+		{
+		
+		}
+
 		
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
 		NDShape( Args ... args )
@@ -57,7 +65,7 @@ namespace OreOreLib
 
 		template < typename T >
 		std::enable_if_t< std::is_convertible_v<T, uint64>, void >
-		ToND( uint64 id, T (&indexND)[N] ) const
+		ToND( uint64 id, T indexND[] ) const
 		{
 			indexND[N-1] = (T)id;
 			for( int i=N-2; i>=0; --i )
@@ -98,11 +106,11 @@ namespace OreOreLib
 		{
 			auto itr = std::begin( indexND );
 
-			uint64 index = *(itr++);
+			uint64 index = (uint64)*(itr++);
 			auto offset = m_Strides;
 
 			while( itr !=std::end( indexND ) )
-				index += *(itr++) * *(offset++);
+				index += (uint64)*(itr++) * *(offset++);
 
 			return index;
 		}

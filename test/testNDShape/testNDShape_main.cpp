@@ -6,7 +6,7 @@ using namespace OreOreLib;
 
 
 
-const int c_LoopCount = 10000000;
+const int c_LoopCount = 1000000;//0;
 
 int main()
 {

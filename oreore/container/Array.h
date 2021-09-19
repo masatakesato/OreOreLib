@@ -72,11 +72,7 @@ namespace OreOreLib
 		// Move assignment opertor =
 		inline ArrayBase& operator=( ArrayBase&& obj )
 		{
-			if( this != &obj )
-			{
-				Memory<T>::operator=( (ArrayBase&&)obj );
-			}
-
+			Memory<T>::operator=( (ArrayBase&&)obj );
 			return *this;
 		}
 

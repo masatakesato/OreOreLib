@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.1401
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDIndex", "testNDIndex\testNDIndex.vcxproj", "{BB41DE9E-4047-45FF-B19E-DEF767F928AD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDShape", "testNDShape\testNDShape.vcxproj", "{BB41DE9E-4047-45FF-B19E-DEF767F928AD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDArrayProto", "testNDArrayProto\testNDArrayProto.vcxproj", "{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{BB41DE9E-4047-45FF-B19E-DEF767F928AD}.Debug|x64.Build.0 = Debug|x64
 		{BB41DE9E-4047-45FF-B19E-DEF767F928AD}.Release|x64.ActiveCfg = Release|x64
 		{BB41DE9E-4047-45FF-B19E-DEF767F928AD}.Release|x64.Build.0 = Release|x64
+		{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}.Debug|x64.ActiveCfg = Debug|x64
+		{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}.Debug|x64.Build.0 = Debug|x64
+		{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}.Release|x64.ActiveCfg = Release|x64
+		{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
