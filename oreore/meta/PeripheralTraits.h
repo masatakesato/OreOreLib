@@ -18,7 +18,11 @@ T sum(T first, Args... args)
 
 
 
-struct NullTypen{};
+//######################################################################//
+//																		//
+//									Sum									//
+//																		//
+//######################################################################//
 
 template < unsigned... Ns > struct sum_;
 
@@ -34,6 +38,31 @@ template < unsigned Head, unsigned ... Rest >
 struct sum_<Head, Rest...>
 {
 	static constexpr unsigned value = Head + sum_<Rest...>::value; 
+};
+
+
+
+
+//######################################################################//
+//																		//
+//								Mult									//
+//																		//
+//######################################################################//
+
+template < unsigned... Ns > struct mult_;
+
+
+template <>
+struct mult_<>
+{
+   static constexpr unsigned value = 1;
+};
+
+
+template < unsigned Head, unsigned ... Rest >
+struct mult_<Head, Rest...>
+{
+	static constexpr unsigned value = Head * mult_<Rest...>::value; 
 };
 
 

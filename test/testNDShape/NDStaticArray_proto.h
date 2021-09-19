@@ -14,41 +14,32 @@ namespace OreOreLib
 {
 
 
-	template< typename T, typename ... Args >
-	class StaticNDArray : public StaticArray<T, Size>
+	template< typename T, unsigned ... Args >
+	class NDStaticArray_proto : public StaticArray<T, mult_<Args...>::value >
 	{
 	public:
 
 		// Default constructor
-		template < std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		StaticNDArray( Args ... args )
+		NDStaticArray_proto()
+			: StaticArray<T, Size>()
+			//, m_Shape( Args... )
 		{
-			m_Shape( args... );
-			StaticArray<T>::Init();
-
-			this->m_pData		= m_Data;
-			this->m_Length		= Size;
-			this->m_AllocSize	= sizeof(T) * Size;
-
-			memset( m_Data, 0, sizeof(T) * Size );
+			
 		}
 
 
 		// Constructor with external buffer
-		StaticNDArray( int len, T* pdata )
+		NDStaticArray_proto( int len, T* pdata )
+			: StaticArray<T, Size>( len, pdata )
+			, m_Shape( Args... )
 		{
-			this->m_pData		= m_Data;
-			this->m_Length		= Size;
-			this->m_AllocSize	= sizeof(T) * Size;
 
-			memset( m_Data, 0, sizeof(T) * Size );
-			MemCopy( m_Data, pdata, len );
 		}
 
 
 		// Constructor
 		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-		//StaticNDArray( Args const & ... args )
+		//NDStaticArray_proto( Args const & ... args )
 		//	: m_Data{ args... }
 		//{
 		//	
@@ -56,137 +47,136 @@ namespace OreOreLib
 
 
 		// Constructor
-		StaticNDArray( std::initializer_list<T> ilist )
+		NDStaticArray_proto( std::initializer_list<T> ilist )
+			: StaticArray<T, Size>( ilist )
+			, m_Shape( Args... )
 		{
-			this->m_pData		= m_Data;
-			this->m_Length		= Size;
-			this->m_AllocSize	= sizeof(T) * Size;
 
-			auto p = m_Data;
-			for( const auto& val : ilist )
-			{
-				if( p==end() )	break;
-				*(p++) = val;
-			}
 		}
 
 
 		// Constructor
-		StaticNDArray( const Memory<T> &obj )
+		NDStaticArray_proto( const Memory<T> &obj )
+			: StaticArray<T, Size>( obj )
+			, m_Shape( Args... )
 		{
-			this->m_pData		= m_Data;
-			this->m_Length		= Size;
-			this->m_AllocSize	= sizeof(T) * Size;
 
-			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
 		// Destructor
-		~StaticNDArray()
+		~NDStaticArray_proto()
 		{
 			this->m_pData = nullptr;
 		}
 
 
 		// Copy constructor
-		StaticNDArray( const StaticNDArray& obj )
+		NDStaticArray_proto( const NDStaticArray_proto& obj )
 		{
-			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			MemCopy( this->begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
 		// Move constructor.
-		StaticNDArray( StaticNDArray&& obj )
+		NDStaticArray_proto( NDStaticArray_proto&& obj )
 		{
-			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			MemCopy( this->begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
-		// Copy Assignment opertor =
-		inline StaticNDArray& operator=( const StaticNDArray& obj )
-		{
-			if( this != &obj )
-			{
-				MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
-			}
-			return *this;
-		}
+		//// Copy Assignment opertor =
+		//inline NDStaticArray_proto& operator=( const NDStaticArray_proto& obj )
+		//{
+		//	if( this != &obj )
+		//	{
+		//		MemCopy( begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
+		//	}
+		//	return *this;
+		//}
 
-		inline StaticNDArray& operator=( const Memory<T>& obj )
-		{
-			if( this != &obj )
-			{
-				MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
-			}
+		//inline NDStaticArray_proto& operator=( const Memory<T>& obj )
+		//{
+		//	if( this != &obj )
+		//	{
+		//		MemCopy( begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
+		//	}
 
-			return *this;
-		}
+		//	return *this;
+		//}
 
 
 		// Move assignment opertor.
-		StaticNDArray& operator=( StaticNDArray&& obj )
-		{
-			if( this != &obj )
-			{
-				MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
-			}
+		//NDStaticArray_proto& operator=( NDStaticArray_proto&& obj )
+		//{
+		//	if( this != &obj )
+		//	{
+		//		MemCopy( begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
+		//	}
 
-			return *this;
-		}
-
-
-		// Subscription operator for read only.( called if StaticMemory is const )
-		inline const T& operator[]( std::size_t n ) const&
-		{
-			return m_Data[n];
-		}
+		//	return *this;
+		//}
 
 
-		// Subscription operator for read-write.( called if StaticMemory is non-const )
-		inline T& operator[]( std::size_t n ) &
-		{
-			return m_Data[n];
-		}
+		//// Subscription operator for read only.( called if StaticMemory is const )
+		//inline const T& operator[]( std::size_t n ) const&
+		//{
+		//	return m_Data[n];
+		//}
 
 
-		// Subscription operator. ( called by following cases: "T& a = StaticMemory<T,10>[n]", "auto&& a = Memory<T,20>[n]" )
-		inline T operator[]( std::size_t n ) const&&
-		{
-			return std::move(m_Data[n]);// return object
-		}
+		//// Subscription operator for read-write.( called if StaticMemory is non-const )
+		//inline T& operator[]( std::size_t n ) &
+		//{
+		//	return m_Data[n];
+		//}
 
 
-		inline void Clear()
-		{
-			memset( m_Data, 0, sizeof(T) * Size );
-		}
+		//// Subscription operator. ( called by following cases: "T& a = StaticMemory<T,10>[n]", "auto&& a = Memory<T,20>[n]" )
+		//inline T operator[]( std::size_t n ) const&&
+		//{
+		//	return std::move(m_Data[n]);// return object
+		//}
 
 
-		int Length() const
-		{
-			return Size;
-		}
+		//inline void Clear()
+		//{
+		//	memset( m_Data, 0, sizeof(T) * Size );
+		//}
 
 
-		inline void Swap( int i, int j )
-		{
-			assert( i>=0 && i<this->length && j>=0 && j<this->length );
+		//int Length() const
+		//{
+		//	return Size;
+		//}
 
-			if( i==j ) return;
 
-			T tmp = m_Data[i];
-			m_Data[i] = m_Data[j];
-			m_Data[j] = tmp;
-		}
+		//inline void Swap( int i, int j )
+		//{
+		//	assert( i>=0 && i<this->length && j>=0 && j<this->length );
+
+		//	if( i==j ) return;
+
+		//	T tmp = m_Data[i];
+		//	m_Data[i] = m_Data[j];
+		//	m_Data[j] = tmp;
+		//}
 
 
 		void Display() const
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
+			static uint64 indexND[ sizeof...(Args) ];
+
 			for( int i=0; i<Size; ++i )
-				tcout << _T("  [") << i << _T("]: ") << m_Data[i] << tendl;
+			{
+				m_Shape.ToND( i, indexND );
+				for( int j=Dim-1; j>=0; --j )
+					tcout << _T("[") << indexND[j] << _T("]");
+
+				tcout << _T(": ") << *(this->begin() + i) << tendl;
+			}
 
 			tcout << tendl;
 		}
@@ -194,25 +184,25 @@ namespace OreOreLib
 
 		// https://stackoverflow.com/questions/31581880/overloading-cbegin-cend
 		// begin / end overload for "range-based for loop"
-		inline T* begin()
-		{
-			return m_Data;
-		}
+		//inline T* begin()
+		//{
+		//	return m_Data;
+		//}
 
-		inline const T* begin() const
-		{
-			return m_Data;
-		}
+		//inline const T* begin() const
+		//{
+		//	return m_Data;
+		//}
 
-		inline T* end()
-		{
-			return begin() + Size;
-		}
+		//inline T* end()
+		//{
+		//	return begin() + Size;
+		//}
 
-		inline const T* end() const
-		{
-			return begin() + Size;
-		}
+		//inline const T* end() const
+		//{
+		//	return begin() + Size;
+		//}
 
 
 		// Delete unnecessary parent methods
@@ -227,8 +217,9 @@ namespace OreOreLib
 
 	private:
 
-		NDShape<sizeof...(Args)>	m_Shape;
-
+		static constexpr size_t Dim = sizeof...(Args);
+		static constexpr size_t Size = mult_<Args...>::value;
+		const NDShape<Dim> m_Shape = NDShape<Dim>(Args...);
 
 	};
 

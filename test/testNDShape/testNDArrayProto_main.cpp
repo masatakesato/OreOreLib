@@ -5,6 +5,7 @@
 
 #include	"NDArray_proto.h"
 #include	"NDArrayView_proto.h"
+#include	"NDStaticArray_proto.h"
 using namespace OreOreLib;
 
 
@@ -51,11 +52,13 @@ int main()
 	std::chrono::system_clock::time_point  start, end; // 型は auto で可
 	start = std::chrono::system_clock::now(); // 計測開始時間
 
+/*
 //	struct sum_<1, 2, 3, 4> aaa;
 //	tcout << aaa.value;
 	BBB<1, 2, 3, 4> bbb;
 
 	return 0;
+*/
 
 	NDArray_proto<double, 2>	double2D({2, 3});// double2D(2, 3); is OK
 
@@ -79,6 +82,13 @@ int main()
 	tcout << "time elapsed: " << elapsed << "[ms].\n";
 
 	tcout << tendl;
+
+
+
+	NDStaticArray_proto<double, 2, 3> sarr2d;
+
+	sarr2d.Display();
+
 
 	return 0;
 }

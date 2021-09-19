@@ -6,7 +6,7 @@ using namespace OreOreLib;
 
 
 
-const int c_LoopCount = 1000000;//0;
+const int c_LoopCount = 1;//1000000;//0;
 
 int main()
 {
@@ -35,7 +35,7 @@ int main()
 				{
 					int index[3] = {x, y, z };
 					auto idx1d = idx.To1D( index );//idx.To1D( x, y, z );//
-					//tcout << "(" << x << ", " << y << ", " << z << ") -> (" << idx1d << ")\n";
+					tcout << "[" << z << "][" << y << "][" << x << "] -> [" << idx1d << "]\n";
 				}
 			}
 		}
@@ -57,13 +57,13 @@ int main()
 		for( int i=0; i<c_LoopCount; ++i)
 		for( int z=0; z<idx.Dim(2); ++z )
 		{
-			for( int y=0; y<idx.Dim( 1 ); ++y )
+			for( int y=0; y<idx.Dim(1); ++y )
 			{
 				for( int x=0; x<idx.Dim(0); ++x )
 				{
 					//int index[3] = {x, y, z };
 					auto idx1d = idx.To1D( x, y, z );//idx.To1D( index );//
-					//tcout << "(" << x << ", " << y << ", " << z << ") -> (" << idx1d << ")\n";
+					tcout << "[" << z << "][" << y << "][" << x << "] -> (" << idx1d << ")\n";
 				}
 			}
 		}
@@ -90,7 +90,7 @@ int main()
 				for( int x=0; x<idx.Dim(0); ++x )
 				{
 					auto idx1d = idx.To1D( {x, y, z} );
-					//tcout << "(" << x << ", " << y << ", " << z << ") -> (" << idx1d << ")\n";
+					tcout << "[" << z << "][" << y << "][" << x << "] -> (" << idx1d << ")\n";
 				}
 			}
 		}
@@ -117,7 +117,7 @@ int main()
 				for( int x=0; x<idx.Dim(0); ++x )
 				{
 					auto idx1d = idx.From3DTo1D( x, y, z );//idx.To1D( index );//
-					//tcout << "(" << x << ", " << y << ", " << z << ") -> (" << idx1d << ")\n";
+					tcout << "[" << z << "][" << y << "][" << x << "] -> (" << idx1d << ")\n";
 				}
 			}
 		}
@@ -138,7 +138,7 @@ int main()
 		int idx_[3];
 		idx.ToND( i, idx_ );
 
-		tcout << "(" << i << ") -> (" << idx_[0] << ", " << idx_[1] << ", " << idx_[2] << ")\n";
+		tcout << "[" << i << "] -> [" << idx_[2] << "][" << idx_[1] << "][" << idx_[0] << "]\n";
 	}
 
 
