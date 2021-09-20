@@ -283,21 +283,21 @@ namespace OreOreLib
 		}
 
 
-		// Subscription operator for read only.( called if Memory is const )
+		// Subscript operator for read only.( called if Memory is const )
 		inline const T& operator[]( std::size_t n ) const&
 		{
 			return m_pData[n];
 		}
 
 
-		// Subscription operator for read-write.( called if Memory is non-const )
+		// Subscript operator for read-write.( called if Memory is non-const )
 		inline T& operator[]( std::size_t n ) &
 		{
 			return m_pData[n];
 		}
 
 
-		// Subscription operator. ( called by following cases: "T a = Memory<T>(10)[n]", "auto&& a = Memory<T>(20)[n]" )
+		// Subscript operator. ( called by following cases: "T a = Memory<T>(10)[n]", "auto&& a = Memory<T>(20)[n]" )
 		inline T operator[]( std::size_t n ) const&&
 		{
 			return std::move(m_pData[n]);// return object

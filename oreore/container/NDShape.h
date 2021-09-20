@@ -92,15 +92,32 @@ namespace OreOreLib
 
 		template < typename T >
 		std::enable_if_t< std::is_convertible_v<T, uint64>, void >
-		ToND( uint64 id, T indexND[] ) const
+		ToND( uint64 indexd1D, T indexND[] ) const
 		{
-			indexND[N-1] = (T)id;
+			indexND[N-1] = (T)indexd1D;
 			for( int i=N-2; i>=0; --i )
 				indexND[i] = indexND[i+1] % (T)m_Strides[i];
 
 			for( int i=N-1; i>=1; --i )
 				indexND[i] /= (T)m_Strides[i-1];
 		}
+
+
+
+
+		uint64 ToND( uint64 indexd1D, int dim ) const
+		{
+			uint64 index = indexd1D;
+			for( int i=N-2; i>=dim; --i )
+				index = index % m_Strides[i];
+
+			if( dim > 0 )
+				index /= m_Strides[dim-1];
+
+			return index;
+		}
+
+
 
 
 		//============== ND to 1D index conversion ===============//
@@ -112,7 +129,7 @@ namespace OreOreLib
 
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, int64 >
-		To1D( Args ... args )// x, y, z, w...
+		To1D( const Args ... args ) const// x, y, z, w...
 		{
 			auto indexND = { args... };
 			auto itr = std::begin( indexND );
@@ -129,7 +146,7 @@ namespace OreOreLib
 
 		template < typename T >
 		std::enable_if_t< std::is_convertible<uint64, T>::value, int64 >
-		To1D( std::initializer_list<T> indexND )// x, y, z, w...
+		To1D( std::initializer_list<T> indexND ) const// x, y, z, w...
 		{
 			auto itr = std::begin( indexND );
 

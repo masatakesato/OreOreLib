@@ -9,6 +9,8 @@
 #include	<oreore/container/StaticArray.h>
 
 
+//TODO: Disable Subscript operator
+
 
 namespace OreOreLib
 {
@@ -17,6 +19,9 @@ namespace OreOreLib
 	template< typename T, unsigned ... Args >
 	class NDStaticArray_proto : public StaticArray<T, mult_<Args...>::value >
 	{
+		static constexpr size_t N = sizeof...(Args);
+		static constexpr size_t Size = mult_<Args...>::value;
+
 	public:
 
 		// Default constructor
@@ -74,154 +79,144 @@ namespace OreOreLib
 		// Copy constructor
 		NDStaticArray_proto( const NDStaticArray_proto& obj )
 		{
-			MemCopy( this->begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
+			MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
 		// Move constructor.
 		NDStaticArray_proto( NDStaticArray_proto&& obj )
 		{
-			MemCopy( this->begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
+			MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
-		//// Copy Assignment opertor =
-		//inline NDStaticArray_proto& operator=( const NDStaticArray_proto& obj )
-		//{
-		//	if( this != &obj )
-		//	{
-		//		MemCopy( begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
-		//	}
-		//	return *this;
-		//}
+		// Copy Assignment opertor =
+		inline NDStaticArray_proto& operator=( const NDStaticArray_proto& obj )
+		{
+			if( this != &obj )
+			{
+				MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			}
+			return *this;
+		}
 
-		//inline NDStaticArray_proto& operator=( const Memory<T>& obj )
-		//{
-		//	if( this != &obj )
-		//	{
-		//		MemCopy( begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
-		//	}
+		inline NDStaticArray_proto& operator=( const Memory<T>& obj )
+		{
+			if( this != &obj )
+			{
+				MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			}
 
-		//	return *this;
-		//}
+			return *this;
+		}
 
 
 		// Move assignment opertor.
-		//NDStaticArray_proto& operator=( NDStaticArray_proto&& obj )
-		//{
-		//	if( this != &obj )
-		//	{
-		//		MemCopy( begin(), obj.begin(), Min( this->m_Length, obj.Length() ) );
-		//	}
+		NDStaticArray_proto& operator=( NDStaticArray_proto&& obj )
+		{
+			if( this != &obj )
+			{
+				MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			}
 
-		//	return *this;
-		//}
-
-
-		//// Subscription operator for read only.( called if StaticMemory is const )
-		//inline const T& operator[]( std::size_t n ) const&
-		//{
-		//	return m_Data[n];
-		//}
+			return *this;
+		}
 
 
-		//// Subscription operator for read-write.( called if StaticMemory is non-const )
-		//inline T& operator[]( std::size_t n ) &
-		//{
-		//	return m_Data[n];
-		//}
+
+		//================= Element access operators(variadic templates) ===================//
+
+		// Read only.( called if NDArray is const )
+		template < typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, const T& >
+		operator()( const Args& ... args ) const&// x, y, z, w...
+		{
+			return this->m_pData[ m_Shape.To1D( args... ) ];
+		}
 
 
-		//// Subscription operator. ( called by following cases: "T& a = StaticMemory<T,10>[n]", "auto&& a = Memory<T,20>[n]" )
-		//inline T operator[]( std::size_t n ) const&&
-		//{
-		//	return std::move(m_Data[n]);// return object
-		//}
+		// Read-write.( called if NDArray is non-const )
+		template < typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T& >
+		operator()( const Args& ... args ) &// x, y, z, w...
+		{
+			m_Shape.To1D( args... );
+			return this->m_pData[ /*m_Shape.To1D( args... )*/0 ];
+		}
 
 
-		//inline void Clear()
-		//{
-		//	memset( m_Data, 0, sizeof(T) * Size );
-		//}
+		// operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)(x, y)", "auto&& a = NDArray<T, 2>(10,10)(x, y)" )
+		template < typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T >
+		operator()( const Args& ... args ) const&&// x, y, z, w...
+		{
+			return (T&&)this->m_pData[ m_Shape.To1D( args... ) ];
+		}
 
 
-		//int Length() const
-		//{
-		//	return Size;
-		//}
+		//================= Element access operators(initializer list) ===================//
+
+		// Read only.( called if NDArray is const )
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, const T& >
+		operator()( std::initializer_list<T_INDEX> indexND ) const&// x, y, z, w...
+		{
+			return this->m_pData[ m_Shape.To1D( indexND ) ];
+		}
 
 
-		//inline void Swap( int i, int j )
-		//{
-		//	assert( i>=0 && i<this->length && j>=0 && j<this->length );
+		// Read-write.( called if NDArray is non-const )
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T& >
+		operator()( std::initializer_list<T_INDEX> indexND ) &// x, y, z, w...
+		{
+			return this->m_pData[ m_Shape.To1D( indexND ) ];
+		}
 
-		//	if( i==j ) return;
 
-		//	T tmp = m_Data[i];
-		//	m_Data[i] = m_Data[j];
-		//	m_Data[j] = tmp;
-		//}
+		// operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)({x, y})", "auto&& a = NDArray<T, 2>(10,10)({x, y})" )
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T >
+		operator()( std::initializer_list<T_INDEX> indexND ) const&&// x, y, z, w...
+		{
+			return (T&&)this->m_pData[ m_Shape.To1D( indexND ) ];
+		}
+
 
 
 		void Display() const
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
-			static uint64 indexND[ sizeof...(Args) ];
-
 			for( int i=0; i<Size; ++i )
 			{
-				m_Shape.ToND( i, indexND );
-				for( int j=Dim-1; j>=0; --j )
-					tcout << _T("[") << indexND[j] << _T("]");
+				tcout << _T("  ");
+				for( int dim=(int)m_Shape.NumDims()-1; dim>=0; --dim )
+					tcout << _T("[") << m_Shape.ToND(i, dim) << _T("]");
 
-				tcout << _T(": ") << *(this->begin() + i) << tendl;
+				tcout << _T(": ") << this->m_Data[i] << tendl;
 			}
 
 			tcout << tendl;
 		}
 
 
-		// https://stackoverflow.com/questions/31581880/overloading-cbegin-cend
-		// begin / end overload for "range-based for loop"
-		//inline T* begin()
-		//{
-		//	return m_Data;
-		//}
+		// Disable subscript operators
+		const T& operator[]( std::size_t n ) const& = delete;
+		T& operator[]( std::size_t n ) & = delete;
+		T operator[]( std::size_t n ) const&& = delete;
 
-		//inline const T* begin() const
-		//{
-		//	return m_Data;
-		//}
-
-		//inline T* end()
-		//{
-		//	return begin() + Size;
-		//}
-
-		//inline const T* end() const
-		//{
-		//	return begin() + Size;
-		//}
-
-
-		// Delete unnecessary parent methods
-		void Init( int len, uint8* pdata=nullptr ) = delete;
-		template < typename ... Args >	void Init( Args const & ... args ) = delete;
-		void Release() = delete;
-		//void Clear() = delete;
-		bool Resize( int newlen ) = delete;
-		bool Extend( int numelms ) = delete;
-		bool Shrink( int numelms ) = delete;
 
 
 	private:
 
-		static constexpr size_t Dim = sizeof...(Args);
-		static constexpr size_t Size = mult_<Args...>::value;
-		const NDShape<Dim> m_Shape = NDShape<Dim>(Args...);
+		const NDShape<N> m_Shape = NDShape<N>(Args...);
+
+
+		using Memory<T>::operator[];
 
 	};
+
 
 
 

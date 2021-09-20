@@ -226,11 +226,13 @@ namespace OreOreLib
 
 
 
-	private:
+	protected:
 
 		// Static array
 		T	m_Data[Size];
 
+
+	private:
 
 		// Hide parent methods
 		using Memory<T>::Init;

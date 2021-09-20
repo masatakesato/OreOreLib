@@ -75,6 +75,7 @@
     <ClCompile Include="..\..\..\test\testNDShape\testNDArrayProto_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\test\testNDShape\NDArrayBase.h" />
     <ClInclude Include="..\..\..\test\testNDShape\NDArrayView_proto.h" />
     <ClInclude Include="..\..\..\test\testNDShape\NDArray_proto.h" />
     <ClInclude Include="..\..\..\test\testNDShape\NDStaticArray_proto.h" />

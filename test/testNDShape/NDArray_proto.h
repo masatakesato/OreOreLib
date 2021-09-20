@@ -11,7 +11,7 @@
 #include	<oreore/container/NDShape.h>
 
 
-
+//TODO: Disable subscript operator
 
 namespace OreOreLib
 {
@@ -153,7 +153,7 @@ namespace OreOreLib
 		}
 
 
-		//================= Subscription operators(variadic templates) ===================//
+		//================= Subscript operators(variadic templates) ===================//
 
 		// Read only.( called if NDArray is const )
 		template < typename ... Args >
@@ -173,7 +173,7 @@ namespace OreOreLib
 		}
 
 
-		// Subscription operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)(x, y)", "auto&& a = NDArray<T, 2>(10,10)(x, y)" )
+		// Subscript operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)(x, y)", "auto&& a = NDArray<T, 2>(10,10)(x, y)" )
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T >
 		operator()( const Args& ... args ) const&&// x, y, z, w...
@@ -182,7 +182,7 @@ namespace OreOreLib
 		}
 
 
-		//================= Subscription operators(initializer list) ===================//
+		//================= Subscript operators(initializer list) ===================//
 
 		// Read only.( called if NDArray is const )
 		template < typename T_INDEX >
@@ -202,7 +202,7 @@ namespace OreOreLib
 		}
 
 
-		// Subscription operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)({x, y})", "auto&& a = NDArray<T, 2>(10,10)({x, y})" )
+		// Subscript operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)({x, y})", "auto&& a = NDArray<T, 2>(10,10)({x, y})" )
 		template < typename T_INDEX >
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T >
 		operator()( std::initializer_list<T_INDEX> indexND ) const&&// x, y, z, w...
@@ -211,17 +211,27 @@ namespace OreOreLib
 		}
 
 
-
-
 		void Display() const
 		{
-			tcout << typeid(*this).name() << _T("[ ") << this->m_Length << _T(" ]:\n" );
+			tcout << typeid(*this).name() << _T(":\n" );
 
 			for( int i=0; i<this->m_Length; ++i )
-				tcout << _T("  [") << i << _T("]: ") << this->m_pData[i] << tendl;
+			{
+				tcout << _T("  ");
+				for( int dim=(int)m_Shape.NumDims()-1; dim>=0; --dim )
+					tcout << _T("[") << m_Shape.ToND(i, dim) << _T("]");
+
+				tcout << _T(": ") << *(this->begin() + i) << tendl;
+			}
 
 			tcout << tendl;
 		}
+
+
+		// Disable subscript operators
+		const T& operator[]( std::size_t n ) const& = delete;
+		T& operator[]( std::size_t n ) & = delete;
+		T operator[]( std::size_t n ) const&& = delete;
 
 
 
@@ -229,6 +239,8 @@ namespace OreOreLib
 
 		NDShape<N> m_Shape;
 
+
+		using Memory<T>::operator[];
 
 	};
 
