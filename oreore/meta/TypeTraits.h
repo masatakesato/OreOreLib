@@ -32,6 +32,14 @@ namespace OreOreLib
 		template < typename T, typename... Ts >
 		using all_convertible = all_true< std::is_convertible<T, Ts>... >;
 
+
+
+
+		template < typename T, typename ... >
+		struct first_type{ using type = T; };
+
+
+
 	}
 
 

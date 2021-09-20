@@ -142,5 +142,10 @@ int main()
 	}
 
 
+	int x, y, z;
+	idx.ToND( 0, x, y, z );
+
+	tcout << x << ", " << y << ", " << z << tendl;
+
 	return 0;
 }

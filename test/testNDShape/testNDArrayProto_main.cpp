@@ -75,7 +75,7 @@ int main()
 
 
 	arr2d.Init({2, 3});
-	auto iter = arr2d.begin();
+	auto iter = &arr2d(0,0);
 	for( int i=0; i<arr2d.Length(); ++i )
 		(*iter++) = double(i);
 

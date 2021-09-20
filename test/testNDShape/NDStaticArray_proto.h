@@ -5,9 +5,9 @@
 #include	<oreore/common/TString.h>
 #include	<oreore/meta/PeripheralTraits.h>
 
-#include	<oreore/container/NDShape.h>
-#include	<oreore/container/StaticArray.h>
-
+//#include	<oreore/container/NDShape.h>
+//#include	<oreore/container/StaticArray.h>
+#include	"NDArrayBase.h"
 
 //TODO: Disable Subscript operator
 
@@ -16,8 +16,8 @@ namespace OreOreLib
 {
 
 
-	template< typename T, unsigned ... Args >
-	class NDStaticArray_proto : public StaticArray<T, mult_<Args...>::value >
+	template< typename T, uint64 ... Args >
+	class NDArrayBase< detail::NDSTATICARR<T>, Args... >/*NDStaticArray_proto*/ : public StaticArray<T, mult_<Args...>::value >
 	{
 		static constexpr size_t N = sizeof...(Args);
 		static constexpr size_t Size = mult_<Args...>::value;
@@ -25,7 +25,7 @@ namespace OreOreLib
 	public:
 
 		// Default constructor
-		NDStaticArray_proto()
+		NDArrayBase/*NDStaticArray_proto*/()
 			: StaticArray<T, Size>()
 			//, m_Shape( Args... )
 		{
@@ -34,7 +34,7 @@ namespace OreOreLib
 
 
 		// Constructor with external buffer
-		NDStaticArray_proto( int len, T* pdata )
+		NDArrayBase/*NDStaticArray_proto*/( int len, T* pdata )
 			: StaticArray<T, Size>( len, pdata )
 			, m_Shape( Args... )
 		{
@@ -44,7 +44,7 @@ namespace OreOreLib
 
 		// Constructor
 		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-		//NDStaticArray_proto( Args const & ... args )
+		//NDArrayBase/*NDStaticArray_proto*/( Args const & ... args )
 		//	: m_Data{ args... }
 		//{
 		//	
@@ -52,7 +52,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		NDStaticArray_proto( std::initializer_list<T> ilist )
+		NDArrayBase/*NDStaticArray_proto*/( std::initializer_list<T> ilist )
 			: StaticArray<T, Size>( ilist )
 			, m_Shape( Args... )
 		{
@@ -61,7 +61,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		NDStaticArray_proto( const Memory<T> &obj )
+		NDArrayBase/*NDStaticArray_proto*/( const Memory<T> &obj )
 			: StaticArray<T, Size>( obj )
 			, m_Shape( Args... )
 		{
@@ -70,28 +70,28 @@ namespace OreOreLib
 
 
 		// Destructor
-		~NDStaticArray_proto()
+		~NDArrayBase/*NDStaticArray_proto*/()
 		{
 			this->m_pData = nullptr;
 		}
 
 
 		// Copy constructor
-		NDStaticArray_proto( const NDStaticArray_proto& obj )
+		NDArrayBase/*NDStaticArray_proto*/( const /*NDStaticArray_proto*/NDArrayBase& obj )
 		{
 			MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
 		// Move constructor.
-		NDStaticArray_proto( NDStaticArray_proto&& obj )
+		/*NDStaticArray_proto*/NDArrayBase( /*NDStaticArray_proto*/NDArrayBase&& obj )
 		{
 			MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
 		// Copy Assignment opertor =
-		inline NDStaticArray_proto& operator=( const NDStaticArray_proto& obj )
+		inline /*NDStaticArray_proto*/NDArrayBase& operator=( const /*NDStaticArray_proto*/NDArrayBase& obj )
 		{
 			if( this != &obj )
 			{
@@ -100,7 +100,7 @@ namespace OreOreLib
 			return *this;
 		}
 
-		inline NDStaticArray_proto& operator=( const Memory<T>& obj )
+		inline /*NDStaticArray_proto*/NDArrayBase& operator=( const Memory<T>& obj )
 		{
 			if( this != &obj )
 			{
@@ -112,7 +112,7 @@ namespace OreOreLib
 
 
 		// Move assignment opertor.
-		NDStaticArray_proto& operator=( NDStaticArray_proto&& obj )
+		/*NDStaticArray_proto*/NDArrayBase& operator=( /*NDStaticArray_proto*/NDArrayBase&& obj )
 		{
 			if( this != &obj )
 			{
@@ -202,9 +202,9 @@ namespace OreOreLib
 
 
 		// Disable subscript operators
-		const T& operator[]( std::size_t n ) const& = delete;
-		T& operator[]( std::size_t n ) & = delete;
-		T operator[]( std::size_t n ) const&& = delete;
+		//const T& operator[]( std::size_t n ) const& = delete;
+		//T& operator[]( std::size_t n ) & = delete;
+		//T operator[]( std::size_t n ) const&& = delete;
 
 
 
@@ -213,7 +213,9 @@ namespace OreOreLib
 		const NDShape<N> m_Shape = NDShape<N>(Args...);
 
 
-		using Memory<T>::operator[];
+		//using Memory<T>::operator[];
+		//using Memory<T>::begin;
+		//using Memory<T>::end;
 
 	};
 

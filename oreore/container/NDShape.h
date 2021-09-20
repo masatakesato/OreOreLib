@@ -29,7 +29,7 @@ namespace OreOreLib
 
 		// Constructor(variadic tempaltes)
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		NDShape( Args ... args )// x, y, z, w...
+		NDShape( const Args& ... args )// x, y, z, w...
 			: m_Shape{ uint64(args)... }
 		{
 			InitStrides();
@@ -53,7 +53,7 @@ namespace OreOreLib
 
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		Init( Args ... args )
+		Init( const Args& ... args )
 		{
 			auto p = m_Shape;
 			for( const auto& val : { args... } )
@@ -104,7 +104,7 @@ namespace OreOreLib
 
 
 
-
+		//　Single dim only
 		uint64 ToND( uint64 indexd1D, int dim ) const
 		{
 			uint64 index = indexd1D;
@@ -115,6 +115,42 @@ namespace OreOreLib
 				index /= m_Strides[dim-1];
 
 			return index;
+		}
+
+
+
+		template < typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
+		ToND( uint64 index1D, Args& ... args ) const
+		{
+			using T = typename TypeTraits::first_type<Args...>::type;
+
+			auto indexND = { &args... };
+			auto head = indexND.begin();
+			auto iter =(T**)indexND.end();
+			iter--;
+			**iter = (T)index1D;
+			iter--;
+			
+			// (1)
+			for( ; iter>=indexND.begin(); --iter )
+			{
+				**iter = (T)123;
+				//tcout << *iter << tendl;
+				//indexND[i] = indexND[i+1] % (T)m_Strides[i];
+			}
+			
+
+/*
+			(1)
+			indexND[N-1] = (T)indexd1D;
+			for( int i=N-2; i>=0; --i )
+				indexND[i] = indexND[i+1] % (T)m_Strides[i];
+
+			(2)
+			for( int i=N-1; i>=1; --i )
+				indexND[i] /= (T)m_Strides[i-1];
+*/
 		}
 
 

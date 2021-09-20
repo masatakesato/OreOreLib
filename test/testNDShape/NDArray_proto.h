@@ -7,8 +7,9 @@
 #include	<oreore/common/TString.h>
 //#include	<oreore/mathlib/Random.h>
 
-#include	<oreore/container/Array.h>
-#include	<oreore/container/NDShape.h>
+//#include	<oreore/container/Array.h>
+//#include	<oreore/container/NDShape.h>
+#include	"NDArrayBase.h"
 
 
 //TODO: Disable subscript operator
@@ -24,12 +25,12 @@ namespace OreOreLib
 
 
 	template< typename T, uint64 N >
-	class NDArray_proto : public Array<T>
+	class /*NDArray_proto*/NDArrayBase< T, N > : public Array<T>
 	{
 	public:
 
 		// Default constructor
-		NDArray_proto()
+		/*NDArray_proto*/NDArrayBase()
 			: m_Shape()
 			, Array<T>()
 		{
@@ -39,7 +40,7 @@ namespace OreOreLib
 
 		// Constructor
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		NDArray_proto( Args const & ... args )
+		/*NDArray_proto*/NDArrayBase( Args const & ... args )
 			: m_Shape( args... )
 		{
 			Memory<T>::Init( int(m_Shape.Size()) );
@@ -48,7 +49,7 @@ namespace OreOreLib
 
 		// Constructor with initializer list
 		template < typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value >* = nullptr >
-		NDArray_proto( std::initializer_list<T_INDEX> ilist )
+		/*NDArray_proto*/NDArrayBase( std::initializer_list<T_INDEX> ilist )
 			: m_Shape( ilist )
 		{
 			Memory<T>::Init( int(m_Shape.Size()) );
@@ -56,7 +57,7 @@ namespace OreOreLib
 
 
 		// Constructor using Memory
-		NDArray_proto( const Memory<T>& obj )
+		/*NDArray_proto*/NDArrayBase( const Memory<T>& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.Length() )
 		{
@@ -65,7 +66,7 @@ namespace OreOreLib
 
 
 		// Copy constructor
-		NDArray_proto( const NDArray_proto& obj )
+		/*NDArray_proto*/NDArrayBase( const /*NDArray_proto*/NDArrayBase& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.m_Shape )
 		{
@@ -74,7 +75,7 @@ namespace OreOreLib
 
 
 		// Move constructor
-		NDArray_proto( NDArray_proto&& obj )
+		/*NDArray_proto*/NDArrayBase( /*NDArray_proto*/NDArrayBase&& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.m_Shape )
 		{
@@ -83,7 +84,7 @@ namespace OreOreLib
 
 
 		// Copy Assignment opertor =
-		inline NDArray_proto& operator=( const NDArray_proto& obj )
+		inline /*NDArray_proto*/NDArrayBase& operator=( const /*NDArray_proto*/NDArrayBase& obj )
 		{
 			Memory<T>::operator=( obj );
 			m_Shape = obj.m_Shape;
@@ -91,7 +92,7 @@ namespace OreOreLib
 		}
 
 
-		inline NDArray_proto& operator=( const Memory<T>& obj )
+		inline /*NDArray_proto*/NDArrayBase& operator=( const Memory<T>& obj )
 		{
 			Memory<T>::operator=( obj );
 			m_Shape.Init( obj.Length() );
@@ -100,9 +101,9 @@ namespace OreOreLib
 
 
 		// Move assignment opertor =
-		inline NDArray_proto& operator=( NDArray_proto&& obj )
+		inline /*NDArray_proto*/NDArrayBase& operator=( /*NDArray_proto*/NDArrayBase&& obj )
 		{
-			Memory<T>::operator=( (NDArray_proto&&)obj );
+			Memory<T>::operator=( (/*NDArray_proto*/NDArrayBase&&)obj );
 			m_Shape = obj.m_Shape;
 			return *this;
 		}
@@ -221,7 +222,7 @@ namespace OreOreLib
 				for( int dim=(int)m_Shape.NumDims()-1; dim>=0; --dim )
 					tcout << _T("[") << m_Shape.ToND(i, dim) << _T("]");
 
-				tcout << _T(": ") << *(this->begin() + i) << tendl;
+				tcout << _T(": ") << this->m_pData[i] << tendl;
 			}
 
 			tcout << tendl;
@@ -229,9 +230,9 @@ namespace OreOreLib
 
 
 		// Disable subscript operators
-		const T& operator[]( std::size_t n ) const& = delete;
-		T& operator[]( std::size_t n ) & = delete;
-		T operator[]( std::size_t n ) const&& = delete;
+		//const T& operator[]( std::size_t n ) const& = delete;
+		//T& operator[]( std::size_t n ) & = delete;
+		//T operator[]( std::size_t n ) const&& = delete;
 
 
 
@@ -240,7 +241,9 @@ namespace OreOreLib
 		NDShape<N> m_Shape;
 
 
-		using Memory<T>::operator[];
+		//using Memory<T>::operator[];
+		//using Memory<T>::begin;
+		//using Memory<T>::end;
 
 	};
 

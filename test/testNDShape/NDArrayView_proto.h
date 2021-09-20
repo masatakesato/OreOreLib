@@ -3,8 +3,10 @@
 
 #include	<oreore/common/TString.h>
 
-#include	<oreore/container/ArrayView.h>
-#include	<oreore/container/NDShape.h>
+//#include	<oreore/container/ArrayView.h>
+//#include	<oreore/container/NDShape.h>
+
+#include	"NDArrayBase.h"
 
 
 // https://www.codeproject.com/Articles/848746/ArrayView-StringView
@@ -17,7 +19,7 @@ namespace OreOreLib
 
 
 	template< typename T, uint64 N >
-	class NDArrayView_proto : public ArrayView<T>
+	class /*NDArrayView_proto*/NDArrayBase< detail::NDARRVIEW<T>, N > : public ArrayView<T>
 	{
 		using Ptr = T*;
 		using ConstPtr = const T*;
@@ -25,8 +27,9 @@ namespace OreOreLib
 	public:
 
 		// Default constructor
-		NDArrayView_proto()
+		/*NDArrayView_proto*/NDArrayBase()
 			: ArrayView<T>()
+			, m_pSrcShape( nullptr )
 		{
 
 		}
@@ -34,21 +37,23 @@ namespace OreOreLib
 
 		// Constructor
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		NDArrayView_proto( ConstPtr const pdata, const Args& ... args )
+		/*NDArrayView_proto*/NDArrayBase( ConstPtr const pdata, const Args& ... args )
+			: m_pSrcShape( nullptr )
 		{
 			Init( pdata, args... );
 		}
 
 
 		// Constructor
-		NDArrayView_proto( const Memory<T>& obj )
+		/*NDArrayView_proto*/NDArrayBase( const Memory<T>& obj )
+			: m_pSrcShape( nullptr )
 		{
 			Init( obj );
 		}
 
 
 		//// Constructor using INDArray
-		//NDArrayView_proto( const INDArray<T>& obj )
+		///*NDArrayView_proto*/NDArrayBase( const INDArray<T>& obj )
 		//{
 		//	Init( obj );
 		//}
@@ -59,14 +64,14 @@ namespace OreOreLib
 
 
 		// Destructor
-		~NDArrayView_proto()
+		~NDArrayBase/*NDArrayView_proto*/()
 		{
 			Release();
 		}
 
 
 		// Copy constructor
-		NDArrayView_proto( const NDArrayView_proto& obj )
+		/*NDArrayView_proto*/NDArrayBase( const /*NDArrayView_proto*/NDArrayBase& obj )
 			: ArrayView( obj )
 			, m_Shape( obj.m_Shape )
 		{
@@ -86,11 +91,19 @@ namespace OreOreLib
 
 	T *ptr( int i ) const
 	{
-		static int div, mod;
-		DivMod( div, mod, i, this->m_numCols );
-		return (T *)(m_refData + m_ColOffset * div + mod);
+		// 一旦NDArrayView空間上のN次元インデックスに戻す
+		static int y, x;
+		y = i / this->m_numCols;
+		x = i % this->m_numCols;
+		
+		// 参照元空間の大きさを使って、N次元インデックスから1Dインデックスに変換する
+		return (T*)( m_refData + m_NumSrcColumn * y + x );
+
+		//DivMod( div, mod, i, this->m_numCols );
+		//return (T *)(m_refData + m_ColOffset * div + mod);
 	}
 */
+
 
 		// Read only.( called if NDArray is const )
 		template < typename ... Args >
@@ -98,8 +111,8 @@ namespace OreOreLib
 		operator()( const Args& ... args ) const&// x, y, z, w...
 		{
 // TODO: Convert to Soruce data address offset using m_SrcStride
-
-			return this->m_pData[ m_Shape.To1D( args... ) ];
+auto index = m_pSrcShape->To1D( args... );
+			return this->m_pData[ index/*m_Shape.To1D( args... )*/ ];
 		}
 
 
@@ -109,8 +122,8 @@ namespace OreOreLib
 		operator()( const Args& ... args ) &// x, y, z, w...
 		{
 // TODO: Convert to Soruce data address offset using m_SrcStride
-
-			return this->m_pData[ m_Shape.To1D( args... ) ];
+auto index = m_pSrcShape->To1D( args... );
+			return this->m_pData[ index/*m_Shape.To1D( args... )*/ ];
 		}
 
 
@@ -120,8 +133,8 @@ namespace OreOreLib
 		operator()( const Args& ... args ) const&&// x, y, z, w...
 		{
 // TODO: Convert to Soruce data address offset using m_SrcStride
-
-			return (T&&)this->m_pData[ m_Shape.To1D( args... ) ];
+auto index = m_pSrcShape->To1D( args... );
+			return (T&&)this->m_pData[ index/*m_Shape.To1D( args... )*/ ];
 		}
 
 
@@ -133,8 +146,8 @@ namespace OreOreLib
 		operator()( std::initializer_list<T_INDEX> indexND ) const&// x, y, z, w...
 		{
 // TODO: Convert indexND to Soruce data index
-
-			return this->m_pData[ m_Shape.To1D( indexND ) ];
+auto index = m_pSrcShape->To1D( indexND );
+			return this->m_pData[ index/*m_Shape.To1D( indexND )*/ ];
 		}
 
 
@@ -144,8 +157,8 @@ namespace OreOreLib
 		operator()( std::initializer_list<T_INDEX> indexND ) &// x, y, z, w...
 		{
 // TODO: Convert indexND to Soruce data index
-
-			return this->m_pData[ m_Shape.To1D( indexND ) ];
+auto index = m_pSrcShape->To1D( indexND );
+			return this->m_pData[ index/*m_Shape.To1D( indexND )*/ ];
 		}
 
 
@@ -154,7 +167,9 @@ namespace OreOreLib
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T >
 		operator()( std::initializer_list<T_INDEX> indexND ) const&&// x, y, z, w...
 		{
-			return (T&&)this->m_pData[ m_Shape.To1D( indexND ) ];
+// TODO: Convert indexND to Soruce data index
+auto index = m_pSrcShape->To1D( indexND );
+			return (T&&)this->m_pData[ index/*m_Shape.To1D( indexND )*/ ];
 		}
 
 
@@ -201,7 +216,7 @@ namespace OreOreLib
 				for( int dim=(int)m_Shape.NumDims()-1; dim>=0; --dim )
 					tcout << _T("[") << m_Shape.ToND(i, dim) << _T("]");
 
-				tcout << _T(": ") << *(this->begin() + i) << tendl;
+				tcout << _T(": ") << this->m_pData[i] << tendl;
 			}
 
 			tcout << tendl;
@@ -218,10 +233,12 @@ namespace OreOreLib
 	private:
 
 		NDShape<N>	m_Shape;
-		uint64		m_SrcStrides[N];
+		NDShape<N>*	m_pSrcShape=nullptr;
 
 
 		using Memory<T>::operator[];
+		using Memory<T>::begin;
+		using Memory<T>::end;
 	};
 
 
