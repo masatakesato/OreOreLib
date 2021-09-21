@@ -52,11 +52,13 @@ namespace OreOreLib
 		}
 
 
-		//// Constructor using INDArray
-		///*NDArrayView_proto*/NDArrayBase( const INDArray<T>& obj )
-		//{
-		//	Init( obj );
-		//}
+		// Constructor using INDArray
+		template < uint64 N >
+		/*NDArrayView_proto*/NDArrayBase( const NDArray_proto<T, N>& obj )
+		{
+			obj.m_Shape;
+			Init( obj );
+		}
 
 
 		// Constructor using NDArray
@@ -181,22 +183,40 @@ auto index = m_pSrcShape->To1D( indexND );
 		}
 
 
-		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		Init( ConstPtr const pdata, const Args& ... args )
+		template < uint64 N, typename ... Args >
+		void Init( const NDArray_proto<T, N>& obj, const Args& ... args )
 		{
-			m_Shape.Init( args... );
-			ArrayView<T>::Init( pdata, m_Shape.Size() );
+			m_Shape = obj.Shape();
+			ArrayView<T>::Init( obj.begin(), int(m_Shape.Size()) );
 		}
 
 
-		template < typename T_INDEX >
-		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
-		Init( ConstPtr const pdata, std::initializer_list<T_INDEX> indexND )
+		template < uint64 N, typename T_INDEX >
+		void Init( const NDArray_proto<T, N>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
 		{
-			m_Shape.Init( indexND );
-			ArrayView<T>::Init( pdata, int(m_Shape.Size()) );
+			m_Shape = { indexND };
+			m_pSrcShape = (NDShape<N>*)&obj.Shape();
+			
+			ArrayView<T>::Init( obj.begin() + m_pSrcShape->To1D( offset ), int(m_Shape.Size()) );
 		}
+
+
+		//template < typename ... Args >
+		//std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
+		//Init( ConstPtr const pdata, const Args& ... args )
+		//{
+		//	m_Shape.Init( args... );
+		//	ArrayView<T>::Init( pdata, m_Shape.Size() );
+		//}
+
+
+		//template < typename T_INDEX >
+		//std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
+		//Init( ConstPtr const pdata, std::initializer_list<T_INDEX> indexND )
+		//{
+		//	m_Shape.Init( indexND );
+		//	ArrayView<T>::Init( pdata, int(m_Shape.Size()) );
+		//}
 
 
 		void Release()
@@ -210,13 +230,18 @@ auto index = m_pSrcShape->To1D( indexND );
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
+			uint64 dims[N];
+
 			for( int i=0; i<this->m_Length; ++i )
 			{
-				tcout << _T("  ");
-				for( int dim=(int)m_Shape.NumDims()-1; dim>=0; --dim )
-					tcout << _T("[") << m_Shape.ToND(i, dim) << _T("]");
+				m_Shape.ToND( i, dims );
 
-				tcout << _T(": ") << this->m_pData[i] << tendl;
+				tcout << _T("  ");
+				for( int j=N-1; j>=0; --j )	tcout << _T("[") << dims[j] << _T("]");
+
+				uint64 idx = m_pSrcShape->To1D( dims );
+
+				tcout << _T(": ") << this->m_pData[ idx ] << tendl;
 			}
 
 			tcout << tendl;
@@ -228,6 +253,8 @@ auto index = m_pSrcShape->To1D( indexND );
 		T& operator[]( std::size_t n ) & = delete;
 		T operator[]( std::size_t n ) const&& = delete;
 
+
+		const NDShape<N>& Shape() const { return m_Shape; }
 
 
 	private:

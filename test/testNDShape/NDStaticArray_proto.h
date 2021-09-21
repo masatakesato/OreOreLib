@@ -188,11 +188,14 @@ namespace OreOreLib
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
+			uint64 dims[N];
+
 			for( int i=0; i<Size; ++i )
 			{
+				m_Shape.ToND( i, dims );
+
 				tcout << _T("  ");
-				for( int dim=(int)m_Shape.NumDims()-1; dim>=0; --dim )
-					tcout << _T("[") << m_Shape.ToND(i, dim) << _T("]");
+				for( int j=N-1; j>=0; --j )	tcout << _T("[") << dims[j] << _T("]");
 
 				tcout << _T(": ") << this->m_Data[i] << tendl;
 			}
@@ -206,6 +209,8 @@ namespace OreOreLib
 		//T& operator[]( std::size_t n ) & = delete;
 		//T operator[]( std::size_t n ) const&& = delete;
 
+
+		const NDShape<N>& Shape() const { return m_Shape; }
 
 
 	private:

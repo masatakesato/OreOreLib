@@ -74,7 +74,7 @@ int main()
 	// NDArray methods
 
 
-	arr2d.Init({2, 3});
+	arr2d.Init({3, 3});
 	auto iter = &arr2d(0,0);
 	for( int i=0; i<arr2d.Length(); ++i )
 		(*iter++) = double(i);
@@ -85,7 +85,9 @@ int main()
 
 
 //TODO: 連続メモリ領域ではなく、N次元空間上で窓枠領域を切り出す -> MatrixViewの多次元拡張
-	view2d.Init( &arr2d(1, 0), {2, 2} );
+//	view2d.Init( arr2d );
+
+	view2d.Init( arr2d, {1, 1}, {2, 2} );
 	view2d.Display();
 
 	tcout << view2d(0, 0) << tendl;
