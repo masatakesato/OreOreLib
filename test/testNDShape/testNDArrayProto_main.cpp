@@ -84,14 +84,15 @@ int main()
 	arr2d.Display();
 
 
-//TODO: 連続メモリ領域ではなく、N次元空間上で窓枠領域を切り出す -> MatrixViewの多次元拡張
-//	view2d.Init( arr2d );
 
-	view2d.Init( arr2d, {1, 1}, {2, 2} );
+	view2d.Init( arr2d.begin(), arr2d.Shape(), {1, 1}, {2, 2} );//view2d.Init( arr2d.begin(), arr2d.Shape(), 1, 1, 2, 2 );//
 	view2d.Display();
-
-	tcout << view2d(0, 0) << tendl;
+	//tcout << view2d(0, 0) << tendl;
 	
+	NDArrayView_proto<double, 2> view2d3(  arr2d, 1, 1, 2, 2 );
+	view2d3.Display();
+
+
 
 	sarr2d = arr2d;
 	sarr2d.Display();

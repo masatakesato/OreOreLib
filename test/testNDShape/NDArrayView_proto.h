@@ -19,7 +19,7 @@ namespace OreOreLib
 
 
 	template< typename T, uint64 N >
-	class /*NDArrayView_proto*/NDArrayBase< detail::NDARRVIEW<T>, N > : public ArrayView<T>
+	class NDArrayBase< detail::NDARRVIEW<T>, N > : public ArrayView<T>
 	{
 		using Ptr = T*;
 		using ConstPtr = const T*;
@@ -27,9 +27,8 @@ namespace OreOreLib
 	public:
 
 		// Default constructor
-		/*NDArrayView_proto*/NDArrayBase()
+		NDArrayBase()
 			: ArrayView<T>()
-			, m_pSrcShape( nullptr )
 		{
 
 		}
@@ -37,43 +36,75 @@ namespace OreOreLib
 
 		// Constructor
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		/*NDArrayView_proto*/NDArrayBase( ConstPtr const pdata, const Args& ... args )
-			: m_pSrcShape( nullptr )
+		NDArrayBase( ConstPtr const pdata, const Args& ... args )
+			: m_Shape( mult_<args...>::value )
+			, m_SrcShape( m_Shape )
 		{
 			Init( pdata, args... );
 		}
 
 
 		// Constructor
-		/*NDArrayView_proto*/NDArrayBase( const Memory<T>& obj )
-			: m_pSrcShape( nullptr )
+		NDArrayBase( const Memory<T>& obj )
+			: m_Shape( obj.Length() )
+			, m_SrcShape( m_Shape )
 		{
 			Init( obj );
 		}
 
 
-		// Constructor using INDArray
-		template < uint64 N >
-		/*NDArrayView_proto*/NDArrayBase( const NDArray_proto<T, N>& obj )
+
+
+
+// Constructor using NDArray_proto(variadic template ver)
+template < uint64 N, typename ... Args, std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
+NDArrayBase( const NDArray_proto<T, N>& obj, const Args& ... args )
+{
+	Init( obj.begin(), obj.Shape(), args... );
+}
+
+
+		// Constructor using NDArray_proto(initializer_list ver)
+		template < uint64 N, typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value>* = nullptr >
+		NDArrayBase( const NDArray_proto<T, N>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
+			: m_Shape( indexND )
+			, m_SrcShape( obj.Shape() )
 		{
-			obj.m_Shape;
-			Init( obj );
+			//ArrayView<T>::Init( obj.begin() + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
 		}
 
 
-		// Constructor using NDArray
+
+// Constructor using NDStaticArray_proto
+template < uint64 ... Args, typename ... Args2, std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args2...>::value >* = nullptr >
+NDArrayBase( const NDStaticArray_proto<T, Args...>& obj, const Args2& ... args )
+{
+	Init( obj.begin(), obj.Shape(), args... );
+}
+
+
+// Constructor using NDStaticArray_proto
+template < uint64 ... Args, typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value>* = nullptr >
+NDArrayBase( const NDStaticArray_proto<T, Args...>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
+	//: m_Shape( indexND )
+	//, m_SrcShape( obj.Shape() )
+{
+	Init( obj.begin(), obj.Shape(), offset, indexND );
+	//ArrayView<T>::Init( obj.begin() + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
+}
+
 
 
 
 		// Destructor
-		~NDArrayBase/*NDArrayView_proto*/()
+		~NDArrayBase()
 		{
 			Release();
 		}
 
 
 		// Copy constructor
-		/*NDArrayView_proto*/NDArrayBase( const /*NDArrayView_proto*/NDArrayBase& obj )
+		NDArrayBase( const NDArrayBase& obj )
 			: ArrayView( obj )
 			, m_Shape( obj.m_Shape )
 		{
@@ -83,38 +114,12 @@ namespace OreOreLib
 
 		//================= Element access operators(variadic templates) ===================//
 
-
-/*
-	T *ptr( int row, int col ) const// row: vertical, col: horizontal
-	{
-		return (T *)( this->m_pData + m_DimX * y + x );
-	}
-
-
-	T *ptr( int i ) const
-	{
-		// 一旦NDArrayView空間上のN次元インデックスに戻す
-		static int y, x;
-		y = i / this->m_numCols;
-		x = i % this->m_numCols;
-		
-		// 参照元空間の大きさを使って、N次元インデックスから1Dインデックスに変換する
-		return (T*)( m_refData + m_NumSrcColumn * y + x );
-
-		//DivMod( div, mod, i, this->m_numCols );
-		//return (T *)(m_refData + m_ColOffset * div + mod);
-	}
-*/
-
-
 		// Read only.( called if NDArray is const )
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, const T& >
 		operator()( const Args& ... args ) const&// x, y, z, w...
 		{
-// TODO: Convert to Soruce data address offset using m_SrcStride
-auto index = m_pSrcShape->To1D( args... );
-			return this->m_pData[ index/*m_Shape.To1D( args... )*/ ];
+			return this->m_pData[ m_SrcShape.To1D( args... ) ];
 		}
 
 
@@ -123,9 +128,7 @@ auto index = m_pSrcShape->To1D( args... );
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T& >
 		operator()( const Args& ... args ) &// x, y, z, w...
 		{
-// TODO: Convert to Soruce data address offset using m_SrcStride
-auto index = m_pSrcShape->To1D( args... );
-			return this->m_pData[ index/*m_Shape.To1D( args... )*/ ];
+			return this->m_pData[ m_SrcShape.To1D( args... ) ];
 		}
 
 
@@ -134,10 +137,9 @@ auto index = m_pSrcShape->To1D( args... );
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T >
 		operator()( const Args& ... args ) const&&// x, y, z, w...
 		{
-// TODO: Convert to Soruce data address offset using m_SrcStride
-auto index = m_pSrcShape->To1D( args... );
-			return (T&&)this->m_pData[ index/*m_Shape.To1D( args... )*/ ];
+			return (T&&)this->m_pData[ m_SrcShape.To1D( args... ) ];
 		}
+
 
 
 		//================= Element acces operators(initializer list) ===================//
@@ -147,9 +149,7 @@ auto index = m_pSrcShape->To1D( args... );
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, const T& >
 		operator()( std::initializer_list<T_INDEX> indexND ) const&// x, y, z, w...
 		{
-// TODO: Convert indexND to Soruce data index
-auto index = m_pSrcShape->To1D( indexND );
-			return this->m_pData[ index/*m_Shape.To1D( indexND )*/ ];
+			return this->m_pData[ m_SrcShape.To1D( indexND ) ];
 		}
 
 
@@ -158,9 +158,7 @@ auto index = m_pSrcShape->To1D( indexND );
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T& >
 		operator()( std::initializer_list<T_INDEX> indexND ) &// x, y, z, w...
 		{
-// TODO: Convert indexND to Soruce data index
-auto index = m_pSrcShape->To1D( indexND );
-			return this->m_pData[ index/*m_Shape.To1D( indexND )*/ ];
+			return this->m_pData[ m_SrcShape.To1D( indexND ) ];
 		}
 
 
@@ -169,9 +167,7 @@ auto index = m_pSrcShape->To1D( indexND );
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T >
 		operator()( std::initializer_list<T_INDEX> indexND ) const&&// x, y, z, w...
 		{
-// TODO: Convert indexND to Soruce data index
-auto index = m_pSrcShape->To1D( indexND );
-			return (T&&)this->m_pData[ index/*m_Shape.To1D( indexND )*/ ];
+			return (T&&)this->m_pData[ m_SrcShape.To1D( indexND ) ];
 		}
 
 
@@ -183,22 +179,42 @@ auto index = m_pSrcShape->To1D( indexND );
 		}
 
 
-		template < uint64 N, typename ... Args >
-		void Init( const NDArray_proto<T, N>& obj, const Args& ... args )
-		{
-			m_Shape = obj.Shape();
-			ArrayView<T>::Init( obj.begin(), int(m_Shape.Size()) );
-		}
 
 
-		template < uint64 N, typename T_INDEX >
-		void Init( const NDArray_proto<T, N>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
-		{
-			m_Shape = { indexND };
-			m_pSrcShape = (NDShape<N>*)&obj.Shape();
-			
-			ArrayView<T>::Init( obj.begin() + m_pSrcShape->To1D( offset ), int(m_Shape.Size()) );
-		}
+
+
+template < uint64 N, typename ... Args >
+std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
+Init( const T* ptr, const NDShape<N>& srcShape, const Args& ... args )
+{
+	uint64 offset[N], indexND[N];
+
+	auto itr = std::begin( {args...} );
+
+	for( int i=0; i<N; ++i )
+		offset[i] = *itr++;
+
+	for( int i=0; i<N; ++i )
+		indexND[i] = *itr;
+
+	m_SrcShape = srcShape;
+	m_Shape.Init( indexND );
+	ArrayView<T>::Init( ptr + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
+}
+
+
+template < uint64 N, typename T_INDEX >
+std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
+Init( const T* ptr, const NDShape<N>& srcShape, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
+{
+	m_SrcShape = srcShape;
+	m_Shape.Init( indexND );			
+	ArrayView<T>::Init( ptr + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
+}
+
+
+
+
 
 
 		//template < typename ... Args >
@@ -239,7 +255,7 @@ auto index = m_pSrcShape->To1D( indexND );
 				tcout << _T("  ");
 				for( int j=N-1; j>=0; --j )	tcout << _T("[") << dims[j] << _T("]");
 
-				uint64 idx = m_pSrcShape->To1D( dims );
+				uint64 idx = m_SrcShape.To1D( dims );
 
 				tcout << _T(": ") << this->m_pData[ idx ] << tendl;
 			}
@@ -260,7 +276,7 @@ auto index = m_pSrcShape->To1D( indexND );
 	private:
 
 		NDShape<N>	m_Shape;
-		NDShape<N>*	m_pSrcShape=nullptr;
+		NDShape<N>	m_SrcShape;
 
 
 		using Memory<T>::operator[];

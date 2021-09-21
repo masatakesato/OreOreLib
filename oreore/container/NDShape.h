@@ -70,6 +70,15 @@ namespace OreOreLib
 		}
 
 
+		// Copy constructor
+		NDShape( const NDShape& obj )
+			: m_Shape( obj.m_Shape )
+			, m_Strides( obj.m_Strides )
+		{
+
+		}
+
+
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
 		Init( const Args& ... args )
@@ -92,6 +101,18 @@ namespace OreOreLib
 
 			InitStrides();
 		}
+
+
+template < typename T >
+std::enable_if_t< std::is_convertible<uint64, T>::value, void >
+Init( const T indexND[] ) 
+{
+	MemCopy( m_Shape, indexND, N );
+//	for( int i=1; i<N; ++i )
+//		m_Shape[i] = indexND[i];
+
+	InitStrides();
+}
 
 
 		void Release()
