@@ -205,7 +205,7 @@ Init( const T indexND[] )
 		// ...
 
 		template < typename T >
-		std::enable_if_t< std::is_convertible_v<T, uint64>, void >
+		std::enable_if_t< std::is_convertible_v<T, uint64>, T* >
 		ToND( uint64 indexd1D, T indexND[] ) const
 		{
 			indexND[N-1] = (T)indexd1D;
@@ -214,6 +214,8 @@ Init( const T indexND[] )
 
 			for( int i=N-1; i>=1; --i )
 				indexND[i] /= (T)m_Strides[i-1];
+
+			return indexND;
 		}
 
 

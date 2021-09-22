@@ -246,9 +246,33 @@ namespace OreOreLib
 
 
 		// Disabled subscript operators
-		const T& operator[]( std::size_t n ) const& = delete;
-		T& operator[]( std::size_t n ) & = delete;
+		//const T& operator[]( std::size_t n ) const& = delete;
+		//T& operator[]( std::size_t n ) & = delete;
 		T operator[]( std::size_t n ) const&& = delete;
+
+
+
+		// Subscript operator for read only.( called if Memory is const )
+		inline const T& operator[]( std::size_t n ) const&
+		{
+			uint64 indexND[N];
+			return this->m_pData[ m_SrcShape.To1D( m_Shape.ToND( n, indexND ) ) ];
+		}
+
+
+		// Subscript operator for read-write.( called if Memory is non-const )
+		inline T& operator[]( std::size_t n ) &
+		{
+			uint64 indexND[N];
+			return this->m_pData[ m_SrcShape.To1D( m_Shape.ToND( n, indexND ) ) ];
+		}
+
+
+		// Subscript operator. ( called by following cases: "T a = Memory<T>(10)[n]", "auto&& a = Memory<T>(20)[n]" )
+		//inline T operator[]( std::size_t n ) const&&
+		//{
+		//	return std::move(this->m_pData[n]);// return object
+		//}
 
 
 	private:

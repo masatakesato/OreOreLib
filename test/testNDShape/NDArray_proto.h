@@ -55,32 +55,24 @@ namespace OreOreLib
 		}
 
 
-		// Constructor using Memory
-		NDArrayBase( const Memory<T>& obj )
-			: Array<T>( obj )
-			, m_Shape( obj.Length() )
-		{
-		
-		}
-
-
 		// Constructor using NDArrayBase
-		template< typename Type, uint64 ... Ns >
+		template< typename Type, uint64 ... Ns, std::enable_if_t< (sizeof...(Ns)==N) >* = nullptr >
 		NDArrayBase( const NDArrayBase<Type, Ns...>& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.m_Shape )
 		{
-
+TODO: Test
 		}
 
 
-		// Constructor using NDArrayView  
-		template< uint64 N >
+		// Constructor( NDArrayView specific )
 		NDArrayBase( const NDArrayView_proto<T, N>& obj )
-//			: Array<T>( obj )
-//			, m_Shape( obj.m_Shape )
+			: Array<T>( (int)obj.Shape().Size() )
+			, m_Shape( obj.Shape() )
 		{
-
+TODO: Test
+			for( int i=0; i<this->m_Length; ++i )
+				this->m_pData[i] = obj[i];
 		}
 
 
