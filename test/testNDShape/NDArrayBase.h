@@ -10,12 +10,6 @@
 
 
 
-TODO: Refactor methods
-Init: Allocate memory space
-SetValue: Set element vales
-
-
-
 namespace OreOreLib
 {
 

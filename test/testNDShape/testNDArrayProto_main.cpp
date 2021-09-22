@@ -32,16 +32,14 @@ int main()
 	// NDArray methods
 
 	arr2d.Init({3, 3});
-	{
-		auto iter = &arr2d(0, 0);
-		for( int i=0; i<arr2d.Length(); ++i )
-			(*iter++) = double(i);
-	}
+	arr2d.SetValues( 0, 1, 2, 3, 4, 5, 6, 7, 8 );
 	arr2d.Display();
 
 
 
 	view2d.Init( arr2d/*.begin(), arr2d.Shape()*/, {1, 1}, {2, 2} );//view2d.Init( arr2d.begin(), arr2d.Shape(), 1, 1, 2, 2 );//
+	view2d.SetValues( -5, -6, -7, -8 );
+
 	view2d.Display();
 	//tcout << view2d(0, 0) << tendl;
 	//view2d.begin();

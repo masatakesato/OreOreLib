@@ -49,7 +49,7 @@ int main()
 
 
 	float *data = new float[10];
-	for( int i=0; i<10; ++i )	data[i] = pow(2, i);
+	for( int i=0; i<10; ++i )	data[i] = (float)pow(2, i);
 
 	fArray arr2( 10, data );// constructor
 	fArray arr2_1 = arr2;// copy constructor
@@ -62,8 +62,8 @@ int main()
 	tcout << _T( "arr2_1.Resize(16): " ) << arr2_1.Resize( 16 ) << tendl;
 	tcout << _T( "arr2_2.Resize(16): " ) << arr2_2.Resize( 16 ) << tendl;	
 
-	for( int i=0; i<arr2_1.Length(); ++i )
-		arr2_1[i] = float( i );
+	//arr2_1.SetValues( 0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111 );
+	arr2_1.SetValues( {0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111} );
 
 
 	for( int i=0; i<arr2_1.Length(); ++i )

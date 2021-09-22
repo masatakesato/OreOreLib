@@ -362,7 +362,6 @@ namespace OreOreLib
 			//for( const auto& val : ilist )
 			//	*(p++) = val;
 			MemCopy( begin(), ilist.begin(), ilist.size() );
-
 		}
 
 
@@ -378,6 +377,30 @@ namespace OreOreLib
 		{
 			if( m_Length>0 )
 				memset( m_pData, 0, m_AllocSize );
+		}
+
+
+		template < typename ... Args >
+		std::enable_if_t< TypeTraits::all_convertible<T, Args...>::value, void >
+		SetValues( const Args& ... args )
+		{
+			int64 count = (int64)Min( sizeof...(Args), (size_t)m_Length ) - 1;
+			auto src = std::begin( { (T)args... } );
+			auto dst = begin();
+			while( count-->=0 )
+				*dst++ = *src++;
+		}
+
+
+		template < typename Type >
+		std::enable_if_t< std::is_convertible_v<Type, T>, void >
+		SetValues( std::initializer_list<Type> ilist )
+		{
+			int64 count = (int64)Min( ilist.size(), (size_t)m_Length ) - 1;
+			auto src = ilist.begin();
+			auto dst = begin();
+			while( count-->=0 )
+				*dst++ = (T)*src++;
 		}
 
 

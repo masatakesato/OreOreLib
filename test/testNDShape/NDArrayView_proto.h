@@ -36,19 +36,19 @@ namespace OreOreLib
 
 		// variadic template
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		NDArrayBase( ConstPtr const pdata, const Args& ... args )
+		NDArrayBase( const Args& ... args )
 			: m_Shape( args... )
 			, m_SrcShape( m_Shape )
 		{
-			ArrayView<T>::Init( pdata, m_Shape.Size() );
+			ArrayView<T>::Init( m_Shape.Size() );
 		}
 
 		// initializer_list
 		template < typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value >* = nullptr >
-		NDArrayBase( ConstPtr const pdata, std::initializer_list<T_INDEX> indexND )
+		NDArrayBase( std::initializer_list<T_INDEX> indexND )
 		{
 			m_Shape.Init( indexND );
-			ArrayView<T>::Init( pdata, int(m_Shape.Size()) );
+			ArrayView<T>::Init( int(m_Shape.Size()) );
 		}
 
 
@@ -152,20 +152,20 @@ namespace OreOreLib
 		// raw pointer with variadic template
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		Init( ConstPtr const pdata, const Args& ... args )
+		Init( const Args& ... args )
 		{
 			m_Shape.Init( args... );
 			m_SrcShape = m_Shape;
-			ArrayView<T>::Init( pdata, (int)m_Shape.Size() );
+			ArrayView<T>::Init( (int)m_Shape.Size() );
 		}
 
 		// raw pointer with initializer list
 		template < typename T_INDEX >
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
-		Init( ConstPtr const pdata, std::initializer_list<T_INDEX> indexND )
+		Init( std::initializer_list<T_INDEX> indexND )
 		{
 			m_Shape.Init( indexND );
-			ArrayView<T>::Init( pdata, (int)m_Shape.Size() );
+			ArrayView<T>::Init( (int)m_Shape.Size() );
 		}
 
 
@@ -212,6 +212,29 @@ namespace OreOreLib
 			ArrayView<T>::Release();
 			m_Shape.Release();
 		}
+
+
+		template < typename ... Args >
+		std::enable_if_t< TypeTraits::all_convertible<T, Args...>::value, void >
+		SetValues( const Args& ... args )
+		{
+			int64 count = (int64)Min( sizeof...(Args), (size_t)this->m_Length );
+			auto src = std::begin( { (T)args... } );
+			for( int64 i=0; i<count; ++i )
+				(*this)[i] = *src++;
+		}
+
+
+		template < typename Type >
+		std::enable_if_t< std::is_convertible_v<Type, T>, void >
+		SetValues( std::initializer_list<Type> ilist )
+		{
+			int64 count = (int64)Min( ilist.size(), (size_t)this->m_Length );
+			auto src = ilist.begin();
+			for( int64 i=0; i<count; ++i )
+				(*this)[i] = *src++;
+		}
+
 
 
 		const NDShape<N>& Shape() const
@@ -272,6 +295,7 @@ namespace OreOreLib
 		//}
 
 
+
 	private:
 
 		NDShape<N>	m_Shape;
@@ -295,6 +319,7 @@ namespace OreOreLib
 
 
 
+		using Memory<T>::SetValues;
 		using Memory<T>::operator[];
 		//using Memory<T>::begin;
 		//using Memory<T>::end;

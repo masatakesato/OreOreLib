@@ -131,10 +131,10 @@ namespace OreOreLib
 
 		template < typename ... Args >
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		Init( const T* const pdata, const Args& ... args )
+		Init( const Args& ... args )
 		{
 			m_Shape.Init( args... );
-			Memory<T>::Init( m_Shape.Size(), pdata );
+			Memory<T>::Init( m_Shape.Size() );
 		}
 
 
