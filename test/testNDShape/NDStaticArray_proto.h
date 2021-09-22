@@ -9,7 +9,6 @@
 //#include	<oreore/container/StaticArray.h>
 #include	"NDArrayBase.h"
 
-//TODO: Disable Subscript operator
 
 
 namespace OreOreLib
@@ -28,7 +27,7 @@ namespace OreOreLib
 		NDArrayBase()
 			: StaticArray<T, Size>()
 		{
-TODO: Test			
+			tcout << _T( "NDStaticArray_proto::NDStaticArray_proto()...\n" );
 		}
 
 
@@ -36,50 +35,25 @@ TODO: Test
 		NDArrayBase( int len, T* pdata )
 			: StaticArray<T, Size>( len, pdata )
 		{
-TODO: Test
+			tcout << _T( "NDStaticArray_proto::NDArrayBase( int len, T* pdata )...\n" );
 		}
 
 
 		// Constructor with initial data( variadic tempalte )
 		template < typename ... Vals, std::enable_if_t< (sizeof...(Vals)==Size) && TypeTraits::all_convertible<T, Vals...>::value >* = nullptr >
 		NDArrayBase( const Vals& ... vals )
-			: StaticArray<T, Size>( vals... )
+			: StaticArray<T, Size>( {(T)vals...} )
 		{
-TODO: Test			
+			tcout << _T( "NDStaticArray_proto::NDArrayBase( const Vals& ... vals )...\n" );
 		}
 
 
 		// Constructor with initial data( initializer list )
-		template < typename Type, std::enable_if_t< std::is_convertible<T, Type>::value>* = nullptr >
-		NDArrayBase( std::initializer_list<Type> ilist )
+		NDArrayBase( std::initializer_list<T> ilist )
 			: StaticArray<T, Size>( ilist )
 		{
-TODO: Test
+			tcout << _T( "NDStaticArray_proto::NDArrayBase( std::initializer_list<Type> ilist )...\n" );
 		}
-
-
-
-		// Constructor using NDArrayBase
-		template< typename Type, uint64 ... Ns, std::enable_if_t< (sizeof...(Ns)==N) >* = nullptr >
-		NDArrayBase( const NDArrayBase<Type, Ns...>& obj )
-			: Array<T>( obj )
-			, m_Shape( obj.m_Shape )
-		{
-TODO: Test
-		}
-
-
-		// Constructor( NDArrayView specific )
-		NDArrayBase( const NDArrayView_proto<T, N>& obj )
-			: Array<T>( (int)obj.Shape().Size() )
-			, m_Shape( obj.Shape() )
-		{
-TODO: Test
-			for( int i=0; i<this->m_Length; ++i )
-				this->m_Data[i] = obj[i];
-		}
-
-
 
 
 		// Destructor
@@ -144,7 +118,7 @@ TODO: Test
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, const T& >
 		operator()( const Args& ... args ) const&// x, y, z, w...
 		{
-			return this->m_Data + m_Shape.To1D( args... );
+			return this->m_Data[ m_Shape.To1D( args... ) ];
 		}
 
 
@@ -153,7 +127,7 @@ TODO: Test
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T& >
 		operator()( const Args& ... args ) &// x, y, z, w...
 		{
-			return this->m_Data + m_Shape.To1D( args... );
+			return this->m_Data[ m_Shape.To1D( args... ) ];
 		}
 
 
@@ -173,7 +147,7 @@ TODO: Test
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, const T& >
 		operator()( std::initializer_list<T_INDEX> indexND ) const&// x, y, z, w...
 		{
-			return this->m_Data + m_Shape.To1D( indexND );
+			return this->m_Data[ m_Shape.To1D( indexND ) ];
 		}
 
 
@@ -182,7 +156,7 @@ TODO: Test
 		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T& >
 		operator()( std::initializer_list<T_INDEX> indexND ) &// x, y, z, w...
 		{
-			return this->m_Data + m_Shape.To1D( indexND );
+			return this->m_Data[ m_Shape.To1D( indexND ) ];
 		}
 
 

@@ -12,7 +12,6 @@
 #include	"NDArrayBase.h"
 
 
-//TODO: Disable subscript operator
 
 namespace OreOreLib
 {
@@ -59,9 +58,9 @@ namespace OreOreLib
 		template< typename Type, uint64 ... Ns, std::enable_if_t< (sizeof...(Ns)==N) >* = nullptr >
 		NDArrayBase( const NDArrayBase<Type, Ns...>& obj )
 			: Array<T>( obj )
-			, m_Shape( obj.m_Shape )
+			, m_Shape( obj.Shape() )
 		{
-TODO: Test
+			tcout << _T( "NDArray_proto::NDArrayBase( const NDArrayBase<Type, Ns...>& obj )...\n" );
 		}
 
 
@@ -70,7 +69,8 @@ TODO: Test
 			: Array<T>( (int)obj.Shape().Size() )
 			, m_Shape( obj.Shape() )
 		{
-TODO: Test
+			tcout << _T( "NDArray_proto::NDArrayBase( const NDArrayView_proto<T, N>& obj )...\n" );
+
 			for( int i=0; i<this->m_Length; ++i )
 				this->m_pData[i] = obj[i];
 		}
@@ -258,7 +258,7 @@ TODO: Test
 		NDShape<N> m_Shape;
 
 
-		//using Memory<T>::operator[];
+		using Memory<T>::operator[];
 		//using Memory<T>::begin;
 		//using Memory<T>::end;
 

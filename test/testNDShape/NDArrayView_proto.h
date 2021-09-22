@@ -12,9 +12,6 @@
 // https://www.codeproject.com/Articles/848746/ArrayView-StringView
 
 
-//TODO: Disable Subscript operator
-//TODO: メモリ参照範囲がはみ出さないようブロックする
-
 
 namespace OreOreLib
 {
