@@ -13,10 +13,11 @@
 
 
 //TODO: Disable Subscript operator
+//TODO: メモリ参照範囲がはみ出さないようブロックする
+
 
 namespace OreOreLib
 {
-
 
 	template< typename T, uint64 N >
 	class NDArrayBase< detail::NDARRVIEW<T>, N > : public ArrayView<T>
@@ -34,66 +35,41 @@ namespace OreOreLib
 		}
 
 
-		// Constructor
+		//============== Constructor using raw pointer ==================//
+
+		// variadic template
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
 		NDArrayBase( ConstPtr const pdata, const Args& ... args )
-			: m_Shape( mult_<args...>::value )
+			: m_Shape( args... )
 			, m_SrcShape( m_Shape )
 		{
-			Init( pdata, args... );
+			ArrayView<T>::Init( pdata, m_Shape.Size() );
 		}
 
-
-		// Constructor
-		NDArrayBase( const Memory<T>& obj )
-			: m_Shape( obj.Length() )
-			, m_SrcShape( m_Shape )
+		// initializer_list
+		template < typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value >* = nullptr >
+		NDArrayBase( ConstPtr const pdata, std::initializer_list<T_INDEX> indexND )
 		{
-			Init( obj );
+			m_Shape.Init( indexND );
+			ArrayView<T>::Init( pdata, int(m_Shape.Size()) );
 		}
 
 
+		//============ Constructor using NDArrayBase ============//
 
-
-
-// Constructor using NDArray_proto(variadic template ver)
-template < uint64 N, typename ... Args, std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-NDArrayBase( const NDArray_proto<T, N>& obj, const Args& ... args )
-{
-	Init( obj.begin(), obj.Shape(), args... );
-}
-
-
-		// Constructor using NDArray_proto(initializer_list ver)
-		template < uint64 N, typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value>* = nullptr >
-		NDArrayBase( const NDArray_proto<T, N>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
-			: m_Shape( indexND )
-			, m_SrcShape( obj.Shape() )
+		// variadic template
+		template< typename Type, uint64 ... Ns, typename ... Args, std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
+		NDArrayBase( const NDArrayBase<Type, Ns...>& obj, const Args& ... args )
 		{
-			//ArrayView<T>::Init( obj.begin() + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
+			Init( obj, args... );
 		}
 
-
-
-// Constructor using NDStaticArray_proto
-template < uint64 ... Args, typename ... Args2, std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args2...>::value >* = nullptr >
-NDArrayBase( const NDStaticArray_proto<T, Args...>& obj, const Args2& ... args )
-{
-	Init( obj.begin(), obj.Shape(), args... );
-}
-
-
-// Constructor using NDStaticArray_proto
-template < uint64 ... Args, typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value>* = nullptr >
-NDArrayBase( const NDStaticArray_proto<T, Args...>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
-	//: m_Shape( indexND )
-	//, m_SrcShape( obj.Shape() )
-{
-	Init( obj.begin(), obj.Shape(), offset, indexND );
-	//ArrayView<T>::Init( obj.begin() + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
-}
-
-
+		// initializer_list
+		template< typename Type, uint64 ...Ns, typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value>* = nullptr >
+		NDArrayBase( const NDArrayBase<Type, Ns...>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
+		{
+			Init( obj, offset, indexND );
+		}
 
 
 		// Destructor
@@ -107,9 +83,11 @@ NDArrayBase( const NDStaticArray_proto<T, Args...>& obj, std::initializer_list<T
 		NDArrayBase( const NDArrayBase& obj )
 			: ArrayView( obj )
 			, m_Shape( obj.m_Shape )
+			, m_SrcShape( obj.m_SrcShape )
 		{
 
 		}
+
 
 
 		//================= Element access operators(variadic templates) ===================//
@@ -172,73 +150,76 @@ NDArrayBase( const NDStaticArray_proto<T, Args...>& obj, std::initializer_list<T
 
 
 
-		void Init( const Memory<T>& obj )
+		//================ Init ===================//
+
+		// raw pointer with variadic template
+		template < typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
+		Init( ConstPtr const pdata, const Args& ... args )
 		{
-			ArrayView<T>::Init( obj );
-			m_Shape.Init( obj.Length() );
+			m_Shape.Init( args... );
+			m_SrcShape = m_Shape;
+			ArrayView<T>::Init( pdata, (int)m_Shape.Size() );
+		}
+
+		// raw pointer with initializer list
+		template < typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
+		Init( ConstPtr const pdata, std::initializer_list<T_INDEX> indexND )
+		{
+			m_Shape.Init( indexND );
+			ArrayView<T>::Init( pdata, (int)m_Shape.Size() );
 		}
 
 
+		// NDArrayBase with variadic template
+		template< typename Type, uint64 ... Ns, typename ... Args >
+		std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args...>::value, bool >
+		Init( const NDArrayBase<Type, Ns...>& obj, const Args& ... args )
+		{
+			uint64 offset[N], indexND[N];
 
+			auto itr = std::begin( {args...} );
+			for( int i=0; i<N; ++i )	offset[i] = *itr++;
+			for( int i=0; i<N; ++i )	indexND[i] = *itr++;
 
+			if( !IsValidViewRange( std::begin(indexND), std::begin(offset), obj.Shape() ) )
+				return false;
 
+			m_SrcShape = obj.Shape();
+			m_Shape.Init( indexND );
+			ArrayView<T>::Init( obj.begin() + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
 
-template < uint64 N, typename ... Args >
-std::enable_if_t< (sizeof...(Args)==2*N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-Init( const T* ptr, const NDShape<N>& srcShape, const Args& ... args )
-{
-	uint64 offset[N], indexND[N];
+			return true;
+		}
 
-	auto itr = std::begin( {args...} );
+		// NDArrayBase with initializer list
+		template< typename Type, uint64 ...Ns, typename T_INDEX >
+		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, bool >
+		Init( const NDArrayBase<Type, Ns...>& obj, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
+		{
+			m_SrcShape = obj.Shape();
+			m_Shape.Init( indexND );
 
-	for( int i=0; i<N; ++i )
-		offset[i] = *itr++;
+			if( !IsValidViewRange( std::begin(indexND), std::begin(offset), obj.Shape() ) )
+				return false;
 
-	for( int i=0; i<N; ++i )
-		indexND[i] = *itr;
+			ArrayView<T>::Init( obj.begin() + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
 
-	m_SrcShape = srcShape;
-	m_Shape.Init( indexND );
-	ArrayView<T>::Init( ptr + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
-}
-
-
-template < uint64 N, typename T_INDEX >
-std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
-Init( const T* ptr, const NDShape<N>& srcShape, std::initializer_list<T_INDEX> offset, std::initializer_list<T_INDEX> indexND )
-{
-	m_SrcShape = srcShape;
-	m_Shape.Init( indexND );			
-	ArrayView<T>::Init( ptr + m_SrcShape.To1D( offset ), int(m_Shape.Size()) );
-}
-
-
-
-
-
-
-		//template < typename ... Args >
-		//std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		//Init( ConstPtr const pdata, const Args& ... args )
-		//{
-		//	m_Shape.Init( args... );
-		//	ArrayView<T>::Init( pdata, m_Shape.Size() );
-		//}
-
-
-		//template < typename T_INDEX >
-		//std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
-		//Init( ConstPtr const pdata, std::initializer_list<T_INDEX> indexND )
-		//{
-		//	m_Shape.Init( indexND );
-		//	ArrayView<T>::Init( pdata, int(m_Shape.Size()) );
-		//}
+			return true;
+		}
 
 
 		void Release()
 		{
 			ArrayView<T>::Release();
 			m_Shape.Release();
+		}
+
+
+		const NDShape<N>& Shape() const
+		{
+			return m_Shape;
 		}
 
 
@@ -261,7 +242,7 @@ Init( const T* ptr, const NDShape<N>& srcShape, std::initializer_list<T_INDEX> o
 			}
 
 			tcout << tendl;
-		}		
+		}
 
 
 		// Disabled subscript operators
@@ -270,18 +251,32 @@ Init( const T* ptr, const NDShape<N>& srcShape, std::initializer_list<T_INDEX> o
 		T operator[]( std::size_t n ) const&& = delete;
 
 
-		const NDShape<N>& Shape() const { return m_Shape; }
-
-
 	private:
 
 		NDShape<N>	m_Shape;
 		NDShape<N>	m_SrcShape;
 
 
+		template < typename Iter >
+		bool IsValidViewRange( Iter range, Iter offset, const NDShape<N>& shape )
+		{
+			for( int i=0; i<N; ++i )
+			{
+				if( *( range++ ) + *( offset++ ) > shape.Dim(i) )
+				{
+					tcout << "TOO LARGE DIMENSIONS SPECIFIED...\n";
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+
+
 		using Memory<T>::operator[];
-		using Memory<T>::begin;
-		using Memory<T>::end;
+		//using Memory<T>::begin;
+		//using Memory<T>::end;
 	};
 
 

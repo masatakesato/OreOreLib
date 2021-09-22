@@ -25,14 +25,13 @@ namespace OreOreLib
 
 
 	template< typename T, uint64 N >
-	class /*NDArray_proto*/NDArrayBase< T, N > : public Array<T>
+	class NDArrayBase< T, N > : public Array<T>
 	{
 	public:
 
 		// Default constructor
-		/*NDArray_proto*/NDArrayBase()
-			: m_Shape()
-			, Array<T>()
+		NDArrayBase()
+			: Array<T>()
 		{
 		
 		}
@@ -40,7 +39,7 @@ namespace OreOreLib
 
 		// Constructor
 		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		/*NDArray_proto*/NDArrayBase( Args const & ... args )
+		NDArrayBase( Args const & ... args )
 			: m_Shape( args... )
 		{
 			Memory<T>::Init( int(m_Shape.Size()) );
@@ -49,7 +48,7 @@ namespace OreOreLib
 
 		// Constructor with initializer list
 		template < typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value >* = nullptr >
-		/*NDArray_proto*/NDArrayBase( std::initializer_list<T_INDEX> ilist )
+		NDArrayBase( std::initializer_list<T_INDEX> ilist )
 			: m_Shape( ilist )
 		{
 			Memory<T>::Init( int(m_Shape.Size()) );
@@ -57,7 +56,7 @@ namespace OreOreLib
 
 
 		// Constructor using Memory
-		/*NDArray_proto*/NDArrayBase( const Memory<T>& obj )
+		NDArrayBase( const Memory<T>& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.Length() )
 		{
@@ -65,8 +64,29 @@ namespace OreOreLib
 		}
 
 
-		// Copy constructor
-		/*NDArray_proto*/NDArrayBase( const /*NDArray_proto*/NDArrayBase& obj )
+		// Constructor using NDArrayBase
+		template< typename Type, uint64 ... Ns >
+		NDArrayBase( const NDArrayBase<Type, Ns...>& obj )
+			: Array<T>( obj )
+			, m_Shape( obj.m_Shape )
+		{
+
+		}
+
+
+		// Constructor using NDArrayView  
+		template< uint64 N >
+		NDArrayBase( const NDArrayView_proto<T, N>& obj )
+//			: Array<T>( obj )
+//			, m_Shape( obj.m_Shape )
+		{
+
+		}
+
+
+
+		// Copy constructor. 
+		NDArrayBase( const NDArrayBase& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.m_Shape )
 		{
@@ -75,7 +95,7 @@ namespace OreOreLib
 
 
 		// Move constructor
-		/*NDArray_proto*/NDArrayBase( /*NDArray_proto*/NDArrayBase&& obj )
+		NDArrayBase( NDArrayBase&& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.m_Shape )
 		{
@@ -84,7 +104,7 @@ namespace OreOreLib
 
 
 		// Copy Assignment opertor =
-		inline /*NDArray_proto*/NDArrayBase& operator=( const /*NDArray_proto*/NDArrayBase& obj )
+		inline NDArrayBase& operator=( const NDArrayBase& obj )
 		{
 			Memory<T>::operator=( obj );
 			m_Shape = obj.m_Shape;
@@ -92,7 +112,7 @@ namespace OreOreLib
 		}
 
 
-		inline /*NDArray_proto*/NDArrayBase& operator=( const Memory<T>& obj )
+		inline NDArrayBase& operator=( const Memory<T>& obj )
 		{
 			Memory<T>::operator=( obj );
 			m_Shape.Init( obj.Length() );
@@ -101,9 +121,9 @@ namespace OreOreLib
 
 
 		// Move assignment opertor =
-		inline /*NDArray_proto*/NDArrayBase& operator=( /*NDArray_proto*/NDArrayBase&& obj )
+		inline NDArrayBase& operator=( NDArrayBase&& obj )
 		{
-			Memory<T>::operator=( (/*NDArray_proto*/NDArrayBase&&)obj );
+			Memory<T>::operator=( (NDArrayBase&&)obj );
 			m_Shape = obj.m_Shape;
 			return *this;
 		}

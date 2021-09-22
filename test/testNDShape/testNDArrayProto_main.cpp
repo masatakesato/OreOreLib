@@ -62,7 +62,7 @@ int main()
 
 
 	NDArray_proto<double, 2>	arr2d({4, 4}),// double2D(2, 3); is OK
-								arr2d2;
+								arr2d2(arr2d  );
 
 	NDArrayView_proto<double, 2>	view2d,
 									view2d2;
@@ -85,11 +85,11 @@ int main()
 
 
 
-	view2d.Init( arr2d.begin(), arr2d.Shape(), {1, 1}, {2, 2} );//view2d.Init( arr2d.begin(), arr2d.Shape(), 1, 1, 2, 2 );//
+	view2d.Init( arr2d/*.begin(), arr2d.Shape()*/, {1, 1}, {2, 2} );//view2d.Init( arr2d.begin(), arr2d.Shape(), 1, 1, 2, 2 );//
 	view2d.Display();
 	//tcout << view2d(0, 0) << tendl;
-	
-	NDArrayView_proto<double, 2> view2d3(  arr2d, 1, 1, 2, 2 );
+	//view2d.begin();
+	NDArrayView_proto<double, 2> view2d3( arr2d, 1, 3, 2, 2 );//view2d3( arr2d, {1, 3}, {2, 2} );//
 	view2d3.Display();
 
 
