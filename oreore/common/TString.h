@@ -8,14 +8,14 @@
 #include	<locale.h>
 
 
-
-typedef std::basic_string<TCHAR>		tstring;
-typedef std::basic_stringstream<TCHAR>	tstringstream;
-typedef std::basic_ostringstream<TCHAR>	tostringstream;
-typedef std::basic_istringstream<TCHAR>	tistringstream;
-typedef std::basic_ifstream<TCHAR>		tifstream;
-typedef std::basic_ofstream<TCHAR>		tofstream;
-
+using tstring			= std::basic_string<TCHAR>;
+using tstringstream		= std::basic_stringstream<TCHAR>;
+using tostringstream	= std::basic_ostringstream<TCHAR>;
+using tistringstream	= std::basic_istringstream<TCHAR>;
+using tifstream			= std::basic_ifstream<TCHAR>;
+using tofstream			= std::basic_ofstream<TCHAR>;
+using tistream			= std::basic_istream<TCHAR>;
+using tostream			= std::basic_ostream<TCHAR>;
 
 
 #if defined(UNICODE) || defined(_UNICODE)

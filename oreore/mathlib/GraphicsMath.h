@@ -8,63 +8,69 @@
 
 
 
-template< typename T > union	Vec2;
+template< typename T >
+union Vec2;
 
-typedef Vec2<unsigned char>		Vec2uc;
-typedef Vec2<short>				Vec2s;
-typedef Vec2<unsigned short>	Vec2us;
-typedef Vec2<int>				Vec2i;
-typedef Vec2<unsigned int>		Vec2ui;
-typedef Vec2<float>				Vec2f;
-typedef Vec2<double>			Vec2d;
-
-
-template< typename T > union	Vec3;
-
-typedef Vec3<unsigned char>		Vec3uc;
-typedef Vec3<short>				Vec3s;
-typedef Vec3<unsigned short>	Vec3us;
-typedef Vec3<int>				Vec3i;
-typedef Vec3<unsigned int>		Vec3ui;
-typedef Vec3<float>				Vec3f;
-typedef Vec3<double>			Vec3d;
+using Vec2uc	= Vec2<uint8>;
+using Vec2s		= Vec2<int16>;
+using Vec2us	= Vec2<uint16>;
+using Vec2i		= Vec2<int32>;
+using Vec2ui	= Vec2<uint32>;
+using Vec2f		= Vec2<float32>;
+using Vec2d		= Vec2<float64>;
 
 
-template< typename T > union	Vec4;
+template< typename T >
+union Vec3;
 
-typedef Vec4<unsigned char>		Vec4uc;
-typedef Vec4<short>				Vec4s;
-typedef Vec4<unsigned short>	Vec4us;
-typedef Vec4<int>				Vec4i;
-typedef Vec4<unsigned int>		Vec4ui;
-typedef Vec4<float>				Vec4f;
-typedef Vec4<double>			Vec4d;
-
-
-template< typename T > union	Mat4;
-
-typedef Mat4<float>				Mat4f;
-typedef Mat4<double>			Mat4d;
+using Vec3uc	= Vec3<uint8>;
+using Vec3s		= Vec3<int16>;
+using Vec3us	= Vec3<uint16>;
+using Vec3i		= Vec3<int32>;
+using Vec3ui	= Vec3<uint32>;
+using Vec3f		= Vec3<float32>;
+using Vec3d		= Vec3<float64>;
 
 
-template< typename T > union	Quaternion;
+template< typename T >
+union Vec4;
 
-typedef	Quaternion<float>		Quatf;
-typedef	Quaternion<double>		Quatd;
+using Vec4uc	= Vec4<uint8>;
+using Vec4s		= Vec4<int16>;
+using Vec4us	= Vec4<uint16>;
+using Vec4i		= Vec4<int32>;
+using Vec4ui	= Vec4<uint32>;
+using Vec4f		= Vec4<float32>;
+using Vec4d		= Vec4<float64>;
 
 
-typedef OreOreLib::Array<unsigned char>		ucArray;
-typedef OreOreLib::Array<short>				sArray;
-typedef OreOreLib::Array<unsigned short>	usArray;
-typedef OreOreLib::Array<int>				iArray;
-typedef OreOreLib::Array<unsigned int>		uiArray;
-typedef OreOreLib::Array<float>				fArray;
-typedef OreOreLib::Array<double>			dArray;
+template< typename T >
+union Mat4;
+
+using Mat4f		= Mat4<float32>;
+using Mat4d		= Mat4<float64>;
+
+
+template< typename T >
+union Quaternion;
+
+using Quatf		= Quaternion<float32>;
+using Quatd		= Quaternion<float64>;
+
+
+using ucArray	= OreOreLib::Array<uint8>;
+using sArray	= OreOreLib::Array<int16>;
+using usArray	= OreOreLib::Array<uint16>;
+using iArray	= OreOreLib::Array<int32>;
+using uiArray	= OreOreLib::Array<uint32>;
+using fArray	= OreOreLib::Array<float32>;
+using dArray	= OreOreLib::Array<float64>;
+
 
 
 
 //##############################################################################//
-//										Scalar									//
+//									Scalar										//
 //##############################################################################//
 
 
@@ -84,122 +90,6 @@ union ieee754
 
 
 
-
-//template< typename T >
-//inline bool IsPositive( const T& a )
-//{
-//	return	a > 0;
-//}
-//
-//
-//template< typename T >
-//inline bool IsNegative( const T& a )
-//{
-//	return	a < 0;
-//}
-//
-//
-//template< typename T >
-//inline const T Max( const T& a, const T& b )
-//{
-//	return a < b ? b : a;     // or: return comp(a,b)?b:a; for version (2)
-//}
-//
-//
-//template< typename T >
-//inline const T Min( const T& a, const T& b )
-//{
-//	return !( b<a )?a:b;
-//}
-//
-//
-//template< typename T >
-//inline const T Saturate( const T& a )
-//{
-//	return Min( Max( a, (T)0 ), (T)1 );
-//}
-//
-//
-//template< typename T >
-//inline const T Clamp( const T& x, const T& a, const T& b )
-//{
-//	return Min( Max( x, a ), b );
-//}
-//
-//
-//template< typename T >
-//inline void Lerp( T& out, const T& start, const T& end, T percent )
-//{
-//	out	= start + percent * ( end - start );
-//}
-//
-//
-//template< typename T >
-//inline const T TO_RADIAN( const T& degree )
-//{
-//	return	degree * ( T )0.01745329251;
-//}
-//
-//
-//template< typename T >
-//inline const T TO_DEGREE( const T& radian )
-//{
-//	return	radian * ( T )57.2957795131;
-//}
-//
-//
-//template< typename T >
-//inline const T Log( const T& a, const T& b )
-//{
-//	return	log( b ) / log( a );
-//}
-//#ifndef Log
-//#define	Log(a,b)	log(b) / log(a)
-//#endif // !Log
-//
-//
-//template< typename T >
-//inline const T Floor( const T& val, const T& unit )
-//{
-//	return	(T)floor( double( val ) / double( unit ) ) * double( unit );
-//}
-//#ifndef Floor
-//#define	Floor( val, unit )	floor( double(val) / double(unit) ) * double(unit)
-//#endif // !Floor
-//
-//
-//template< typename T >
-//inline const T Ceil( const T& val, const T& unit )
-//{
-//	return	(T)ceil( double( val ) / double( unit ) ) * double( unit );
-//}
-//#ifndef Ceil
-//#define	Ceil( val, unit )	ceil( double(val) / double(unit) ) * double(unit)
-//#endif // !Ceil
-//
-//
-//template< typename T >
-//inline const int fRound( const T& x )
-//{
-//	return	(int)rintf( x );
-//}
-//#ifndef fRound
-//#define fRound(x) (int)rintf(x)
-//#endif
-//
-//
-//
-//template< typename T >
-//inline const int DivUp( const T& a, const T& b )
-//{
-//	return	(int)( a%b==0 ? a/b : a/b+1 );
-//}
-//#ifndef DivUp
-//#define DivUp(a, b)( (((a)%(b))==0)?((a)/(b)):((a)/(b)+1) )
-//#endif
-
-
-
 //##############################################################################//
 //									2D Vector									//
 //##############################################################################//
@@ -214,8 +104,21 @@ union Vec2
 	T	xy[2];
 	T	uv[2];
 
-	Vec2(): x( 0 ), y( 0 ) {}
-	Vec2( T x_, T y_ ): x( x_ ), y( y_ ) {}
+	Vec2()
+		: x( 0 )
+		, y( 0 )
+	{
+
+	}
+
+
+	Vec2( T x_, T y_ )
+		: x( x_ )
+		, y( y_ )
+	{
+	
+	}
+
 
 	//=========== experimental implementation. 2018.10.14 ============//
 	// Copy constructor
@@ -225,10 +128,13 @@ union Vec2
 		y = obj.y;
 	}
 
+
 	// Copy constructor
 	~Vec2()
 	{
+
 	}
+
 
 	// Move constructor
 	Vec2( Vec2&& obj )
@@ -236,6 +142,7 @@ union Vec2
 		x = obj.x;
 		y = obj.y;
 	}
+
 
 	// Copy assignment operator
 	Vec2& operator=( const Vec2& obj )
@@ -248,6 +155,7 @@ union Vec2
 		return *this;
 	}
 
+
 	// Move assignment opertor =
 	Vec2& operator=( Vec2&& obj )
 	{
@@ -259,6 +167,12 @@ union Vec2
 		return *this;
 	}
 
+
+	friend tostream& operator<<( tostream& stream, const Vec2& obj )
+	{
+		stream << _T("(") << obj.x << _T(", ") << obj.y << _T(")");
+		return stream;
+	}
 
 };
 
@@ -541,6 +455,7 @@ union Vec3
 	struct { T x, y, z; };
 	struct { T r, g, b; };
 
+
 	Vec3()
 	{
 		x = 0;
@@ -548,11 +463,19 @@ union Vec3
 		z = 0;
 	}
 
+
 	Vec3( T x_, T y_, T z_ )
 	{
 		x = x_;
 		y = y_;
 		z = z_;
+	}
+
+
+	friend tostream& operator<<( tostream& stream, const Vec3& obj )
+	{
+		stream << _T("(") << obj.x << _T(", ") << obj.y << _T(", ") << obj.z << _T(")");
+		return stream;
 	}
 
 };
@@ -872,6 +795,7 @@ union Vec4
 	struct { T r, g, b, a; };
 	struct { Vec3<T>xyz; T w; };
 
+
 	Vec4() : xyz()
 	{
 		//x = 0;
@@ -880,12 +804,20 @@ union Vec4
 		w = 0;
 	}
 
+
 	Vec4( T x_, T y_, T z_, T w_ )
 	{
 		x = x_;
 		y = y_;
 		z = z_;
 		w = w_;
+	}
+
+
+	friend tostream& operator<<( tostream& stream, const Vec4& obj )
+	{
+		stream << _T("(") << obj.x << _T(", ") << obj.y << _T(", ") << obj.z << _T(", ") << obj.w << _T(")");
+		return stream;
 	}
 
 };

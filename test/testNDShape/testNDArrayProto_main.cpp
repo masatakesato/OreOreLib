@@ -2,6 +2,7 @@
 
 #include	<oreore/common/TString.h>
 #include	<oreore/meta/PeripheralTraits.h>
+#include	<oreore/mathlib/GraphicsMath.h>
 
 #include	"NDArray_proto.h"
 #include	"NDArrayView_proto.h"
@@ -36,10 +37,23 @@ int main()
 	arr2d.Display();
 
 
+	{
+		NDArrayView_proto<double, 2> view;
+		view.Init( arr2d, 1, 1, 2, 2 );
+		view.SetValues( -5, -6, -7, -8 );
+		view.Display();
+	}
 
-	view2d.Init( arr2d/*.begin(), arr2d.Shape()*/, {1, 1}, {2, 2} );//view2d.Init( arr2d.begin(), arr2d.Shape(), 1, 1, 2, 2 );//
-	view2d.SetValues( -5, -6, -7, -8 );
 
+	{
+		NDArrayView_proto<double, 2> view;
+		view.Init( arr2d, {1, 1}, {2, 2} );
+		view.SetValues( -5, -6, -7, -8 );
+		view.Display();
+	}
+
+
+/*
 	view2d.Display();
 	//tcout << view2d(0, 0) << tendl;
 	//view2d.begin();
@@ -49,22 +63,23 @@ int main()
 
 	sarr2d = arr2d;
 	{
-		auto iter = &sarr2d(0, 0);
-		for( int i=0; i<arr2d.Length(); ++i )
-			(*iter++) = double(i);
+		sarr2d.SetValues( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 );
+		//auto iter = &sarr2d(0, 0);
+		//for( int i=0; i<arr2d.Length(); ++i )
+		//	(*iter++) = double(i);
 	}
 	sarr2d.Display();
 
-
-
-
-	NDArray_proto<double, 2>	arr2d3(sarr2d);
-	arr2d3.Display();
-
-	/*
-	NDArray_proto<double, 2>	arr2d3(view2d3);
-	arr2d3.Display();
-	*/
+/*
+	{
+		NDArray_proto<double, 2>	arr(sarr2d);
+		arr.Display();
+	}
+	
+	{
+		NDArray_proto<double, 2>	arr(view2d3);
+		arr.Display();
+	}
 
 	{
 		double value[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -81,7 +96,7 @@ int main()
 		NDStaticArray_proto<double, 4, 4> arr( {-1, 2, -3, 4, -5, 6, -7, 8, -9, 10, -11, 12, -13, 14, -15, 16} );
 		arr.Display();
 	}
-
+*/
 
 
 /*
@@ -94,9 +109,16 @@ int main()
 
 
 
+	NDStaticArray_proto<Vec3f, 4, 4>	rgbimage;
 
+	rgbimage[0].x = 0.5f;
+	rgbimage[1].x = 0.5f;
 
+	rgbimage.Display();
 
+	Vec3f fff;
+
+	tcout << fff << tendl;
 
 	end = std::chrono::system_clock::now();  // 計測終了時間
 	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end-start ).count(); //処理に要した時間をミリ秒に変換
