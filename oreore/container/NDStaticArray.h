@@ -27,7 +27,7 @@ namespace OreOreLib
 		NDArrayBase()
 			: StaticArray<T, Size>()
 		{
-			tcout << _T( "NDStaticArray_proto::NDStaticArray_proto()...\n" );
+			//tcout << _T( "NDStaticArray::NDStaticArray()...\n" );
 		}
 
 
@@ -35,7 +35,7 @@ namespace OreOreLib
 		NDArrayBase( int len, T* pdata )
 			: StaticArray<T, Size>( len, pdata )
 		{
-			tcout << _T( "NDStaticArray_proto::NDArrayBase( int len, T* pdata )...\n" );
+			//tcout << _T( "NDStaticArray::NDStaticArray( int len, T* pdata )...\n" );
 		}
 
 
@@ -44,7 +44,7 @@ namespace OreOreLib
 		NDArrayBase( const Vals& ... vals )
 			: StaticArray<T, Size>( {(T)vals...} )
 		{
-			tcout << _T( "NDStaticArray_proto::NDArrayBase( const Vals& ... vals )...\n" );
+			//tcout << _T( "NDStaticArray::NDStaticArray( const Vals& ... vals )...\n" );
 		}
 
 
@@ -52,7 +52,7 @@ namespace OreOreLib
 		NDArrayBase( std::initializer_list<T> ilist )
 			: StaticArray<T, Size>( ilist )
 		{
-			tcout << _T( "NDStaticArray_proto::NDArrayBase( std::initializer_list<Type> ilist )...\n" );
+			//tcout << _T( "NDStaticArray::NDStaticArray( std::initializer_list<Type> ilist )...\n" );
 		}
 
 

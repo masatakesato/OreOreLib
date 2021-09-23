@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28307.1401
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDShape", "testNDShape\testNDShape.vcxproj", "{BB41DE9E-4047-45FF-B19E-DEF767F928AD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDArrayProto", "testNDArrayProto\testNDArrayProto.vcxproj", "{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDArray", "testNDArray\testNDArray.vcxproj", "{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

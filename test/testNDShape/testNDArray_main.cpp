@@ -1,12 +1,12 @@
 ﻿#include	<chrono>
 
 #include	<oreore/common/TString.h>
-#include	<oreore/meta/PeripheralTraits.h>
+//#include	<oreore/meta/PeripheralTraits.h>
 #include	<oreore/mathlib/GraphicsMath.h>
 
-#include	"NDArray_proto.h"
-#include	"NDArrayView_proto.h"
-#include	"NDStaticArray_proto.h"
+#include	<oreore/container/NDArray.h>
+#include	<oreore/container/NDArrayView.h>
+#include	<oreore/container/NDStaticArray.h>
 using namespace OreOreLib;
 
 
@@ -19,15 +19,15 @@ int main()
 
 
 
-	NDArray_proto<double, 2>	arr2d({4, 4}),// double2D(2, 3); is OK
-								arr2d2(arr2d);
+	NDArray<double, 2>	arr2d({4, 4}),// double2D(2, 3); is OK
+						arr2d2(arr2d);
 
 
-	NDArrayView_proto<double, 2>	view2d,
-									view2d2;
+	NDArrayView<double, 2>	view2d,
+							view2d2;
 
-	NDStaticArray_proto<double, 4, 4>	sarr2d,
-										sarr2d2;
+	NDStaticArray<double, 4, 4>	sarr2d,
+								sarr2d2;
 
 
 	// NDArray methods
@@ -38,7 +38,7 @@ int main()
 
 
 	{
-		NDArrayView_proto<double, 2> view;
+		NDArrayView<double, 2> view;
 		view.Init( arr2d, 1, 1, 2, 2 );
 		view.SetValues( -5, -6, -7, -8 );
 		view.Display();
@@ -46,7 +46,7 @@ int main()
 
 
 	{
-		NDArrayView_proto<double, 2> view;
+		NDArrayView<double, 2> view;
 		view.Init( arr2d, {1, 1}, {2, 2} );
 		view.SetValues( -5, -6, -7, -8 );
 		view.Display();
@@ -57,7 +57,7 @@ int main()
 	view2d.Display();
 	//tcout << view2d(0, 0) << tendl;
 	//view2d.begin();
-	NDArrayView_proto<double, 2> view2d3( arr2d, 1, 1, 2, 2 );//view2d3( arr2d, {1, 3}, {2, 2} );//
+	NDArrayView<double, 2> view2d3( arr2d, 1, 1, 2, 2 );//view2d3( arr2d, {1, 3}, {2, 2} );//
 	view2d3.Display();
 
 
@@ -72,28 +72,28 @@ int main()
 
 /*
 	{
-		NDArray_proto<double, 2>	arr(sarr2d);
+		NDArray<double, 2>	arr(sarr2d);
 		arr.Display();
 	}
 	
 	{
-		NDArray_proto<double, 2>	arr(view2d3);
+		NDArray<double, 2>	arr(view2d3);
 		arr.Display();
 	}
 
 	{
 		double value[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-		NDStaticArray_proto<double, 4, 4> arr(10, value);
+		NDStaticArray<double, 4, 4> arr(10, value);
 		arr.Display();
 	}
 
 	{
-		NDStaticArray_proto<double, 4, 4> arr( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 );
+		NDStaticArray<double, 4, 4> arr( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 );
 		arr.Display();
 	}
 
 	{
-		NDStaticArray_proto<double, 4, 4> arr( {-1, 2, -3, 4, -5, 6, -7, 8, -9, 10, -11, 12, -13, 14, -15, 16} );
+		NDStaticArray<double, 4, 4> arr( {-1, 2, -3, 4, -5, 6, -7, 8, -9, 10, -11, 12, -13, 14, -15, 16} );
 		arr.Display();
 	}
 */
@@ -101,15 +101,15 @@ int main()
 
 /*
 	// 
-	sarr2d2 = sarr2d;// operator=( const NDStaticArray_proto& obj )
+	sarr2d2 = sarr2d;// operator=( const NDStaticArray& obj )
 	sarr2d2 = arr2d;// operator=( const Memory<T>& obj )
-	sarr2d2 = std::move(sarr2d);//operator=( NDStaticArray_proto&& obj )
+	sarr2d2 = std::move(sarr2d);//operator=( NDStaticArray&& obj )
 */
 
 
 
 
-	NDStaticArray_proto<Vec3f, 4, 4>	rgbimage;
+	NDStaticArray<Vec3f, 4, 4>	rgbimage;
 
 	rgbimage[0].x = 0.5f;
 	rgbimage[1].x = 0.5f;

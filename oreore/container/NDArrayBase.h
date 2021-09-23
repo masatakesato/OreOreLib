@@ -15,47 +15,32 @@ namespace OreOreLib
 
 	namespace detail
 	{
-
-		//================= NDArrayView specific structs =================//
-
+		// struct for NDArrayView specialization
 		template< typename T >	struct NDARRVIEW{ using Type = typename T; };
 
-		//template< typename >
-		//struct is_ndarrview : std::false_type{};
-
-		//template< typename T >
-		//struct is_ndarrview< NDARRVIEW<T> > : std::true_type{};
-
-		//template< typename T >
-		//constexpr bool is_ndarrview_v = is_ndarrview<T>::value;
-
-
+		// struct for NDStaticArray specialization
 		template< typename T >	struct NDSTATICARR{ using Type = typename T; };
-
-
-		//==============================================================//
-
 	}
 
 
+	// NDArrayBase declaration
 	template< typename T, uint64 ...Ns > class NDArrayBase; 
 
 
-	// NDArray
+	// NDArray specialization
 	template< typename T, uint64 N >
-	using NDArray_proto = NDArrayBase< T, N >;
+	using NDArray = NDArrayBase< T, N >;
 
 
-	// NDStaticArray
+	// NDStaticArray specialization
 	template< typename T, uint64 ... Args >
-	using NDStaticArray_proto = NDArrayBase< detail::NDSTATICARR<T>, Args... >;
+	using NDStaticArray = NDArrayBase< detail::NDSTATICARR<T>, Args... >;
 
 
-	// NDArrayView
+	// NDArrayView specialization
 	template< typename T, uint64 N >
-	using NDArrayView_proto = NDArrayBase< detail::NDARRVIEW<T>, N >;
+	using NDArrayView = NDArrayBase< detail::NDARRVIEW<T>, N >;
 	
-
 }
 
 

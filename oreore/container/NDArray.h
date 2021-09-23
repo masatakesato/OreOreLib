@@ -1,27 +1,13 @@
-﻿#ifndef ND_ARRAY_PROTO_H
-#define ND_ARRAY_PROTO_H
-
-#include	<math.h>
-#include	<limits>
+﻿#ifndef ND_ARRAY_H
+#define ND_ARRAY_H
 
 #include	<oreore/common/TString.h>
-//#include	<oreore/mathlib/Random.h>
-
-//#include	<oreore/container/Array.h>
-//#include	<oreore/container/NDShape.h>
 #include	"NDArrayBase.h"
 
 
 
 namespace OreOreLib
 {
-
-	//######################################################################//
-	//																		//
-	//						Array class implementation						//
-	//																		//
-	//######################################################################//
-
 
 	template< typename T, uint64 N >
 	class NDArrayBase< T, N > : public Array<T>
@@ -60,16 +46,16 @@ namespace OreOreLib
 			: Array<T>( obj )
 			, m_Shape( obj.Shape() )
 		{
-			tcout << _T( "NDArray_proto::NDArrayBase( const NDArrayBase<Type, Ns...>& obj )...\n" );
+			//tcout << _T( "NDArray::NDArray( const NDArrayBase<Type, Ns...>& obj )...\n" );
 		}
 
 
 		// Constructor( NDArrayView specific )
-		NDArrayBase( const NDArrayView_proto<T, N>& obj )
+		NDArrayBase( const NDArrayView<T, N>& obj )
 			: Array<T>( (int)obj.Shape().Size() )
 			, m_Shape( obj.Shape() )
 		{
-			tcout << _T( "NDArray_proto::NDArrayBase( const NDArrayView_proto<T, N>& obj )...\n" );
+			//tcout << _T( "NDArray::NDArray( const NDArrayView<T, N>& obj )...\n" );
 
 			for( int i=0; i<this->m_Length; ++i )
 				this->m_pData[i] = obj[i];
@@ -269,4 +255,4 @@ namespace OreOreLib
 }// end of namespace
 
 
-#endif /* ND_ARRAY_PROTO_H */
+#endif /* ND_ARRAY_H */

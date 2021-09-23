@@ -380,6 +380,13 @@ namespace OreOreLib
 		}
 
 
+		void SetValues( T* pdata, int len )
+		{
+			assert( len>0 && pdata );
+			MemCopy( m_pData, pdata, Min( m_Length, len ) );
+		}
+
+
 		template < typename ... Args >
 		std::enable_if_t< TypeTraits::all_convertible<T, Args...>::value, void >
 		SetValues( const Args& ... args )
