@@ -23,7 +23,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
+		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< detail::ShapeType<N>, Args... >::value >* = nullptr >
 		NDArrayBase( Args const & ... args )
 			: m_Shape( args... )
 		{
@@ -32,7 +32,7 @@ namespace OreOreLib
 
 
 		// Constructor with initializer list
-		template < typename T_INDEX, std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value >* = nullptr >
+		template < typename T_INDEX, std::enable_if_t< std::is_convertible< T_INDEX, detail::ShapeType<N> >::value >* = nullptr >
 		NDArrayBase( std::initializer_list<T_INDEX> ilist )
 			: m_Shape( ilist )
 		{
@@ -41,7 +41,7 @@ namespace OreOreLib
 
 
 		// Constructor using NDArrayBase
-		template< typename Type, uint64 ... Ns, std::enable_if_t< (sizeof...(Ns)==N) >* = nullptr >
+		template< typename Type, int64 ... Ns, std::enable_if_t< (sizeof...(Ns)==N) >* = nullptr >
 		NDArrayBase( const NDArrayBase<Type, Ns...>& obj )
 			: Array<T>( obj )
 			, m_Shape( obj.Shape() )
@@ -107,7 +107,6 @@ namespace OreOreLib
 		}
 
 
-
 		void Init( const Memory<T>& obj )
 		{
 			Array<T>::Init( obj );
@@ -116,7 +115,7 @@ namespace OreOreLib
 
 
 		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< detail::ShapeType<N>, Args... >::value, void >
 		Init( const Args& ... args )
 		{
 			m_Shape.Init( args... );
@@ -125,7 +124,7 @@ namespace OreOreLib
 
 
 		template < typename T_INDEX >
-		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, void >
+		std::enable_if_t< std::is_convertible< T_INDEX, detail::ShapeType<N> >::value, void >
 		Init( std::initializer_list<T_INDEX> ilist )
 		{
 			m_Shape.Init( ilist );
@@ -156,7 +155,7 @@ namespace OreOreLib
 
 		// Read only.( called if NDArray is const )
 		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, const T& >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< detail::ShapeType<N>, Args... >::value, const T& >
 		operator()( const Args& ... args ) const&// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( args... ) ];
@@ -165,7 +164,7 @@ namespace OreOreLib
 
 		// Read-write.( called if NDArray is non-const )
 		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T& >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< detail::ShapeType<N>, Args... >::value, T& >
 		operator()( const Args& ... args ) &// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( args... ) ];
@@ -174,7 +173,7 @@ namespace OreOreLib
 
 		// Subscript operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)(x, y)", "auto&& a = NDArray<T, 2>(10,10)(x, y)" )
 		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, T >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< detail::ShapeType<N>, Args... >::value, T >
 		operator()( const Args& ... args ) const&&// x, y, z, w...
 		{
 			return (T&&)this->m_pData[ m_Shape.To1D( args... ) ];
@@ -185,7 +184,7 @@ namespace OreOreLib
 
 		// Read only.( called if NDArray is const )
 		template < typename T_INDEX >
-		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, const T& >
+		std::enable_if_t< std::is_convertible< T_INDEX, detail::ShapeType<N> >::value, const T& >
 		operator()( std::initializer_list<T_INDEX> indexND ) const&// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( indexND ) ];
@@ -194,7 +193,7 @@ namespace OreOreLib
 
 		// Read-write.( called if NDArray is non-const )
 		template < typename T_INDEX >
-		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T& >
+		std::enable_if_t< std::is_convertible< T_INDEX, detail::ShapeType<N> >::value, T& >
 		operator()( std::initializer_list<T_INDEX> indexND ) &// x, y, z, w...
 		{
 			return this->m_pData[ m_Shape.To1D( indexND ) ];
@@ -203,7 +202,7 @@ namespace OreOreLib
 
 		// Subscript operator. ( called by following cases: "T& a = NDArray<T, 2>(10,10)({x, y})", "auto&& a = NDArray<T, 2>(10,10)({x, y})" )
 		template < typename T_INDEX >
-		std::enable_if_t< std::is_convertible<uint64, T_INDEX>::value, T >
+		std::enable_if_t< std::is_convertible< T_INDEX, detail::ShapeType<N> >::value, T >
 		operator()( std::initializer_list<T_INDEX> indexND ) const&&// x, y, z, w...
 		{
 			return (T&&)this->m_pData[ m_Shape.To1D( indexND ) ];
@@ -216,8 +215,8 @@ namespace OreOreLib
 		}
 
 
-		template < typename T_INDEX=uint32 >
-		std::enable_if_t< std::is_convertible_v<uint32, T_INDEX>, T_INDEX >
+		template < typename T_INDEX=NDShape<N>::SHAPE_TYPE >
+		std::enable_if_t< std::is_convertible_v< T_INDEX, detail::ShapeType<N> >, T_INDEX >
 		Dim( int i ) const
 		{
 			return m_Shape.Dim<T_INDEX>(i);

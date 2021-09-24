@@ -93,7 +93,7 @@ int main()
 
 
 
-	view2d.Display();
+	//view2d.Display();
 	//tcout << view2d(0, 0) << tendl;
 	//view2d.begin();
 	NDArrayView<double, 2> view2d3( arr2d, 1, 1, 2, 2 );//view2d3( arr2d, {1, 3}, {2, 2} );//
