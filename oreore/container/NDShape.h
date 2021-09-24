@@ -32,10 +32,13 @@ namespace OreOreLib
 
 	// https://stackoverflow.com/questions/32921192/c-variadic-template-limit-number-of-args
 
-	template < uint64 N >
+	template < int64 N >
 	class NDShape
 	{
 	public:
+
+		using SHAPE_TYPE = uint32;
+
 
 		// Default constructor
 		NDShape()
@@ -47,17 +50,17 @@ namespace OreOreLib
 
 
 		// Constructor(variadic tempaltes)
-		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value >* = nullptr >
-		NDShape( const Args& ... args )// x, y, z, w...
-			: m_Shape{ uint64(args)... }
+		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SHAPE_TYPE, Args...>::value >* = nullptr >
+		NDShape( const Args& ... args )// ...w, z, y, x
+			: m_Shape{ SHAPE_TYPE(args)... }
 		{
 			InitStrides();
 		}
 
 
 		// Constructor(initializer list)
-		template < typename T, std::enable_if_t< std::is_convertible<uint64, T>::value >* = nullptr >
-		NDShape( std::initializer_list<T> indexND )// x, y, z, w...
+		template < typename T, std::enable_if_t< std::is_convertible<T, SHAPE_TYPE>::value >* = nullptr >
+		NDShape( std::initializer_list<T> indexND )// ...w, z, y, x
 		{
 			Init( indexND );
 		}
@@ -79,39 +82,36 @@ namespace OreOreLib
 
 
 		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		Init( const Args& ... args )
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SHAPE_TYPE, Args...>::value, void >
+		Init( const Args& ... args )// ...w, z, y, x
 		{
 			auto p = m_Shape;
 			for( const auto& val : { args... } )
-				*(p++) = val;
+				*(p++) = (SHAPE_TYPE)val;
 
 			InitStrides();
 		}
 
 
 		template < typename T >
-		std::enable_if_t< std::is_convertible<uint64, T>::value, void >
-		Init( std::initializer_list<T> indexND )
+		std::enable_if_t< std::is_convertible<T, SHAPE_TYPE>::value, void >
+		Init( std::initializer_list<T> indexND )// ...w, z, y, x
 		{
 			auto p = m_Shape;
 			for( const auto& val : indexND )
-				*(p++) = val;
+				*(p++) = (SHAPE_TYPE)val;
 
 			InitStrides();
 		}
 
 
-template < typename T >
-std::enable_if_t< std::is_convertible<uint64, T>::value, void >
-Init( const T indexND[] ) 
-{
-	MemCopy( m_Shape, indexND, N );
-//	for( int i=1; i<N; ++i )
-//		m_Shape[i] = indexND[i];
-
-	InitStrides();
-}
+		template < typename T >
+		std::enable_if_t< std::is_convertible<T, SHAPE_TYPE>::value, void >
+		Init( const T indexND[] ) 
+		{
+			MemCopy( m_Shape, indexND, N );
+			InitStrides();
+		}
 
 
 		void Release()
@@ -123,74 +123,64 @@ Init( const T indexND[] )
 
 
 		//============== ND to 1D index conversion ===============//
-		// indexND[0] +				// x
-		// indexND[1] * m_Strides[0] +	// y
-		// indexND[2] * m_Strides[1] +	// z
-		// indexND[3] * m_Strides[2];	// w
 		// ...
+		// indexND[0] * m_Strides[2];	// w
+		// indexND[1] * m_Strides[1] +	// z
+		// indexND[2] * m_Strides[0] +	// y
+		// indexND[3] +					// x
 
-		template < typename ... Args >// initializer_list version
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, int64 >
-		To1D( const Args& ... args ) const// x, y, z, w...
+		template < typename T=SHAPE_TYPE, typename ... Args >// initializer_list version
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<T, Args...>::value, T >
+		To1D( const Args& ... args ) const// ...w, z, y, x
 		{
-			auto indexND = { args... };
-			auto itr = std::begin( indexND );
-
-			uint64 index = *(itr++);
+			//using T = typename TypeTraits::first_type<Args...>::type;
+			auto indexND = { &args... };
+			auto itr = std::rbegin( indexND );
+			
+			/*uint64*/T index = **itr++;
 			auto offset = m_Strides;
 
-			while( itr !=std::end( indexND ) )
-				index += *(itr++) * *(offset++);
-
-			return index;
-		}
-		//template < typename ... Args >// C-style array version. slower than above implementation. 
-		//std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, int64 >
-		//To1D( const Args& ... args ) const// x, y, z, w...
-		//{
-		//	using T = typename TypeTraits::first_type<Args...>::type;
-		//	const T* indexND[N] = { &args... };
-		//	
-		//	int64 index = (T)*indexND[0];
-		//	for( int i=1; i<N; ++i )	index += *indexND[i] * m_Strides[i-1];
-		//	return index;
-		//}
-
-
-		template < typename T >
-		std::enable_if_t< std::is_convertible<uint64, T>::value, int64 >
-		To1D( std::initializer_list<T> indexND ) const// x, y, z, w...
-		{
-			auto itr = std::begin( indexND );
-
-			uint64 index = (uint64)*(itr++);
-			auto offset = m_Strides;
-
-			while( itr !=std::end( indexND ) )
-				index += (uint64)*(itr++) * *(offset++);
+			while( itr !=std::rend( indexND ) )
+				index += (T)**(itr++) * (T)*(offset++);
 
 			return index;
 		}
 
 
-		template < typename T >
-		std::enable_if_t< std::is_convertible_v<T, uint64>, int64 >
+		template < typename T=SHAPE_TYPE >
+		std::enable_if_t< std::is_convertible<SHAPE_TYPE, T>::value, T >
+		To1D( std::initializer_list<T> indexND ) const// ...w, z, y, x
+		{
+			auto itr = std::rbegin( indexND );
+
+			/*uint64*/T index = (/*uint64*/T)*(itr++);
+			auto offset = m_Strides;
+
+			while( itr !=std::rend( indexND ) )
+				index += (/*uint64*/T)*(itr++) * (T)*(offset++);
+
+			return index;
+		}
+
+
+		template < typename T=SHAPE_TYPE >
+		std::enable_if_t< std::is_convertible_v<T, SHAPE_TYPE>, T >
 		To1D( const T indexND[] ) const
 		{
-			int64 index = indexND[0];
-			for( int i=1; i<N; ++i )	index += indexND[i] * m_Strides[i-1];
+			T index = indexND[N-1];
+			for( int i=N-2; i>=0; --i )	index += indexND[i] * (T)m_Strides[N-2-i];
 			return index;
 
-			//indexND[0] +					// x
-			//indexND[1] * m_Strides[0] +	// y
-			//indexND[2] * m_Strides[1] +	// z
-			//indexND[3] * m_Strides[2];	// w
+			//indexND[0] * m_Strides[2];	// w
+			//indexND[1] * m_Strides[1] +	// z
+			//indexND[2] * m_Strides[0] +	// y
+			//indexND[3] +					// x
 		}
 
 
 		template < typename T >
 		std::enable_if_t< std::is_convertible_v<T, uint64>, int64 >
-		From3DTo1D( const T& x, const T& y, const T& z ) const
+		From3DTo1D( const T& z, const T& y, const T& x ) const
 		{
 			return z * m_Strides[1] + y * m_Strides[0] + x;
 		}
@@ -198,55 +188,58 @@ Init( const T indexND[] )
 
 
 		//=============== 1D to ND index conversion ===============//
-		// indexND[3]	= ( id / m_Strides[2] );
-		// indexND[2]	= ( id % m_Strides[2] ) / m_Strides[1];
-		// indexND[1]	= ( id % m_Strides[2] ) % m_Strides[1] / m_Strides[0];
-		// indexND[0]	= ( id % m_Strides[2] ) % m_Strides[1] % m_Strides[0];
+		// indexND[0]	= ( id / m_Strides[2] );
+		// indexND[1]	= ( id % m_Strides[2] ) / m_Strides[1];
+		// indexND[2]	= ( id % m_Strides[2] ) % m_Strides[1] / m_Strides[0];
+		// indexND[3]	= ( id % m_Strides[2] ) % m_Strides[1] % m_Strides[0];
 		// ...
 
-		template < typename T >
-		std::enable_if_t< std::is_convertible_v<T, uint64>, T* >
-		ToND( uint64 indexd1D, T indexND[] ) const
+		template < typename T_INDEX=SHAPE_TYPE, typename T=SHAPE_TYPE >
+		std::enable_if_t< std::is_convertible_v<T_INDEX, T>, T* >
+		ToND( T_INDEX indexd1D, T indexND[] ) const
 		{
-			indexND[N-1] = (T)indexd1D;
-			for( int i=N-2; i>=0; --i )
-				indexND[i] = indexND[i+1] % (T)m_Strides[i];
-
-			for( int i=N-1; i>=1; --i )
-				indexND[i] /= (T)m_Strides[i-1];
+			indexND[ 0 ] = (T)indexd1D;
+			for( int i=0; i<N-1; ++i )
+			{
+				T str = (T)m_Strides[ N-2-i ];
+				indexND[ i+1 ] = indexND[ i ] % str;
+				indexND[ i ] /= str;
+			}
 
 			return indexND;
 		}
 
 
 		//　Single dim only
-		uint64 ToND( uint64 indexd1D, int dim ) const
+		template < typename T_INDEX=SHAPE_TYPE, typename T=SHAPE_TYPE >
+		std::enable_if_t< std::is_convertible_v<T_INDEX, T>, T >
+		ToND( T_INDEX indexd1D, uint16 dim ) const
 		{
-			uint64 index = indexd1D;
-			for( int i=N-2; i>=dim; --i )
-				index = index % m_Strides[i];
+			T index = (T)indexd1D;
+			for( int i=1; i<=dim; ++i )
+				index = index % (T)m_Strides[ N-1-i ];
 
-			if( dim > 0 )
-				index /= m_Strides[dim-1];
+			if( dim < N-1 )
+				index /= (T)m_Strides[ N-2-dim ];
 
 			return index;
 		}
 
 
-		template < typename ... Args >// C-style array version
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		ToND( uint64 index1D, Args& ... args ) const
+		template < typename T_INDEX=SHAPE_TYPE, typename ... Args >// C-style array version
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<T_INDEX, Args...>::value, void >
+		ToND( T_INDEX index1D, Args& ... args ) const
 		{
 			using T = typename TypeTraits::first_type<Args...>::type;
+			T* indexND[ N ] = { &args... };
 
-			T* indexND[N] = { &args... };
-
-			*indexND[N-1] = (T)index1D;
-			for( int i=N-2; i>=0; --i )
-				*indexND[i] = *indexND[i+1] % (T)m_Strides[i];
-			
-			for( int i=N-1; i>=1; --i )
-				*indexND[i] /= (T)m_Strides[i-1];
+			*indexND[ 0 ] = (T)index1D;
+			for( int i=0; i<N-1; ++i )
+			{
+				T& stride = (T&)m_Strides[ N-2-i ];
+				*indexND[ i+1 ] = *indexND[ i ] % stride;
+				*indexND[ i ] /= stride;
+			}
 		}
 		//template < typename ... Args >// initializer_list version. slower than above implementation. 
 		//std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
@@ -256,37 +249,39 @@ Init( const T indexND[] )
 
 		//	auto indexND = { &args... };
 
-		//	auto iter_i = (T**)indexND.end();	iter_i--;
+		//	auto iter_i = (T**)indexND.begin();
 		//	**iter_i = (T)index1D;//indexND[N-1] = (T)indexd1D;
 
 		//	auto iter_i_1 = iter_i;
 		//	auto iter_stride = &m_Strides[N-2];
-		//	while( --iter_i >= indexND.begin() )
-		//		**iter_i = **iter_i_1-- % *iter_stride--;
+		//	while( ++iter_i != indexND.end() )
+		//		**iter_i = **iter_i_1++ % *iter_stride--;
 		//	
-		//	iter_i = (T**)indexND.end();
+		//	iter_i = (T**)indexND.begin();
 		//	iter_stride = &m_Strides[N-2];
-		//	while( --iter_i > indexND.begin() )
-		//		**iter_i /= (T)*iter_stride--;
+		//	while( iter_stride >= m_Strides )
+		//		**iter_i++ /= (T)*iter_stride--;
 		//}
 
 
-
-		uint64 NumDims() const
+		template < typename T=SHAPE_TYPE >
+		/*uint64*/T NumDims() const
 		{
-			return N;
+			return (T)N;
 		}
 
 
-		uint64 Dim( uint64 i ) const
+		template < typename T=SHAPE_TYPE >
+		T Dim( int32 i ) const
 		{
-			return i<N ? m_Shape[ i ] : 0;
+			return (T)m_Shape[i];//i<N ? m_Shape[ i ] : 0;
 		}
 
 
-		uint64 Size() const
+		template < typename T=SHAPE_TYPE >
+		T Size() const
 		{
-			return m_Strides[ N-1 ];
+			return (T)m_Strides[ N-1 ];
 		}
 
 
@@ -302,19 +297,20 @@ Init( const T indexND[] )
 
 	private:
 
-		uint64	m_Shape[ N ];
-		uint64	m_Strides[ N ];// strides for multidimensional element access.
+		SHAPE_TYPE	m_Shape[ N ];
+		SHAPE_TYPE	m_Strides[ N ];// strides for multidimensional element access.
 
 
 		const void InitStrides()
 		{
-			m_Strides[0] = m_Shape[0];
-			for( int i=1; i<N; ++i )	m_Strides[i] = m_Shape[i] * m_Strides[i-1];
+			m_Strides[0] = m_Shape[N-1];
+			for( int i=0; i<N-1; ++i )
+				m_Strides[ i+1 ] = m_Strides[ i ] * m_Shape[ N-2-i ];
 
-			//m_Strides[0]	= m_Shape[0];
-			//m_Strides[1]	= m_Shape[0] * m_Shape[1];
-			//m_Strides[2]	= m_Shape[0] * m_Shape[1] * m_Shape[2];
-			//m_Strides[3]	= m_Shape[0] * m_Shape[1] * m_Shape[2] * m_Shape[3];
+			//m_Strides[0]	= m_Shape[3];
+			//m_Strides[1]	= m_Strides[0] * m_Shape[2];
+			//m_Strides[2]	= m_Strides[1] * m_Shape[1];
+			//m_Strides[3]	= m_Strides[2] * m_Shape[0];
 			//...
 		}
 

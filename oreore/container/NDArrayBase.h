@@ -24,21 +24,21 @@ namespace OreOreLib
 
 
 	// NDArrayBase declaration
-	template< typename T, uint64 ...Ns > class NDArrayBase; 
+	template< typename T, int64 ...Ns > class NDArrayBase; 
 
 
 	// NDArray specialization
-	template< typename T, uint64 N >
+	template< typename T, int64 N >
 	using NDArray = NDArrayBase< T, N >;
 
 
 	// NDStaticArray specialization
-	template< typename T, uint64 ... Args >
+	template< typename T, int64 ... Args >
 	using NDStaticArray = NDArrayBase< detail::NDSTATICARR<T>, Args... >;
 
 
 	// NDArrayView specialization
-	template< typename T, uint64 N >
+	template< typename T, int64 N >
 	using NDArrayView = NDArrayBase< detail::NDARRVIEW<T>, N >;
 	
 }

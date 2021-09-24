@@ -16,7 +16,43 @@ int main()
 	std::chrono::system_clock::time_point  start, end; // 型は auto で可
 	start = std::chrono::system_clock::now(); // 計測開始時間
 
+	/*
+	{
+		const int X=2, Y=3, Z=4;
+		double arr3d[Z][Y][X];
 
+		double i=0;
+		for( int z=0; z<Z; ++z )
+			for( int y=0; y<Y; ++y )
+				for( int x=0; x<X; ++x )				
+				{
+					arr3d[z][y][x] = i++;
+					tcout << "[" << z << "][" << y << "][" << x << "]: " << arr3d[z][y][x] << tendl;
+				}
+	}
+	*/
+	tcout << tendl;
+
+	{
+		const int X=2, Y=3, Z=4;
+		NDArray<double, 3>	arr3d( Z, Y, X );
+		
+		double i=0;
+		for( int z=0; z<arr3d.Dim<int>(0); ++z )
+			for( int y=0; y<arr3d.Dim<int>(1); ++y )
+				for( int x=0; x<arr3d.Dim<int>(2); ++x )
+				{
+					arr3d(z,y,x) = i++;
+					tcout << "[" << z << "][" << y << "][" << x << "]: " << arr3d(z, y, x) << tendl;
+				}
+
+		tcout << tendl;
+
+		arr3d.Display();
+	}
+
+
+	tcout << tendl;
 
 
 	NDArray<double, 2>	arr2d({4, 4}),// double2D(2, 3); is OK
@@ -44,6 +80,7 @@ int main()
 		view.Display();
 	}
 
+	tcout << tendl;
 
 	{
 		NDArrayView<double, 2> view;
@@ -52,8 +89,10 @@ int main()
 		view.Display();
 	}
 
+	tcout << tendl;
 
-/*
+
+
 	view2d.Display();
 	//tcout << view2d(0, 0) << tendl;
 	//view2d.begin();
@@ -70,7 +109,7 @@ int main()
 	}
 	sarr2d.Display();
 
-/*
+
 	{
 		NDArray<double, 2>	arr(sarr2d);
 		arr.Display();
@@ -96,7 +135,7 @@ int main()
 		NDStaticArray<double, 4, 4> arr( {-1, 2, -3, 4, -5, 6, -7, 8, -9, 10, -11, 12, -13, 14, -15, 16} );
 		arr.Display();
 	}
-*/
+
 
 
 /*

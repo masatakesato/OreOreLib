@@ -380,10 +380,10 @@ namespace OreOreLib
 		}
 
 
-		void SetValues( T* pdata, int len )
+		void SetValues( uint8* pdata, int len )
 		{
 			assert( len>0 && pdata );
-			MemCopy( m_pData, pdata, Min( m_Length, len ) );
+			MemCopy( m_pData, (T*)pdata, Min( m_Length, len ) );
 		}
 
 

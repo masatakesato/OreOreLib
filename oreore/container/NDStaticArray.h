@@ -15,11 +15,11 @@ namespace OreOreLib
 {
 
 
-	template< typename T, uint64 ... Args >
+	template< typename T, int64 ... Args >
 	class NDArrayBase< detail::NDSTATICARR<T>, Args... > : public StaticArray<T, mult_<Args...>::value >
 	{
-		static constexpr size_t N = sizeof...(Args);
-		static constexpr size_t Size = mult_<Args...>::value;
+		static constexpr int64 N = sizeof...(Args);
+		static constexpr int64 Size = mult_<Args...>::value;
 
 	public:
 
@@ -169,19 +169,32 @@ namespace OreOreLib
 		//}
 
 
+		const NDShape<N>& Shape() const
+		{
+			return m_Shape;
+		}
+
+
+		template < typename T_INDEX=uint32 >
+		std::enable_if_t< std::is_convertible_v<uint32, T_INDEX>, T_INDEX >
+		Dim( int i ) const
+		{
+			return m_Shape.Dim<T_INDEX>(i);
+		}
+
 
 		void Display() const
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
-			uint64 dims[N];
+			uint32 dims[N];
 
 			for( int i=0; i<Size; ++i )
 			{
 				m_Shape.ToND( i, dims );
 
 				tcout << _T("  ");
-				for( int j=N-1; j>=0; --j )	tcout << _T("[") << dims[j] << _T("]");
+				for( int j=0; j<N; ++j )	tcout << _T("[") << dims[j] << _T("]");
 
 				tcout << _T(": ") << this->m_Data[i] << tendl;
 			}
@@ -195,8 +208,6 @@ namespace OreOreLib
 		//T& operator[]( std::size_t n ) & = delete;
 		//T operator[]( std::size_t n ) const&& = delete;
 
-
-		const NDShape<N>& Shape() const { return m_Shape; }
 
 
 	private:
