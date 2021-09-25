@@ -129,7 +129,7 @@ namespace OreOreLib
 		// indexND[2] * m_Strides[0] +	// y
 		// indexND[3] +					// x
 
-		template < typename T=SHAPE_TYPE, typename ... Args >// initializer_list version
+		template < typename T=SHAPE_TYPE, typename ... Args >// variadic template version
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<T, Args...>::value, T >
 		To1D( const Args& ... args ) const// ...w, z, y, x
 		{
@@ -137,7 +137,7 @@ namespace OreOreLib
 			auto indexND = { &args... };
 			auto itr = std::rbegin( indexND );
 			
-			/*uint64*/T index = **itr++;
+			T index = **itr++;
 			auto offset = m_Strides;
 
 			while( itr !=std::rend( indexND ) )
@@ -147,17 +147,17 @@ namespace OreOreLib
 		}
 
 
-		template < typename T=SHAPE_TYPE >
+		template < typename T=SHAPE_TYPE >// initializer_list version
 		std::enable_if_t< std::is_convertible<SHAPE_TYPE, T>::value, T >
 		To1D( std::initializer_list<T> indexND ) const// ...w, z, y, x
 		{
 			auto itr = std::rbegin( indexND );
 
-			/*uint64*/T index = (/*uint64*/T)*(itr++);
+			T index = (T)*(itr++);
 			auto offset = m_Strides;
 
 			while( itr !=std::rend( indexND ) )
-				index += (/*uint64*/T)*(itr++) * (T)*(offset++);
+				index += (T)*(itr++) * (T)*(offset++);
 
 			return index;
 		}

@@ -1,4 +1,5 @@
 ﻿#include	<chrono>
+#include	<crtdbg.h>
 
 #include	<oreore/common/TString.h>
 //#include	<oreore/meta/PeripheralTraits.h>
@@ -39,6 +40,7 @@ const int c_LoopCount = 1;
 
 int main()
 {
+	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	NDArray<double, 2>	arr2d({4, 4}),// double2D(2, 3); is OK
 						arr2d2(arr2d);
@@ -167,7 +169,7 @@ int main()
 	tcout << tendl;
 
 	{
-		NDArray<Vec4f, 2>	rgbimage( 16384, 16384 );
+		NDArray</*Vec4f*/double, 2>	rgbimage( 16384, 16384 );
 
 	//	rgbimage[0].x = 0.5f;
 	//	rgbimage[1].x = 0.5f;
@@ -183,8 +185,10 @@ int main()
 		{
 			for( int x=0; x<16384; ++x )
 			{
-				Vec4f& pixel = rgbimage( y, x);
-				InitVec( pixel, 255.0f, 0.5f, 0.0f, 1.0f );
+				double& pixel = rgbimage( y, x);
+				pixel = 255.0;
+				//Vec4f& pixel = rgbimage( y, x);
+				//InitVec( pixel, 255.0f, 0.5f, 0.0f, 1.0f );
 			}
 		}
 

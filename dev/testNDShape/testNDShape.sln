@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDShape", "testNDShape\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNDArray", "testNDArray\testNDArray.vcxproj", "{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testPerformance", "testPerformance\testPerformance.vcxproj", "{B83BFA84-A095-43FE-8C9B-91CFED36736D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}.Debug|x64.Build.0 = Debug|x64
 		{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}.Release|x64.ActiveCfg = Release|x64
 		{CE153EB0-4D9A-486B-B368-36A1BE55DDFB}.Release|x64.Build.0 = Release|x64
+		{B83BFA84-A095-43FE-8C9B-91CFED36736D}.Debug|x64.ActiveCfg = Debug|x64
+		{B83BFA84-A095-43FE-8C9B-91CFED36736D}.Debug|x64.Build.0 = Debug|x64
+		{B83BFA84-A095-43FE-8C9B-91CFED36736D}.Release|x64.ActiveCfg = Release|x64
+		{B83BFA84-A095-43FE-8C9B-91CFED36736D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
