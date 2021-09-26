@@ -1,4 +1,5 @@
 ﻿#include	<chrono>
+#include	<windows.h>
 #include	<crtdbg.h>
 
 #include	<oreore/common/TString.h>
@@ -24,7 +25,7 @@ void Access( NDArrayBase<T, Ns...>& arr )
 
 
 
-//#define PERFORMANCE_CHECK
+#define PERFORMANCE_CHECK
 
 #ifdef PERFORMANCE_CHECK
 
@@ -58,6 +59,57 @@ int main()
 	arr2d.Init({3, 3});
 	arr2d.SetValues( 0, 1, 2, 3, 4, 5, 6, 7, 8 );
 	arr2d.Display();
+
+
+	{
+		NDArray<double, 2>	arr({3, 4});
+		Sleep( 1000 );
+
+		std::chrono::system_clock::time_point  start, end; // 型は auto で可
+		start = std::chrono::system_clock::now(); // 計測開始時間
+
+		for( int i=0; i<c_LoopCount; ++i )
+		{
+			arr.SetValues( -5.0, -6, -7.0, (uint8)-8 );
+		}
+		#ifndef PERFORMANCE_CHECK
+			arr.Display();
+		#endif
+
+		end = std::chrono::system_clock::now();  // 計測終了時間
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end-start ).count(); //処理に要した時間をミリ秒に変換
+		tcout << "time elapsed: " << elapsed << "[ms].\n";
+	}
+
+	tcout << tendl;
+
+	
+	{
+		NDArray<double, 2>	arr({3, 4});
+		Sleep( 1000 );
+
+		std::chrono::system_clock::time_point  start, end; // 型は auto で可
+		start = std::chrono::system_clock::now(); // 計測開始時間
+
+		for( int i=0; i<c_LoopCount; ++i )
+		{
+			arr.SetValues( {-5.0, -6.0, -7.0, -8.0} );
+		}
+		#ifndef PERFORMANCE_CHECK
+			arr.Display();
+		#endif
+
+		end = std::chrono::system_clock::now();  // 計測終了時間
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end-start ).count(); //処理に要した時間をミリ秒に変換
+		tcout << "time elapsed: " << elapsed << "[ms].\n";
+	}
+
+	tcout << tendl;
+
+
+	return 0;
+
+
 
 
 	{

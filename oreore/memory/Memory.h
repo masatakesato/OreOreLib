@@ -391,23 +391,34 @@ namespace OreOreLib
 		std::enable_if_t< TypeTraits::all_convertible<T, Args...>::value, void >
 		SetValues( const Args& ... args )
 		{
-			int64 count = (int64)Min( sizeof...(Args), (size_t)m_Length ) - 1;
-			auto src = std::begin( { (T)args... } );
-			auto dst = begin();
-			while( count-->=0 )
-				*dst++ = *src++;
+			auto values = { (T)args... };
+			MemCopy( m_pData, values.begin(), Min( (size_t)m_Length, values.size() ) );
+
+			//T values[]{ (T)args... };//
+			//MemCopy( m_pData, values, Min( (size_t)m_Length, sizeof...(Args) ) );
+
+			//SetValues( { (T)args... } );
+
+
+			//int64 count = (int64)Min( sizeof...(Args), (size_t)m_Length ) - 1;
+			//auto src = std::begin( { (T)args... } );
+			//auto dst = begin();
+			//while( count-->=0 )
+			//	*dst++ = *src++;
 		}
 
 
 		template < typename Type >
-		std::enable_if_t< std::is_convertible_v<Type, T>, void >
+		std::enable_if_t< std::is_same_v<Type, T>, void >
 		SetValues( std::initializer_list<Type> ilist )
 		{
-			int64 count = (int64)Min( ilist.size(), (size_t)m_Length ) - 1;
-			auto src = ilist.begin();
-			auto dst = begin();
-			while( count-->=0 )
-				*dst++ = (T)*src++;
+			MemCopy( m_pData, ilist.begin(), Min( (size_t)m_Length, ilist.size() ) );
+
+			//int64 count = (int64)Min( ilist.size(), (size_t)m_Length ) - 1;
+			//auto src = ilist.begin();
+			//auto dst = begin();
+			//while( count-->=0 )
+			//	*dst++ = (T)*src++;
 		}
 
 

@@ -133,17 +133,18 @@ namespace OreOreLib
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<T, Args...>::value, T >
 		To1D( const Args& ... args ) const// ...w, z, y, x
 		{
-			//using T = typename TypeTraits::first_type<Args...>::type;
-			auto indexND = { &args... };
-			auto itr = std::rbegin( indexND );
-			
-			T index = **itr++;
-			auto offset = m_Strides;
+			return To1D( {args...} );
+			///using T = typename TypeTraits::first_type<Args...>::type;
+			//auto indexND = { &args... };
+			//auto itr = std::rbegin( indexND );
+			//
+			//T index = **itr++;
+			//auto offset = m_Strides;
 
-			while( itr !=std::rend( indexND ) )
-				index += (T)**(itr++) * (T)*(offset++);
+			//while( itr !=std::rend( indexND ) )
+			//	index += (T)**(itr++) * (T)*(offset++);
 
-			return index;
+			//return index;
 		}
 
 
@@ -262,6 +263,28 @@ namespace OreOreLib
 		//	while( iter_stride >= m_Strides )
 		//		**iter_i++ /= (T)*iter_stride--;
 		//}
+
+
+
+		//template < typename T_INDEX, typename T >// initializer_list version. Deprecated. Very slow
+		//std::enable_if_t< std::is_convertible<SHAPE_TYPE, T>::value, void >
+		//ToND( T_INDEX index1D, std::initializer_list<T*> indexND ) const
+		//{
+		//	
+		//	auto* index_i = indexND.begin();
+		//	auto* index_i1 = index_i;
+		//	index_i1++;
+		//	
+		//	auto stride = m_Strides[ N-2 ];
+		//	**index_i = (T)index1D;
+		//	for( ; index_i1 != indexND.end(); index_i++, index_i1++, stride-- )
+		//	{
+		//		**index_i1 = **index_i % stride;
+		//		**index_i /= stride;
+		//	}
+		//	
+		//}
+
 
 
 		template < typename T=SHAPE_TYPE >
