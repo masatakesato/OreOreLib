@@ -4,7 +4,6 @@
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-#include	<oreore/common/TString.h>
 #include	<oreore/ui/win/Window.h>
 #include	<oreore/ui/win/WindowProcedure.h>
 #include	<oreore/ui/win/Controller.h>

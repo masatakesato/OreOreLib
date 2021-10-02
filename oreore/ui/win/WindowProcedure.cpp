@@ -86,6 +86,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_DESTROY:
 		ctrl->Destroy();
+		PostQuitMessage(0);
 		break;
 
 	case WM_CLOSE:

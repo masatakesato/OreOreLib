@@ -6,12 +6,34 @@
 
 
 
+//Window::Window()
+//	: m_hWnd(0)
+//	, m_hInst( 0 )
+//	, m_Style( 0x0 )
+//	, m_PositionX( 0x0 )
+//	, m_PositionY( 0x0 )
+//	, m_Width( 0 )
+//	, m_Height( 0 )
+//	, m_hParent( 0 )
+//	, m_hMenu( 0 )
+//	, m_pController( 0 )
+//{
+//
+//}
 
-Window::Window(HINSTANCE hInstance, TCHAR *classname, TCHAR *title, LPVOID controller, WNDPROC WinProc) :
-	m_hWnd(0), m_hInst(hInstance), m_Style(WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN),
-	m_PositionX(CW_USEDEFAULT), m_PositionY(CW_USEDEFAULT),
-	m_Width(CW_USEDEFAULT), m_Height(CW_USEDEFAULT),
-	m_hParent(0), m_hMenu(0), m_pController(controller)
+
+
+Window::Window( HINSTANCE hInstance, const TCHAR *classname, const TCHAR *title, LPVOID controller, WNDPROC WinProc )
+	: m_hWnd(0)
+	, m_hInst(hInstance)
+	, m_Style(WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN)
+	, m_PositionX(CW_USEDEFAULT)
+	, m_PositionY(CW_USEDEFAULT)
+	, m_Width(CW_USEDEFAULT)
+	, m_Height(CW_USEDEFAULT)
+	, m_hParent(0)
+	, m_hMenu(0)
+	, m_pController(controller)
 {
 
 #ifdef _DEBUG

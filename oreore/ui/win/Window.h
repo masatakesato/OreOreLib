@@ -11,7 +11,8 @@ class Window
 {
 public:
 	
-	Window( HINSTANCE hInstance, TCHAR *classname, TCHAR *title, LPVOID controller, WNDPROC WinProc );
+	//Window();
+	Window( HINSTANCE hInstance, const TCHAR *classname, const TCHAR *title, LPVOID controller, WNDPROC WinProc );
 	~Window();
 
 	HRESULT Create();			// ウィンドウ作成
