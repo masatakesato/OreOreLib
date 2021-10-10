@@ -3,9 +3,7 @@
 
 #include	<exception>
 
-#include	"../common/Utility.h"
 #include	"../common/HashCode.h"
-#include	"../meta/TypeTraits.h"
 #include	"Pair.h"
 
 
