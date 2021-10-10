@@ -243,15 +243,24 @@ namespace OreOreLib
 		//}
 
 
-
 		Set( std::initializer_list<T> ilist )
 			: m_pTable()
 			, hashFunc()
-			, m_numElements( int(ilist.size()) )
+			, m_numElements( 0 )
 		{
-
 			for( const auto& val : ilist )
 				Put( val );
+		}
+
+
+		template < typename Iter >
+		Set( Iter first, Iter last )
+			: m_pTable()
+			, hashFunc()
+			, m_numElements( 0 )
+		{
+			for(; first != last; ++first )
+				Put( *first );
 		}
 
 

@@ -1,5 +1,6 @@
 ﻿#include	<oreore/common/TString.h>
 #include	<oreore/container/Set.h>
+#include	<oreore/container/StaticArray.h>
 
 using namespace OreOreLib;
 
@@ -44,17 +45,16 @@ int main()
 
 
 		set2 = std::move(set1);
-	}
 
+
+	}
 
 	for( const auto& data : set2 )
 	{
 		tcout << data << tendl;
 	}
 
-
 	tcout << tendl;
-
 
 	{
 		const Set< tstring, tableSize > set3 = { _T("aaa"), _T("bbb"), _T("bbb") };
@@ -66,25 +66,35 @@ int main()
 
 	}
 
+	tcout << tendl;
 
 	{
-		const Set< float, tableSize > set3 = { 0.5f, 0.6f, 0.6f };
+		float vals[] = { 0.5f, 0.6f, 0.6f };
+		const Set< float, tableSize > set3( std::begin(vals), std::end(vals) );
 
 		for( auto& data : set3 )
 		{
-			float& p = (float&)data;
-			//*p = 5.54f;
-			//tcout << data << tendl;
-		}
-
-
-		for( auto& data : set3 )
-		{
-//			float& p = data;
 			tcout << data << tendl;
 		}
-
 	}
+
+	tcout << tendl;
+
+	{
+		const StaticArray<const char*, 3> chararray = { "VK_KHR_swapchain", "VK_KHR_swapchain", "VK_KHR_swapchain" };
+
+		Set< std::string, tableSize > set3( chararray.begin(), chararray.end() );
+
+//		set3.Put( "dsfds" );
+
+
+		for( auto& data : set3 )
+		{
+			tcout << data.c_str() << tendl;
+		}
+	}
+
+
 
 
 

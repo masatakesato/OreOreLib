@@ -45,7 +45,7 @@ namespace OreOreLib
 
 
 	template < typename T >
-	std::enable_if_t< std::is_same_v<T,tstring>, uint64 >
+	std::enable_if_t< std::is_same_v<T,tstring> || std::is_same_v<T,std::string>, uint64 >
 	HashCode( const T& key )
 	{
 		unsigned hash = HashConst::Seed;
