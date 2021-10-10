@@ -47,6 +47,10 @@ namespace OreOreLib
 		// Constructor using Memory
 		ArrayBase( const Memory<T>& obj ) : Memory<T>( obj ) {}
 
+		// Constructor using iterator
+		template < class Iter >
+		ArrayBase( Iter first, Iter last ) : Memory<T>( first, last ) {}
+
 		// Copy constructor
 		ArrayBase( const ArrayBase& obj ) : Memory<T>( obj ) {}
 

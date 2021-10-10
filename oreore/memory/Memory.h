@@ -200,6 +200,19 @@ namespace OreOreLib
 		}
 
 
+		// Constructor with iterator
+		template < class Iter >
+		Memory( Iter first, Iter last )
+			: m_Length( int(last - first) )
+			, m_AllocSize( m_Length * sizeof(T) )
+			, m_pData( new T[ m_Length ]() )			
+		{
+			auto p = m_pData;
+			for(; first != last; ++first )
+				*(p++) = T(*first);
+		}
+
+
 		// Destructor
 		virtual ~Memory()
 		{
