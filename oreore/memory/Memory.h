@@ -24,54 +24,103 @@ namespace OreOreLib
 	//##############################################################################################################//
 
 	// Memory Copy
-	template < class Iter >
-	Iter* MemCopy( Iter* pDst, Iter* pSrc, size_t size )
+	template < class SrcIter, class DstIter >
+	DstIter* MemCopy( DstIter* pDst, SrcIter* pSrc, size_t size )
 	{
-		if constexpr ( std::is_trivially_copyable_v<Iter> )
+		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
-			return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
+			return (DstIter*)memcpy( pDst, pSrc, sizeof DstIter * size );
 		}
 		else
 		{
-			Iter* begin = pSrc;
-			Iter* end = pSrc + size;
-			Iter* out = pDst;
+			SrcIter* begin = pSrc;
+			SrcIter* end = pSrc + size;
+			DstIter* out = pDst;
 
 			while( begin != end )
 			{
-				*out = *begin;
+				*out = *(DstIter*)begin;
 				++begin; ++out;
 			}
-    
+			
 			return out;
 		}
 	}
+
+	//// Memory Copy
+	//template < class Iter >
+	//Iter* MemCopy( Iter* pDst, Iter* pSrc, size_t size )
+	//{
+	//	if constexpr ( std::is_trivially_copyable_v<Iter> )
+	//	{
+	//		return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
+	//	}
+	//	else
+	//	{
+	//		Iter* begin = pSrc;
+	//		Iter* end = pSrc + size;
+	//		Iter* out = pDst;
+
+	//		while( begin != end )
+	//		{
+	//			*out = *begin;
+	//			++begin; ++out;
+	//		}
+	//
+	//		return out;
+	//	}
+	//}
 
 
 
 	// Memory Move
-	template < class Iter >
-	Iter* MemMove( Iter* pDst, Iter* pSrc, size_t size )
+	template < class SrcIter, class DstIter >
+	DstIter* MemMove( DstIter* pDst, SrcIter* pSrc, size_t size )
 	{
-		if constexpr ( std::is_trivially_copyable_v<Iter> )
+		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
-			return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
+			return (DstIter*)memmove( pDst, pSrc, sizeof DstIter * size );
 		}
 		else
 		{
-			Iter* begin = pSrc;
-			Iter* end = pSrc + size;
-			Iter* out = pDst;
+			SrcIter* begin = pSrc;
+			SrcIter* end = pSrc + size;
+			DstIter* out = pDst;
 
 			while(begin != end)
 			{
-				*out = *begin;
+				*out = *(DstIter*)begin;
 				++begin; ++out;
 			}
 
 			return out;
 		}
 	}
+
+	//// Memory Move
+	//template < class Iter >
+	//Iter* MemMove( Iter* pDst, Iter* pSrc, size_t size )
+	//{
+	//	if constexpr ( std::is_trivially_copyable_v<Iter> )
+	//	{
+	//		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
+	//	}
+	//	else
+	//	{
+	//		Iter* begin = pSrc;
+	//		Iter* end = pSrc + size;
+	//		Iter* out = pDst;
+
+	//		while(begin != end)
+	//		{
+	//			*out = *begin;
+	//			++begin; ++out;
+	//		}
+
+	//		return out;
+	//	}
+	//}
+
 
 
 	#else
@@ -91,23 +140,40 @@ namespace OreOreLib
 		return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
 	}
 
-	// Non-Trivial Memcpy
-	template < class Iter >
-	std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
-	MemCopy( Iter* pDst, const Iter* pSrc, size_t size )
+	template < class SrcIter, class DstIter >
+	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
+	MemCopy( DstIter* pDst, const SrcIter* pSrc, size_t size )
 	{
-		Iter* begin = (Iter*)pSrc;
-		const Iter* end = pSrc + size;
-		Iter* out = pDst;
+		SrcIter* begin = (SrcIter*)pSrc;
+		const SrcIter* end = pSrc + size;
+		DstIter* out = pDst;
 
 		while( begin != end )
 		{
-			*out = *begin;
+			*out = *(DstIter*)begin;
 			++begin; ++out;
 		}
-    
+		
 		return out;
 	}
+
+	//// Single type Non-Trivial Memcpy( single template type )
+	//template < class Iter >
+	//std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
+	//MemCopy( Iter* pDst, const Iter* pSrc, size_t size )
+	//{
+	//	Iter* begin = (Iter*)pSrc;
+	//	const Iter* end = pSrc + size;
+	//	Iter* out = pDst;
+
+	//	while( begin != end )
+	//	{
+	//		*out = *begin;
+	//		++begin; ++out;
+	//	}
+	//
+	//	return out;
+	//}
 
 
 
@@ -120,22 +186,41 @@ namespace OreOreLib
 	}
 
 	// Non-Trivial MemMove
-	template < class Iter >
-	std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
-	MemMove( Iter* pDst, const Iter* pSrc, size_t size )
+	template < class SrcIter, class DstIter >
+	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
+	MemMove( DstIter* pDst, const SrcIter* pSrc, size_t size )
 	{
-		Iter* begin = (Iter*)pSrc;
-		const Iter* end = pSrc + size;
-		Iter* out = pDst;
+		SrcIter* begin = (SrcIter*)pSrc;
+		const SrcIter* end = pSrc + size;
+		DstIter* out = pDst;
 
 		while( begin != end )
 		{
-			*out = *begin;
+			*out = *(DstIter*)begin;
 			++begin; ++out;
 		}
-    
+		
 		return out;
 	}
+
+	//// Non-Trivial MemMove( single template type )
+	//template < class Iter >
+	//std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
+	//MemMove( Iter* pDst, const Iter* pSrc, size_t size )
+	//{
+	//	Iter* begin = (Iter*)pSrc;
+	//	const Iter* end = pSrc + size;
+	//	Iter* out = pDst;
+
+	//	while( begin != end )
+	//	{
+	//		*out = *begin;
+	//		++begin; ++out;
+	//	}
+	//
+	//	return out;
+	//}
+
 
 
 	#endif//__cplusplus
@@ -422,7 +507,7 @@ namespace OreOreLib
 
 
 		template < typename Type >
-		std::enable_if_t< std::is_same_v<Type, T>, void >
+		std::enable_if_t< std::is_convertible_v<Type, T>/*  std::is_same_v<Type, T>*/, void >
 		SetValues( std::initializer_list<Type> ilist )
 		{
 			MemCopy( m_pData, ilist.begin(), Min( (size_t)m_Length, ilist.size() ) );

@@ -41,10 +41,13 @@ int main()
 	{
 		tcout << "//================== float 2d array test ===================//\n";
 
+
+		//tcout <<  std::is_trivially_copyable_v< OreOreLib::Array<float> > << tendl;
+
 		OreOreLib::Array< OreOreLib::Array<float> > array2d;
 
 		array2d.Init( 4 );
-	
+/*
 		int val=0;
 		array2d[0].AddToTail( float(val++) );
 		array2d[0].AddToTail( float(val++) );
@@ -152,6 +155,8 @@ int main()
 		}
 
 		tcout << tendl;
+
+*/
 	}
 
 

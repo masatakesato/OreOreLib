@@ -22,7 +22,13 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
+	{
+		float aaa[3] = {1.0f, 2.0f, 3.0f};
 
+		fArray faaa;//( std::begin(aaa), std::end(aaa) );
+		faaa.Init( 3, aaa );
+
+	}
 	//fSArray16 pp;
 
 	//fArray a0(5);
@@ -64,7 +70,6 @@ int main()
 
 	//arr2_1.SetValues( 0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111 );
 	arr2_1.SetValues( {0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111} );
-
 
 	for( int i=0; i<arr2_1.Length(); ++i )
 		tcout << arr2_1[i] << tendl;
