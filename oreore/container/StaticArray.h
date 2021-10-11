@@ -92,6 +92,10 @@ namespace OreOreLib
 		// Copy constructor
 		ArrayBase( const ArrayBase& obj )
 		{
+			this->m_pData		= m_Data;
+			this->m_Length		= Size;
+			this->m_AllocSize	= sizeof(T) * Size;
+
 			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
@@ -99,6 +103,10 @@ namespace OreOreLib
 		// Move constructor.
 		ArrayBase( ArrayBase&& obj )
 		{
+			this->m_pData		= m_Data;
+			this->m_Length		= Size;
+			this->m_AllocSize	= sizeof(T) * Size;
+
 			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
