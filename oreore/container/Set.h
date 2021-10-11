@@ -217,7 +217,7 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template < typename T, size_t TableSize, typename F = KeyHash<T, TableSize> >
+	template < typename T, size_t TableSize = 64, typename F = KeyHash<T, TableSize> >
 	class Set
 	{
 	public:

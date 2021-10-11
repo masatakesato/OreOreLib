@@ -1,10 +1,9 @@
 ﻿#ifndef GRAPHICS_MATH_H
 #define GRAPHICS_MATH_H
 
-#include	"MathLib.h"
+#include	"../common/TString.h"
 #include	"../common/Utility.h"
-#include	"../container/Array.h"
-
+#include	"MathLib.h"
 
 
 
@@ -56,15 +55,6 @@ union Quaternion;
 
 using Quatf		= Quaternion<float32>;
 using Quatd		= Quaternion<float64>;
-
-
-using ucArray	= OreOreLib::Array<uint8>;
-using sArray	= OreOreLib::Array<int16>;
-using usArray	= OreOreLib::Array<uint16>;
-using iArray	= OreOreLib::Array<int32>;
-using uiArray	= OreOreLib::Array<uint32>;
-using fArray	= OreOreLib::Array<float32>;
-using dArray	= OreOreLib::Array<float64>;
 
 
 
