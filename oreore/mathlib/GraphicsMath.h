@@ -1528,7 +1528,7 @@ inline void MatRotationZ( Mat4<T>& mat, T theta )
 
 
 // 座標変換行列を作成する(右手座標系/左手座標系の違いに注意！).行順
-// u: horizontal, v: vertical, n: forward
+// u: horizontal, v: vertical, n: forward, c: position
 template< typename T >
 inline void MatViewGL( Mat4<T>& out, const Vec3<T>& u, const Vec3<T>& v, const Vec3<T>& n, const Vec3<T>& c )
 {

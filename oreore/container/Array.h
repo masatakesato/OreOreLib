@@ -55,7 +55,7 @@ namespace OreOreLib
 		ArrayBase( const ArrayBase& obj ) : Memory<T>( obj ) {}
 
 		// Move constructor
-		ArrayBase( ArrayBase&& obj ) : Memory<T>( obj ) {}
+		ArrayBase( ArrayBase&& obj ) : Memory<T>( (ArrayBase&&)obj ) {}
 
 
 		// Copy Assignment opertor =
