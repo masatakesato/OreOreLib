@@ -1554,12 +1554,12 @@ inline void MatView( Mat4<T>& out, const Vec3<T>& u, const Vec3<T>& v, const Vec
 template< typename T >
 inline void MatPerspectiveFov( Mat4<T>& out, T fovy, T aspect, T znear, T zfar )
 {
-	T	depth = (znear)-( zfar );
-	T	f = ( T )1.0 / tan( ( T )0.5*( fovy ) );
+	T depth = znear - zfar;
+	T f = (T)1 / tan( (T)0.5 * fovy );
 
-	out.m00 = f / ( aspect );		out.m01 = 0;			out.m02 = 0;							out.m03 = 0;
+	out.m00 = f / aspect;		out.m01 = 0;			out.m02 = 0;							out.m03 = 0;
 	out.m10 = 0;				out.m11 = f;			out.m12 = 0;							out.m13 = 0;
-	out.m20 = 0;				out.m21 = 0;			out.m22 = ( (zfar)+( znear ) ) / depth;		out.m23 = (T)2*( zfar )*( znear ) / depth;
+	out.m20 = 0;				out.m21 = 0;			out.m22 = ( zfar + znear ) / depth;		out.m23 = (T)2 * zfar * znear / depth;
 	out.m30 = 0;				out.m31 = 0;			out.m32 = -1;							out.m33 = 0;
 }
 
@@ -1576,9 +1576,25 @@ inline void MatPerspectiveOffCenter( Mat4<T>& out, T left, T right, T bottom, T 
 
 
 
-// 射影変換行列を作成する(glOrthoと等価).
+// 射影変換行列を作成する
 template< typename T >
 inline void MatOrtho( Mat4<T>& out, T left, T right, T bottom, T top, T znear, T zfar )
+{
+	T width		= right -left;
+	T height	= top - bottom;
+	T depth		= zfar - znear;
+
+	out.m00 = (T)2 / width;		out.m01 = 0;				out.m02 = 0;				out.m03 = -( right + left ) / width;
+	out.m10 = 0;				out.m11 = (T)2 / height;	out.m12 = 0;				out.m13 = -( top + bottom ) / height;
+	out.m20 = 0;				out.m21 = 0;				out.m22 = (T)2 / depth;	out.m23 = ( zfar + znear ) / depth;
+	out.m30 = 0;				out.m31 = 0;				out.m32 = 0;				out.m33 = 1;
+}
+
+
+
+// 射影変換行列を作成する(glOrthoと等価).
+template< typename T >
+inline void MatOrthoGL( Mat4<T>& out, T left, T right, T bottom, T top, T znear, T zfar )
 {
 	T width		= right -left;
 	T height	= top - bottom;
