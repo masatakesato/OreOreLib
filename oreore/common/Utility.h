@@ -240,7 +240,7 @@ namespace MaxPrecision
 	#define HANDLE_EXCEPTION()
 
 
-	#define my_assert( ... )
+	#define ASSERT( ... )
 
 
 

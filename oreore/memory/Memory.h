@@ -527,9 +527,12 @@ namespace OreOreLib
 			T *newdata	= new T[ newlen ]();
 			int newallocsize = c_ElementSize * newlen;
 
-			MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+			if( m_pData )
+			{
+				MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+				SafeDeleteArray( m_pData );
+			}
 
-			SafeDeleteArray( m_pData );
 			m_pData		= newdata;
 			m_Length	= newlen;
 			m_AllocSize	= newallocsize;

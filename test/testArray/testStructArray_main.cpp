@@ -12,35 +12,79 @@
 
 
 
-struct Data
+//struct Data
+//{
+//	float value;
+//
+//};
+//
+//
+//
+//using strArray = OreOreLib::Array<Data>;
+//
+//
+//int main()
+//{
+//	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+//
+//	
+//	tcout << _T("//=================== Struct Array FindIf test ====================//\n" );
+//
+//	strArray	arr1{ {0.5f}, {0.1f}, {0.3f}, {0.6f}, {0.8f}, {0.9f}, {1.1f}, {-5.5f}, {9.6f}, {0.0f} };
+//	
+//
+//	float x = -5.5f;
+//	tcout << "FintIf(" << x << "): " << OreOreLib::FindIf( arr1, [&]( const Data& d ){ return d.value==x; } ) << tendl;
+//
+//
+//	auto* refd = &arr1[4];
+//	tcout << "FintIf(" << refd << "): " << OreOreLib::FindIf( arr1, [&]( const Data& d ){	return (Data*)&d==refd; } ) << tendl;
+//
+//
+//
+//	return 0;
+//
+//}
+
+
+
+float a;
+
+/*struct*/class Data
 {
-	float value;
+public:
+
+	Data() : value( a ) {}
+	Data( float val ) : value(val){}
+	~Data(){}
+
+	//Data( const Data& ) = delete;
+
+
+	const float& value;
+	//const float& fff;
+
 
 };
 
 
 
-using strArray = OreOreLib::Array<Data>;
+//using strArray = OreOreLib::Array<Data>;
 
 
 int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	
-	tcout << _T("//=================== Struct Array FindIf test ====================//\n" );
-
-	strArray	arr1{ {0.5f}, {0.1f}, {0.3f}, {0.6f}, {0.8f}, {0.9f}, {1.1f}, {-5.5f}, {9.6f}, {0.0f} };
-	
-
-	float x = -5.5f;
-	tcout << "FintIf(" << x << "): " << OreOreLib::FindIf( arr1, [&]( const Data& d ){ return d.value==x; } ) << tendl;
 
 
-	auto* refd = &arr1[4];
-	tcout << "FintIf(" << refd << "): " << OreOreLib::FindIf( arr1, [&]( const Data& d ){	return (Data*)&d==refd; } ) << tendl;
+//	strArray	arr1;
+//	arr1.Resize(4);
 
 
+	std::vector<Data> arr1;
+
+	arr1.resize(4);
 
 	return 0;
 
