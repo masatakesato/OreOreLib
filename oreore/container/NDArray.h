@@ -258,6 +258,10 @@ namespace OreOreLib
 		NDShape<N> m_Shape;
 
 
+		using Memory<T>::Init;
+		using Memory<T>::Resize;
+		using Memory<T>::Extend;
+		using Memory<T>::Shrink;
 		using Memory<T>::operator[];
 		//using Memory<T>::begin;
 		//using Memory<T>::end;
