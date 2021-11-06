@@ -80,15 +80,9 @@ namespace OreOreLib
 		}
 
 
-		T& Ref() const
+		T& Get() const
 		{
 			return *m_Ptr;
-		}
-
-
-		T* Ptr() const
-		{
-			return m_Ptr;
 		}
 
 
