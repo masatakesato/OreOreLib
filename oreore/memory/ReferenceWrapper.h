@@ -74,7 +74,27 @@ namespace OreOreLib
 		}
 
 
-		operator T&() const
+		// member access operator from const object
+		T* operator->()
+		{
+			return m_Ptr;
+		}
+
+
+		// member access operator( const object )
+		const T* operator->() const
+		{
+			return m_Ptr;
+		}
+
+
+		operator T&()
+		{
+			return *m_Ptr;
+		}
+
+
+		operator const T&() const
 		{
 			return *m_Ptr;
 		}

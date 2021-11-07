@@ -4,48 +4,103 @@ using namespace OreOreLib;
 
 
 
+struct A
+{
+	int val;
+
+};
+
+
 int main()
 {
-	int a=66;
-	int b= -55555;
-	ReferenceWrapper<int> ref( a );
+	{
+		tcout << _T( "//=========== test int reference wrapper ===========//\n" );
 
-	tcout << ref << tendl;
+		int a = 66, b = -55555;
 
-	ref.Get() = 999;
-
-	tcout << ref << tendl;
+		tcout << _T( "int a = 66, b = -55555;\n" );
+		tcout << tendl;
 
 
-//	ref.Ref() = b;
-	ref = b;
+		tcout << _T( "//=== ReferenceWrapper<int> ref( a ); ===//\n" );
 
-	tcout << ref << tendl;
+		ReferenceWrapper<int> ref( a );
+		tcout << ref << tendl;
+
+		tcout << tendl;
+
+
+		tcout << _T( "//==== ref.Get() = 999; ===//\n" );
+
+		ref.Get() = 999;
+		tcout << ref << tendl;
+
+		tcout << tendl;
+
+
+		tcout << _T( "//=== ref = b; ===//\n" );
+		ref = b;
+		tcout << ref << tendl;
+
+		tcout << tendl;
+
+	}
+	
+	tcout << tendl;
+
+	{
+		tcout << _T( "//=========== test struct reference wrapper ===========//\n" );
+
+		A a{66}, b{-55555};
+
+		tcout << _T( "A a{66}, b{-55555};\n" );
+		tcout << tendl;
+
+
+		tcout << _T( "//=== ReferenceWrapper<int> ref( a ); ===//\n" );
+		ReferenceWrapper<A> ref( a );
+
+		tcout << ref->val << tendl;
+
+		tcout << tendl;
+
+
+		tcout << _T( "//==== ref.Get() = { 999 }; ===//\n" );
+
+		ref.Get() = { 999 };
+		tcout << ref.Get().val << tendl;
+
+		tcout << tendl;
+
+
+		tcout << _T( "//=== ref = b; ===//\n" );
+		ref = b;
+		tcout << ref->val << tendl;
+
+		tcout << tendl;
+
+
+
+
+
+
+		//int a = 66, b = -55555;
+		//ReferenceWrapper<int> ref( a );
+
+		//tcout << ref << tendl;
+
+	//	ref.Get() = 999;
+	//
+	//	tcout << ref << tendl;
+	//
+	//
+	////	ref.Ref() = b;
+	//	ref = b;
+	//
+	//	tcout << ref << tendl;
+
+	}
+
 
 	return 0;
 }
-
-
-
-
-//int main()
-//{
-//	int a=66;
-//	int b= -55555;
-//
-//	std::reference_wrapper<int> ref( a );
-//
-//	tcout << ref << tendl;
-//
-//	ref.get() = 999;
-//	ref.
-//	tcout << ref << tendl;
-//
-//
-////	ref.Ref() = b;
-//	ref = b;
-//
-//	tcout << ref << tendl;
-//
-//	return 0;
-//}
