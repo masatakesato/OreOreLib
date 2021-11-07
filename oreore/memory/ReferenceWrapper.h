@@ -106,6 +106,12 @@ namespace OreOreLib
 		}
 
 
+		void Reset()
+		{
+			m_Ptr = nullptr;
+		}
+
+
 
 	private:
 
