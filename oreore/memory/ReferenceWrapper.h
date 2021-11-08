@@ -112,6 +112,12 @@ namespace OreOreLib
 		}
 
 
+		bool IsNull() const
+		{
+			return !m_Ptr;
+		}
+
+
 
 	private:
 
