@@ -463,19 +463,6 @@ namespace OreOreLib
 		}
 
 
-		template < class Iter >
-		void Init( Iter first, Iter last )		
-		{
-			m_Length	= int(last - first);
-			m_AllocSize	= m_Length * sizeof(T);
-			m_pData		= new T[ m_Length ]();
-
-			auto p = m_pData;
-			for(; first != last; ++first )
-				*(p++) = T(*first);
-		}
-
-
 		void Release()
 		{
 			m_Length	= 0;
