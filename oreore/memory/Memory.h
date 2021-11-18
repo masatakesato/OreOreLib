@@ -542,6 +542,34 @@ namespace OreOreLib
 		}
 
 
+		inline bool Resize( int newlen, const T& fill )
+		{
+			assert( newlen > 0 );
+
+			T *newdata	= new T[ newlen ]();
+			int newallocsize = c_ElementSize * newlen;
+
+			if( m_pData )
+			{
+				MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+				SafeDeleteArray( m_pData );
+			}
+
+			if( m_Length < newlen )
+			{
+				for( int i=m_Length; i<newlen; ++i )
+					newdata[i] = fill;
+			}
+
+			m_pData		= newdata;
+			m_Length	= newlen;
+			m_AllocSize	= newallocsize;
+			
+
+			return true;
+		}
+
+
 		inline bool Extend( int numelms )
 		{
 			return Resize( m_Length + numelms );
