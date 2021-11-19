@@ -19,25 +19,37 @@ using tostream			= std::basic_ostream<TCHAR>;
 
 
 #if defined(UNICODE) || defined(_UNICODE)
-# define tcout	std::wcout
-# define tcin	std::wcin
-# define tcerr	std::wcerr
-# define tclog	std::wclog
-# define tatof		_wtof
-# define tatoi		_wtoi
-# define tatoi64	_wtoi64
-# define tatol		_wtol
-# define to_tstring	std::to_wstring
+
+	#define tcout		std::wcout
+	#define tcin		std::wcin
+	#define tcerr		std::wcerr
+	#define tclog		std::wclog
+	#define tatof		_wtof
+	#define tatoi		_wtoi
+	#define tatoi64		_wtoi64
+	#define tatol		_wtol
+	#define to_tstring	std::to_wstring
+	#define tsscanf		std::swscanf
+	#define tstrcmp		std::wcscmp
+	#define tstrcmpi	_wcsicmp// windows only
+	#define tstrcpy		std::wcscpy
+
 #else
-# define tcout	std::cout
-# define tcin	std::cin
-# define tcerr	std::cerr
-# define tclog	std::clog
-# define tatof		atof
-# define tatoi		atoi
-# define tatoi64	_atoi64
-# define tatol		atol
-# define to_tstring	std::to_string
+
+	#define tcout		std::cout
+	#define tcin		std::cin
+	#define tcerr		std::cerr
+	#define tclog		std::clog
+	#define tatof		atof
+	#define tatoi		atoi
+	#define tatoi64		_atoi64
+	#define tatol		atol
+	#define to_tstring	std::to_string
+	#define tsscanf		std::sscanf
+	#define tstrcmp		std::strcmp
+	#define tstrcmpi	strcmpi// windows only
+	#define tstrcpy		std::strcpy
+
 #endif
 
 #define	tendl	std::endl
