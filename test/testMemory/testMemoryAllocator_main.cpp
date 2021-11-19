@@ -3,7 +3,7 @@
 
 
 #include	<oreore/common/TString.h>
-#include	<oreore/MathLib.h>
+#include	<oreore/mathlib/MathLib.h>
 
 
 #include	<oreore/memory/MemoryAllocator.h>

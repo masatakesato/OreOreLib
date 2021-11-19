@@ -243,6 +243,7 @@ namespace OreOreLib
 		Memory()
 			: m_Length( 0 )
 			, m_AllocSize( 0 )
+			, m_Capacity( 0 )
 			, m_pData( nullptr )
 		{
 			//tcout << _T("Memory default constructor...\n");
@@ -253,6 +254,7 @@ namespace OreOreLib
 		Memory( int len, T* pdata=nullptr )
 			: m_Length( len )
 			, m_AllocSize( len * sizeof(T) )
+			, m_Capacity( len )
 			, m_pData( new T[len]() )
 		{
 			//tcout << _T("Memory constructor(dynamic allocation)...\n");
@@ -266,18 +268,20 @@ namespace OreOreLib
 		// Constructor
 		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
 		Memory( Args const & ... args )
-			: m_pData( new T[ sizeof ...(Args) ]{args...} )
-			, m_Length( sizeof ...(Args) )
+			: m_Length( sizeof ...(Args) )
 			, m_AllocSize( sizeof ...(Args) * sizeof(T) )
+			, m_Capacity( sizeof ...(Args) )
+			, m_pData( new T[ sizeof ...(Args) ]{args...} )
 		{
 			
 		}
 
 		// Constructor with initializer_list
 		Memory( std::initializer_list<T> ilist )
-			: m_pData( new T[ ilist.size() ] )
-			, m_Length( int(ilist.size()) )
+			: m_Length( int(ilist.size()) )
 			, m_AllocSize( int(ilist.size()) * sizeof(T) )
+			, m_Capacity( int(ilist.size()) )
+			, m_pData( new T[ ilist.size() ] )
 		{
 			auto p = m_pData;
 			for( const auto& val : ilist )
@@ -290,7 +294,8 @@ namespace OreOreLib
 		Memory( Iter first, Iter last )
 			: m_Length( int(last - first) )
 			, m_AllocSize( m_Length * sizeof(T) )
-			, m_pData( new T[ m_Length ]() )			
+			, m_Capacity( int(last - first) )
+			, m_pData( new T[ int(last - first) ]() )
 		{
 			auto p = m_pData;
 			for(; first != last; ++first )
@@ -310,12 +315,13 @@ namespace OreOreLib
 		Memory( const Memory& obj )
 			: m_Length( obj.m_Length )
 			, m_AllocSize( obj.m_AllocSize )
+			, m_Capacity( obj.m_Capacity )
 			, m_pData( nullptr )
 		{
 			//tcout << _T("Memory copy constructor...\n");
 			if( obj.m_pData )
 			{
-				m_pData = new T[ m_Length ];
+				m_pData = new T[ m_Capacity ];
 				MemCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 			}
 		}
@@ -325,13 +331,16 @@ namespace OreOreLib
 		Memory( Memory&& obj )
 			: m_Length( obj.m_Length )
 			, m_AllocSize( obj.m_AllocSize )
+			, m_Capacity( obj.m_Capacity )
 			, m_pData( obj.m_pData )
+
 		{
 			//tcout << _T("Memory move constructor...\n");
 
-			obj.m_Length = 0;
-			obj.m_AllocSize = 0;
-			obj.m_pData	= nullptr;// clear reference from obj
+			obj.m_Length	= 0;
+			obj.m_AllocSize	= 0;
+			obj.m_Capacity	= 0;
+			obj.m_pData		= nullptr;// clear reference from obj
 		}
 
 
@@ -341,13 +350,14 @@ namespace OreOreLib
 			if( this != &obj )
 			{
 				//tcout << _T("Memory copy assignment operator...\n");
-				m_Length		= obj.m_Length;
-				m_AllocSize		= obj.m_AllocSize;
+				m_Length	= obj.m_Length;
+				m_AllocSize	= obj.m_AllocSize;
+				m_Capacity	= obj.m_Capacity;
 				SafeDeleteArray( m_pData );
 				
 				if( obj.m_pData )
 				{
-					m_pData = new T[ m_Length ];
+					m_pData = new T[ m_Capacity ];
 					MemCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 				}
 			}
@@ -369,11 +379,13 @@ namespace OreOreLib
 				// copy data to *this
 				m_Length		= obj.m_Length;
 				m_AllocSize		= obj.m_AllocSize;
+				m_Capacity		= obj.m_Capacity;
 				m_pData			= obj.m_pData;
 
 				// clear reference from obj
 				obj.m_Length	= 0;
 				obj.m_AllocSize	= 0;
+				obj.m_Capacity	= 0;
 				obj.m_pData		= nullptr;
 			}
 
@@ -424,42 +436,59 @@ namespace OreOreLib
 		void Init( int len, T* pdata=nullptr )
 		{
 			assert( len>0 );
-	
-			SafeDeleteArray( m_pData );
 
 			m_Length	= len;
 			m_AllocSize	= c_ElementSize * len;
-			m_pData		= new T[len]();
+
+			if( m_Length > m_Capacity )
+			{
+				SafeDeleteArray( m_pData );
+				m_Capacity	= m_Length;
+				m_pData		= new T[ m_Capacity ]();
+			}
 
 			if( pdata )
+			{
 				MemCopy( m_pData, pdata, m_Length );
+			}
+
+
+			//SafeDeleteArray( m_pData );
+
+			//m_Length	= len;
+			//m_AllocSize	= c_ElementSize * len;
+			//m_Capacity	= len;
+			//m_pData		= new T[ m_Capacity ]();
+
+			//if( pdata )
+			//	MemCopy( m_pData, pdata, m_Length );
 		}
-
-
-		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-		//void Init( Args const & ... args )
-		//{
-		//	SafeDeleteArray( m_pData );
-
-		//	m_Length	= sizeof ...(Args);
-		//	m_AllocSize	= sizeof ...(Args) * sizeof(T);
-		//	m_pData		= new T[ sizeof ...(Args) ]{args...};
-		//	
-		//}
 
 
 		void Init( std::initializer_list<T> ilist )
 		{
-			SafeDeleteArray( m_pData );
-
 			m_Length	= int( ilist.size() );
-			m_AllocSize	= m_Length * sizeof(T);
-			m_pData		= new T[ m_Length ];	
+			m_AllocSize	= c_ElementSize * m_Length;
 
-			//auto p = m_pData;
-			//for( const auto& val : ilist )
-			//	*(p++) = val;
+			if( m_Length > m_Capacity )
+			{
+				SafeDeleteArray( m_pData );
+				m_Capacity	= m_Length;
+				m_pData		= new T[ m_Capacity ]();
+			}
+
 			MemCopy( begin(), ilist.begin(), ilist.size() );
+
+
+
+			//SafeDeleteArray( m_pData );
+
+			//m_Length	= int( ilist.size() );
+			//m_AllocSize	= m_Length * sizeof(T);
+			//m_Capacity	= int( ilist.size() );
+			//m_pData		= new T[ m_Capacity ];	
+
+			//MemCopy( begin(), ilist.begin(), ilist.size() );
 		}
 
 
@@ -467,6 +496,7 @@ namespace OreOreLib
 		{
 			m_Length	= 0;
 			m_AllocSize	= 0;
+			m_Capacity	= 0;
 			SafeDeleteArray( m_pData );
 		}
 
@@ -491,18 +521,6 @@ namespace OreOreLib
 		{
 			auto values = { (T)args... };
 			MemCopy( m_pData, values.begin(), Min( (size_t)m_Length, values.size() ) );
-
-			//T values[]{ (T)args... };//
-			//MemCopy( m_pData, values, Min( (size_t)m_Length, sizeof...(Args) ) );
-
-			//SetValues( { (T)args... } );
-
-
-			//int64 count = (int64)Min( sizeof...(Args), (size_t)m_Length ) - 1;
-			//auto src = std::begin( { (T)args... } );
-			//auto dst = begin();
-			//while( count-->=0 )
-			//	*dst++ = *src++;
 		}
 
 
@@ -511,12 +529,6 @@ namespace OreOreLib
 		SetValues( std::initializer_list<Type> ilist )
 		{
 			MemCopy( m_pData, ilist.begin(), Min( (size_t)m_Length, ilist.size() ) );
-
-			//int64 count = (int64)Min( ilist.size(), (size_t)m_Length ) - 1;
-			//auto src = ilist.begin();
-			//auto dst = begin();
-			//while( count-->=0 )
-			//	*dst++ = (T)*src++;
 		}
 
 
@@ -524,21 +536,57 @@ namespace OreOreLib
 		{
 			assert( newlen > 0 );
 
-			T *newdata	= new T[ newlen ]();
-			int newallocsize = c_ElementSize * newlen;
-
-			if( m_pData )
+			if( newlen < m_Length )
 			{
-				MemCopy( newdata, m_pData, Min(m_Length, newlen) );
-				SafeDeleteArray( m_pData );
+				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
+					iter->~T();
+				//for( int i=m_Length; i<newlen; ++i )	m_pData[i].~T();
+			}
+			else if( newlen > m_Capacity )
+			{
+				T *newdata	= new T[ newlen ]();
+				int newallocsize = c_ElementSize * newlen;
+
+				if( m_pData )
+				{
+					MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+					SafeDeleteArray( m_pData );
+				}
+				m_Capacity	= newlen;
+				m_pData		= newdata;
 			}
 
-			m_pData		= newdata;
 			m_Length	= newlen;
-			m_AllocSize	= newallocsize;
-			
+			m_AllocSize	= c_ElementSize * m_Length;
 
 			return true;
+
+
+			//if( newlen <= m_Capacity )
+			//{
+			//	for( auto& iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )	iter.~T();//for( int i=m_Length; i<newlen; ++i )	m_pData[i].~T();
+
+			//	m_Length	= newlen;
+			//	m_AllocSize	= c_ElementSize * newlen;
+			//}
+			//else
+			//{
+			//	T *newdata	= new T[ newlen ]();
+			//	int newallocsize = c_ElementSize * newlen;
+
+			//	if( m_pData )
+			//	{
+			//		MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+			//		SafeDeleteArray( m_pData );
+			//	}
+
+			//	m_pData		= newdata;
+			//	m_Length	= newlen;
+			//	m_Capacity	= newlen;
+			//	m_AllocSize	= newallocsize;
+			//}
+
+			//return true;
 		}
 
 
@@ -546,25 +594,82 @@ namespace OreOreLib
 		{
 			assert( newlen > 0 );
 
-			T *newdata	= new T[ newlen ]();
-			int newallocsize = c_ElementSize * newlen;
+			if( newlen < m_Length )
+			{
+				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
+					iter->~T();
+				//for( int i=m_Length; i<newlen; ++i )	m_pData[i].~T();
+			}
+			else if( newlen > m_Capacity )
+			{
+				T *newdata	= new T[ newlen ]();
+				int newallocsize = c_ElementSize * newlen;
+
+				if( m_pData )
+				{
+					MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+					SafeDeleteArray( m_pData );
+				}
+				m_Capacity	= newlen;
+				m_pData		= newdata;
+			}
+
+			for( int i=m_Length; i<newlen; ++i )
+				m_pData[i] = fill;
+
+			m_Length	= newlen;
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			return true;
+
+
+
+			//if( newlen <= m_Capacity )
+			//{
+			//	for( int i=m_Length; i<newlen; ++i )
+			//		m_pData[i] = fill;
+
+			//	m_Length	= newlen;
+			//	m_AllocSize	= c_ElementSize * newlen;
+			//}
+			//else
+			//{
+			//	T *newdata	= new T[ newlen ]();
+			//	int newallocsize = c_ElementSize * newlen;
+
+			//	if( m_pData )
+			//	{
+			//		MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+			//		SafeDeleteArray( m_pData );
+			//	}
+
+			//	for( int i=m_Length; i<newlen; ++i )
+			//		newdata[i] = fill;
+
+			//	m_pData		= newdata;
+			//	m_Length	= newlen;
+			//	m_AllocSize	= newallocsize;
+			//}
+
+			//return true;
+		}
+
+
+		inline bool Reserve( int newlen )
+		{
+			if( newlen <= m_Capacity )
+				return false;
+
+			m_Capacity	= newlen;
+			T* newdata	= new T[ m_Capacity ]();
 
 			if( m_pData )
 			{
-				MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+				MemCopy( newdata, m_pData, m_Length );
 				SafeDeleteArray( m_pData );
 			}
 
-			if( m_Length < newlen )
-			{
-				for( int i=m_Length; i<newlen; ++i )
-					newdata[i] = fill;
-			}
-
-			m_pData		= newdata;
-			m_Length	= newlen;
-			m_AllocSize	= newallocsize;
-			
+			m_pData = newdata;
 
 			return true;
 		}
@@ -604,6 +709,12 @@ namespace OreOreLib
 		int Length() const
 		{
 			return m_Length;
+		}
+
+
+		int Capacity() const
+		{
+			return m_Capacity;
 		}
 
 
@@ -653,6 +764,8 @@ namespace OreOreLib
 		int	m_Length;
 		int m_AllocSize;
 		T*	m_pData;
+
+		int	m_Capacity;
 
 
 	};

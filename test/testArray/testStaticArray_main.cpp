@@ -82,7 +82,7 @@ int main()
 
 
 	float *data = new float[10];
-	for( int i=0; i<10; ++i )	data[i] = pow(2, i);
+	for( int i=0; i<10; ++i )	data[i] = (float)pow(2, i);
 
 	fSArray arr2( 10, data );
 	arr2.Display();
