@@ -8,6 +8,7 @@
 #include	<locale.h>
 
 
+
 using tstring			= std::basic_string<TCHAR>;
 using tstringstream		= std::basic_stringstream<TCHAR>;
 using tostringstream	= std::basic_ostringstream<TCHAR>;
@@ -16,6 +17,9 @@ using tifstream			= std::basic_ifstream<TCHAR>;
 using tofstream			= std::basic_ofstream<TCHAR>;
 using tistream			= std::basic_istream<TCHAR>;
 using tostream			= std::basic_ostream<TCHAR>;
+
+using charstring		= std::basic_string<char>;
+using wcharstring		= std::basic_string<wchar_t>;
 
 
 #if defined(UNICODE) || defined(_UNICODE)
