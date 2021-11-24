@@ -730,6 +730,23 @@ namespace OreOreLib
 		}
 
 
+		T& Front() const
+		{
+			return *m_pData;
+		}
+
+
+		T& Back() const
+		{
+			auto tmp = end();
+			--tmp;
+
+			return *tmp;
+		}
+
+
+
+
 		// https://stackoverflow.com/questions/31581880/overloading-cbegin-cend
 		// begin / end overload for "range-based for loop"
 		inline T* begin()
