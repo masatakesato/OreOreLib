@@ -492,6 +492,26 @@ namespace OreOreLib
 		}
 
 
+		void Init( int len, const T& fill )
+		{
+			assert( len>0 );
+
+			m_Length	= len;
+			m_AllocSize	= c_ElementSize * len;
+
+			if( m_Length > m_Capacity )
+			{
+				SafeDeleteArray( m_pData );
+				m_Capacity	= m_Length;
+				m_pData		= new T[ m_Capacity ]();
+			}
+
+			for( auto& data : m_pData )
+				data = fill;
+		}
+
+
+
 		void Release()
 		{
 			m_Length	= 0;
@@ -839,7 +859,6 @@ namespace OreOreLib
 
 
 
-
 	template < typename T, typename Predicate >
 	inline int64 FindIf( const Memory<T>& arr, Predicate pred )
 	{
@@ -855,6 +874,14 @@ namespace OreOreLib
 		return -1;
 	}
 
+
+
+	template < class ForwardIter, class T >
+	inline void Fill( ForwardIter first, ForwardIter last, const T& value )
+	{
+		while( first != last )
+			*first++ = value;
+	}
 
 
 
