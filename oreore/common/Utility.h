@@ -207,6 +207,7 @@ namespace MaxPrecision
 
 #ifdef _DEBUG
 
+
 	#define HANDLE_EXCEPTION() \
 		try { \
 			throw; \
@@ -228,9 +229,17 @@ namespace MaxPrecision
 		}
 
 
+	namespace internal
+	{
+		static int abort()
+		{
+			::abort();
+			return 1;
+		}
+	}
 
 	#define ASSERT( expression ) \
-		!(expression) && tcerr << _T( "Assertion Failed: "#expression", " ) << __FILE__ << _T("(") << __LINE__ << _T(")") << tendl;
+		!(expression) && tcerr << _T( "Assertion Failed: "#expression", " ) << __FILE__ << _T("(") << __LINE__ << _T(")\n") && internal::abort()
 		//(!(expr) && printf("Assertion Failed: "#expr", %s(%d)\n", __FILE__, __LINE__, __VA_ARGS__) /*&& internal::abort()*/)
 
 
