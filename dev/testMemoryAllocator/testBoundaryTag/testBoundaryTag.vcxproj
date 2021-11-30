@@ -10,13 +10,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\test\testMemory\testFLISLIoperators_main.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5AB49AA7-117E-4760-AC5A-EBE73BAC33AA}</ProjectGuid>
+    <ProjectGuid>{959855D7-0504-47CA-A3BE-82B600B72A92}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>testFLISLIoperators</RootNamespace>
+    <RootNamespace>testBoundaryTag</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -83,6 +80,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\oreore\memory\BoundaryTagBlock.cpp" />
+    <ClCompile Include="..\..\..\test\testMemoryAllocator\testBoundaryTag_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\oreore\memory\BoundaryTagBlock.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

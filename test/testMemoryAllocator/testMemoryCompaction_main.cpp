@@ -2,7 +2,7 @@
 #include	<crtdbg.h>
 
 #include	<oreore/common/TString.h>
-#include	<oreore/MathLib.h>
+#include	<oreore/mathlib/MathLib.h>
 #include	<oreore/memory/TLSF.h>
 using namespace OreOreLib;
 

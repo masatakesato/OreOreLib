@@ -74,7 +74,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\oreore\memory\PoolAllocator.cpp" />
     <ClCompile Include="..\..\..\oreore\os\OSAllocator.cpp" />
-    <ClCompile Include="..\..\..\test\testMemory\testPoolAllocator_main.cpp" />
+    <ClCompile Include="..\..\..\test\testMemoryAllocator\testPoolAllocator_main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\oreore\common\BitOperations.h" />

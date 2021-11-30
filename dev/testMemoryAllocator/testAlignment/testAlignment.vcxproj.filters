@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\test\testMemory\testMemoryManager_main.cpp">
+    <ClCompile Include="..\..\..\oreore\memory\PoolAllocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\oreore\memory\MemoryManager.cpp">
@@ -24,7 +24,7 @@
     <ClCompile Include="..\..\..\oreore\os\OSAllocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\oreore\memory\PoolAllocator.cpp">
+    <ClCompile Include="..\..\..\test\testMemoryAllocator\testAlignment_main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

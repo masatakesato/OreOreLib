@@ -10,10 +10,19 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\oreore\memory\BoundaryTagBlock.cpp" />
+    <ClCompile Include="..\..\..\oreore\memory\TLSF.cpp" />
+    <ClCompile Include="..\..\..\test\testMemoryAllocator\testMemoryCompaction_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\oreore\memory\BoundaryTagBlock.h" />
+    <ClInclude Include="..\..\..\oreore\memory\TLSF.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{959855D7-0504-47CA-A3BE-82B600B72A92}</ProjectGuid>
+    <ProjectGuid>{502FF69C-CA5F-4AB9-B67E-172476D347D2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>testBoundaryTag</RootNamespace>
+    <RootNamespace>testMemoryCompaction</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -80,13 +89,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\oreore\memory\BoundaryTagBlock.cpp" />
-    <ClCompile Include="..\..\..\test\testMemory\testBoundaryTag_main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\oreore\memory\BoundaryTagBlock.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -12,8 +12,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{8C636947-B115-4105-BED4-DE1280A77C3D}</ProjectGuid>
-    <RootNamespace>testMemoryManager</RootNamespace>
+    <ProjectGuid>{D68C8EA8-78D2-4FC5-AD3E-6B9E5E75309F}</ProjectGuid>
+    <RootNamespace>testAlignment</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -75,7 +75,7 @@
     <ClCompile Include="..\..\..\oreore\memory\MemoryManager.cpp" />
     <ClCompile Include="..\..\..\oreore\memory\PoolAllocator.cpp" />
     <ClCompile Include="..\..\..\oreore\os\OSAllocator.cpp" />
-    <ClCompile Include="..\..\..\test\testMemory\testMemoryManager_main.cpp" />
+    <ClCompile Include="..\..\..\test\testMemoryAllocator\testAlignment_main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\oreore\memory\MemoryManager.h" />

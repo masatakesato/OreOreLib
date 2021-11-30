@@ -12,8 +12,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{D68C8EA8-78D2-4FC5-AD3E-6B9E5E75309F}</ProjectGuid>
-    <RootNamespace>testAlignment</RootNamespace>
+    <ProjectGuid>{74A96C12-957A-4DD6-9C7A-FD48B89A7A3D}</ProjectGuid>
+    <RootNamespace>testMemoryAllocator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -50,6 +50,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -64,6 +65,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -72,15 +74,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\oreore\memory\MemoryManager.cpp" />
-    <ClCompile Include="..\..\..\oreore\memory\PoolAllocator.cpp" />
-    <ClCompile Include="..\..\..\oreore\os\OSAllocator.cpp" />
-    <ClCompile Include="..\..\..\test\testMemory\testAlignment_main.cpp" />
+    <ClCompile Include="..\..\..\oreore\memory\BoundaryTagBlock.cpp" />
+    <ClCompile Include="..\..\..\oreore\memory\MemoryAllocator.cpp" />
+    <ClCompile Include="..\..\..\test\testMemoryAllocator\testMemoryAllocator_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\oreore\memory\MemoryManager.h" />
-    <ClInclude Include="..\..\..\oreore\memory\PoolAllocator.h" />
-    <ClInclude Include="..\..\..\oreore\os\OSAllocator.h" />
+    <ClInclude Include="..\..\..\oreore\memory\BoundaryTagBlock.h" />
+    <ClInclude Include="..\..\..\oreore\memory\MemoryAllocator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
