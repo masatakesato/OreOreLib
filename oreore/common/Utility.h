@@ -300,14 +300,18 @@ inline static void SafeRelease( T*& p )
 }
 
 
-template< typename T, sizeType SIZE >
-inline static sizeType ArraySize( const T (&)[SIZE] )
+template< typename OUT_TYPE=sizeType, typename T, sizeType SIZE >
+inline static OUT_TYPE ArraySize( const T (&)[SIZE] )
 {   
-    return SIZE;
+    return static_cast<OUT_TYPE>( SIZE );
 }
 
 
-
+//template< typename T, sizeType SIZE >
+//inline static sizeType ArraySize( const T (&)[SIZE] )
+//{   
+//    return SIZE;
+//}
 
 
 
