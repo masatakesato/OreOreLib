@@ -1,9 +1,10 @@
 ﻿#ifndef	UTILITY_H
 #define	UTILITY_H
 
-
 #include	<assert.h>
 #include	<limits>
+
+#include	"TString.h"
 
 
 

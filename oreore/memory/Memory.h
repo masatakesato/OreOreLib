@@ -7,7 +7,7 @@
 #include	"../meta/TypeTraits.h"
 #include	"../mathlib/MathLib.h"
 
-TODO: Replace SizeType with MemSizeType
+//TODO: Replace SizeType with MemSizeType
 
 namespace OreOreLib
 {
@@ -265,7 +265,7 @@ namespace OreOreLib
 	template< typename T >
 	struct Memory
 	{
-		using SizeType = typename uint32;//sizeType;//int32;//uint64;//
+		using SizeType = typename MemSizeType;//typename uint32;//sizeType;//int32;//uint64;//
 
 	public:
 

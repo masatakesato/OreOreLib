@@ -11,6 +11,8 @@
 #include	<oreore/container/StaticArray.h>
 #include	<oreore/container/ArrayView.h>
 
+#include	<oreore/algorithm/Algorithm.h>
+
 
 
 using fArray = OreOreLib::Array<float>;
@@ -27,7 +29,6 @@ int main()
 
 		fArray faaa;//( std::begin(aaa), std::end(aaa) );
 		faaa.Init( 3, aaa );
-
 	}
 	//fSArray16 pp;
 
