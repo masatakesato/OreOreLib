@@ -748,9 +748,10 @@ namespace OreOreLib
 		}
 
 
-		SizeType Length() const
+		template < typename Type=SizeType >
+		Type Length() const
 		{
-			return m_Length;
+			return static_cast<Type>( m_Length );
 		}
 
 

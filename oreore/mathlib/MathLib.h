@@ -3,7 +3,7 @@
 
 
 #include	<math.h>
-
+#include	<algorithm>
 
 
 #ifndef	M_PI

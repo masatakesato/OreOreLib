@@ -213,9 +213,10 @@ public:
 	}
 
 
-	sizeType BitLength() const
+	template < typename Type=sizeType >
+	Type BitLength() const
 	{
-		return m_BitLength;
+		return static_cast<Type>( m_BitLength );
 	}
 
 
