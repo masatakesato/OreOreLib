@@ -26,13 +26,15 @@ namespace OreOreLib
 	template< typename T >
 	class ArrayBase< T, detail::DynamicSize > : public Memory<T>
 	{
+		using SizeType = typename Memory<T>::SizeType;
+
 	public:
 
 		// Default constructor
 		ArrayBase(): Memory<T>() {}
 
 		// Constructor
-		ArrayBase( int len ) : Memory<T>(len) {}
+		ArrayBase( SizeType len ) : Memory<T>(len) {}
 
 		// Constructor
 //		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
@@ -42,7 +44,7 @@ namespace OreOreLib
 		ArrayBase( std::initializer_list<T> ilist ) : Memory<T>( ilist ) {}
 
 		// Constructor with external buffer
-		ArrayBase( int len, T* pdata ): Memory<T>( len, pdata ) {}
+		ArrayBase( SizeType len, T* pdata ): Memory<T>( len, pdata ) {}
 
 		// Constructor using Memory
 		ArrayBase( const Memory<T>& obj ) : Memory<T>( obj ) {}
@@ -81,17 +83,17 @@ namespace OreOreLib
 		}
 
 
-		inline int AddToFront()
+		inline SizeType AddToFront()
 		{
 			return InsertBefore( 0 );
 		}
 
-		inline int AddToTail()
+		inline SizeType AddToTail()
 		{
 			return InsertBefore( this->m_Length );
 		}
 
-		inline int InsertBefore( int elm )
+		inline SizeType InsertBefore( SizeType elm )
 		{
 			if( this->Extend( 1 )==false )
 				return -1;
@@ -100,34 +102,34 @@ namespace OreOreLib
 			return elm;
 		}
 
-		inline int InsertAfter( int elm )
+		inline SizeType InsertAfter( SizeType elm )
 		{
 			return InsertBefore( elm + 1 );
 		}
 
 		
-		inline int AddToFront( const T& src )
+		inline SizeType AddToFront( const T& src )
 		{
 			return InsertBefore( 0, src );
 		}
 
-		inline int AddToFront( T&& src )
+		inline SizeType AddToFront( T&& src )
 		{
 			return InsertBefore( 0, src );
 		}
 
-		inline int AddToTail( const T& src )
+		inline SizeType AddToTail( const T& src )
 		{
 			return InsertBefore( this->m_Length, src );
 		}
 
-		inline int AddToTail( T&& src )
+		inline SizeType AddToTail( T&& src )
 		{
 			return InsertBefore( this->m_Length, src );
 		}
 
 
-		inline int InsertBefore( int elm, const T& src )
+		inline SizeType InsertBefore( SizeType elm, const T& src )
 		{
 			if( this->Extend( 1 )==false )
 				return -1;
@@ -137,7 +139,7 @@ namespace OreOreLib
 		}
 
 
-		inline int InsertBefore( int elm, T&& src )
+		inline SizeType InsertBefore( SizeType elm, T&& src )
 		{
 			if( this->Extend( 1 )==false )
 				return -1;
@@ -148,20 +150,20 @@ namespace OreOreLib
 
 
 
-		inline int InsertAfter( int elm, const T& src )
+		inline SizeType InsertAfter( SizeType elm, const T& src )
 		{
 			return InsertBefore( elm+1, src );
 		}
 
-		inline int InsertAfter( int elm, T&& src )
+		inline SizeType InsertAfter( SizeType elm, T&& src )
 		{
 			return InsertBefore( elm+1, src );
 		}
 
 
-		inline void FastRemove( int elm )// 削除対象の要素を配列最後尾要素で上書きする & メモリ確保サイズ自体は変更せずlenghデクリメントする
+		inline void FastRemove( SizeType elm )// 削除対象の要素を配列最後尾要素で上書きする & メモリ確保サイズ自体は変更せずlenghデクリメントする
 		{
-			assert( elm>=0 && elm<this->m_Length );
+			ASSERT( elm<this->m_Length );
 
 			this->m_pData[elm].~T();
 			if( this->m_Length > 0 )
@@ -189,9 +191,9 @@ namespace OreOreLib
 		//}
 
 		
-		inline void Remove( int elm )
+		inline void Remove( SizeType elm )
 		{
-			assert( elm>=0 && elm<this->m_Length );
+			ASSERT( elm<this->m_Length );
 
 			this->m_pData[elm].~T();
 			ShiftElementsLeft( elm );
@@ -214,9 +216,9 @@ namespace OreOreLib
 		//}
 
 
-		inline void Swap( int i, int j )
+		inline void Swap( SizeType i, SizeType j )
 		{
-			assert( i>=0 && i<this->m_Length && j>=0 && j<this->m_Length );
+			ASSERT( i<this->m_Length && j<this->m_Length );
 
 			if( i==j ) return;
 
@@ -230,7 +232,7 @@ namespace OreOreLib
 		{
 			tcout << typeid(*this).name() << _T("[ ") << this->m_Length << _T(" ]:\n" );
 
-			for( int i=0; i<this->m_Length; ++i )
+			for( SizeType i=0; i<this->m_Length; ++i )
 				tcout << _T("  [") << i << _T("]: ") << this->m_pData[i] << tendl;
 
 			tcout << tendl;
@@ -240,19 +242,26 @@ namespace OreOreLib
 
 	private:
 
-		inline void ShiftElementsRight( int elm, int num=1 )
+		inline void ShiftElementsRight( SizeType elm, SizeType num=1 )
 		{
-			int numtomove = this->m_Length - elm - num;
-			if( numtomove > 0 )
-				MemMove( &this->m_pData[elm+num], &this->m_pData[elm], numtomove );
+			if( this->m_Length <= ( elm + num ) || num == 0 )
+				return;
+
+			//if( this->m_Length < elm + num )
+			//SizeType numtomove = this->m_Length - ( elm + num );
+			//if( numtomove > 0 )
+				MemMove( &this->m_pData[elm+num], &this->m_pData[elm], /*numtomove*/this->m_Length - ( elm + num ) );
 		}
 
 
-		inline void ShiftElementsLeft( int elm, int num=1 )
+		inline void ShiftElementsLeft( SizeType elm, SizeType num=1 )
 		{
-			int numtomove = this->m_Length - elm - num;
-			if( numtomove > 0 )
-				MemMove( &this->m_pData[elm], &this->m_pData[elm+num], numtomove );
+			if( this->m_Length <= ( elm + num ) || num == 0 )
+				return;
+
+			//SizeType numtomove = this->m_Length - ( elm + num );
+			//if( numtomove > 0 )
+				MemMove( &this->m_pData[elm], &this->m_pData[elm+num], /*numtomove*/this->m_Length - ( elm + num ) );
 		}
 
 	};
@@ -269,9 +278,9 @@ namespace OreOreLib
 	template < typename T >
 	inline void Shuffle( Array<T>& arr )
 	{
-		for( int i=0; i<arr.Length(); ++i )
+		for( sizeType i=0; i<arr.Length(); ++i )
 		{
-			int j = int( genrand_real2() * arr.Length() );
+			sizeType j = sizeType( genrand_real2() * arr.Length() );
 			T temp	= arr[i];
 			arr[i]	= arr[j];
 			arr[j]	= temp;

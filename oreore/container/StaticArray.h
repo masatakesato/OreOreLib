@@ -18,9 +18,11 @@ namespace OreOreLib
 
 
 
-	template< typename T, int64 Size >
+	template< typename T, sizeType Size >
 	class ArrayBase< T, Size,std::enable_if_t< Size!=detail::DynamicSize > > : public Memory<T>
 	{
+		using SizeType = typename Memory<T>::SizeType;
+
 	public:
 
 		// Default constructor
@@ -29,17 +31,19 @@ namespace OreOreLib
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
 			this->m_AllocSize	= sizeof(T) * Size;
+			this->m_Capacity	= Size;
 
 			memset( m_Data, 0, sizeof(T) * Size );
 		}
 
 
 		// Constructor with external buffer
-		ArrayBase( int len, T* pdata )
+		ArrayBase( SizeType len, T* pdata )
 		{
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
 			this->m_AllocSize	= sizeof(T) * Size;
+			this->m_Capacity	= Size;
 
 			memset( m_Data, 0, sizeof(T) * Size );
 			MemCopy( m_Data, pdata, len );
@@ -61,6 +65,7 @@ namespace OreOreLib
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
 			this->m_AllocSize	= sizeof(T) * Size;
+			this->m_Capacity	= Size;
 
 			auto p = m_Data;
 			for( const auto& val : ilist )
@@ -77,6 +82,7 @@ namespace OreOreLib
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
 			this->m_AllocSize	= sizeof(T) * Size;
+			this->m_Capacity	= Size;
 
 			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
@@ -95,6 +101,7 @@ namespace OreOreLib
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
 			this->m_AllocSize	= sizeof(T) * Size;
+			this->m_Capacity	= Size;
 
 			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
@@ -106,6 +113,7 @@ namespace OreOreLib
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
 			this->m_AllocSize	= sizeof(T) * Size;
+			this->m_Capacity	= Size;
 
 			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
@@ -171,13 +179,13 @@ namespace OreOreLib
 		}
 
 
-		int Length() const
+		SizeType Length() const
 		{
 			return Size;
 		}
 
 
-		inline void Swap( int i, int j )
+		inline void Swap( SizeType i, SizeType j )
 		{
 			assert( i>=0 && i<this->length && j>=0 && j<this->length );
 
@@ -193,7 +201,7 @@ namespace OreOreLib
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
-			for( int i=0; i<Size; ++i )
+			for( SizeType i=0; i<Size; ++i )
 				tcout << _T("  [") << i << _T("]: ") << m_Data[i] << tendl;
 
 			tcout << tendl;
@@ -232,15 +240,15 @@ namespace OreOreLib
 	private:
 
 		// Delete unnecessary parent methods
-		void Init( int, uint8* ) = delete;
+		void Init( SizeType, uint8* ) = delete;
 		template < typename ... Args >	void Init( Args const & ... args ) = delete;
 		void Release() = delete;
 		//void Clear() = delete;
-		bool Resize( int ) = delete;
-		bool Resize( int, const T& ) = delete;
-		bool Reserve( int ) = delete;
-		bool Extend( int ) = delete;
-		bool Shrink( int ) = delete;
+		bool Resize( SizeType ) = delete;
+		bool Resize( SizeType, const T& ) = delete;
+		bool Reserve( SizeType ) = delete;
+		bool Extend( SizeType ) = delete;
+		bool Shrink( SizeType ) = delete;
 
 
 		// Hide parent methods

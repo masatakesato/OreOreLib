@@ -20,10 +20,6 @@ namespace OreOreLib
 
 		// struct for NDStaticArray specialization
 		template< typename T >	struct NDSTATICARR{ using Type = typename T; };
-
-		// Shape type
-		template< int64 N >
-		using ShapeType = typename NDShape<N>::SHAPE_TYPE;
 	}
 
 

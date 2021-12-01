@@ -58,7 +58,7 @@ int main()
 
 
 
-	NDShape<3> idx( (size_t)4, (size_t)4, (size_t)2 );//, (size_t)6 );
+	NDShape<3, int32> idx( (size_t)4, (size_t)4, (size_t)2 );//, (size_t)6 );
 
 	idx.Init( 4, 3, 2 );
 //	idx.Disiplay();
@@ -135,7 +135,7 @@ int main()
 		{
 			for( int y=0; y<idx.Dim<int>(1); ++y )
 			{
-				for( int x=0, X=idx.Dim(0); x<X; ++x )
+				for( int x=0, X=idx.Dim<int>(0); x<X; ++x )
 				{
 					auto idx1d = idx.To1D( {z, y, x} );
 					#ifndef PERFORMANCE_CHECK
@@ -160,7 +160,7 @@ int main()
 		start = std::chrono::system_clock::now(); // 計測開始時間
 
 		for( int k=0; k<c_LoopCount; ++k)
-		for( int z=0, Z=idx.Dim(0); z<Z; ++z )
+		for( int z=0, Z=idx.Dim<int>(0); z<Z; ++z )
 		{
 			for( int y=0; y<idx.Dim<int>(1); ++y )
 			{
@@ -216,9 +216,9 @@ int main()
 		for(int i=0; i<idx.Size<int>(); ++i )
 		{
 			int z, y, x;
-			z = idx.ToND(i, 0);
-			y = idx.ToND(i, 1);
-			x = idx.ToND(i, 2);
+			z = idx.ToND<int>(i, 0);
+			y = idx.ToND<int>(i, 1);
+			x = idx.ToND<int>(i, 2);
 			#ifndef PERFORMANCE_CHECK
 			tcout << "[" << i << "] -> [" << z << "][" << y << "][" << x << "]\n";
 			#endif

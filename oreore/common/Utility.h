@@ -64,9 +64,15 @@ using float128	= long double;
 
 
 #ifdef ENVIRONMENT64
+
 using uintptr	= uint64;
+using sizeType	= uint64;
+
 #elif ENVIRONMENT32
+
 using uintptr	= uint32;
+using sizeType	= uint32;
+
 #endif
 
 
@@ -74,25 +80,25 @@ using uintptr	= uint32;
 
 namespace BitSize
 {
-	const size_t uInt8		= std::numeric_limits<uint8>::digits;
-	const size_t Int8		= std::numeric_limits<int8>::digits;
-
-	const size_t uInt16		= std::numeric_limits<uint16>::digits;
-	const size_t Int16		= std::numeric_limits<int16>::digits;
-
-	const size_t uInt32		= std::numeric_limits<uint32>::digits;
-	const size_t Int32		= std::numeric_limits<int32>::digits;
-
-	const size_t uInt64		= std::numeric_limits<uint64>::digits;
-	const size_t Int64		= std::numeric_limits<int64>::digits;
-
-	const size_t Float32	= std::numeric_limits<float32>::digits;
-
-	const size_t Float64	= std::numeric_limits<float64>::digits;
-
-	const size_t Float128	= std::numeric_limits<float128>::digits;
-
-	const size_t uIntPtr	= std::numeric_limits<uintptr>::digits;
+	const sizeType uInt8	= std::numeric_limits<uint8>::digits;
+	const sizeType Int8		= std::numeric_limits<int8>::digits;
+		  
+	const sizeType uInt16	= std::numeric_limits<uint16>::digits;
+	const sizeType Int16	= std::numeric_limits<int16>::digits;
+		  
+	const sizeType uInt32	= std::numeric_limits<uint32>::digits;
+	const sizeType Int32	= std::numeric_limits<int32>::digits;
+		  
+	const sizeType uInt64	= std::numeric_limits<uint64>::digits;
+	const sizeType Int64	= std::numeric_limits<int64>::digits;
+		  
+	const sizeType Float32	= std::numeric_limits<float32>::digits;
+		  
+	const sizeType Float64	= std::numeric_limits<float64>::digits;
+		  
+	const sizeType Float128	= std::numeric_limits<float128>::digits;
+		  
+	const sizeType uIntPtr	= std::numeric_limits<uintptr>::digits;
 };
 
 
@@ -100,28 +106,28 @@ namespace BitSize
 
 namespace ByteSize
 {
-	const size_t uInt8		= sizeof(uint8);// size_t
-	const size_t Int8		= sizeof(int8);
+	const sizeType uInt8	= sizeof(uint8);
+	const sizeType Int8		= sizeof(int8);
 
-	const size_t uInt16		= sizeof(uint16);
-	const size_t Int16		= sizeof(int16);
+	const sizeType uInt16	= sizeof(uint16);
+	const sizeType Int16	= sizeof(int16);
 
-	const size_t uInt32		= sizeof(uint32);
-	const size_t Int32		= sizeof(int32);
+	const sizeType uInt32	= sizeof(uint32);
+	const sizeType Int32	= sizeof(int32);
 
-	const size_t uInt64		= sizeof(uint64);
-	const size_t Int64		= sizeof(int64);
+	const sizeType uInt64	= sizeof(uint64);
+	const sizeType Int64	= sizeof(int64);
 
-	const size_t Float32	= sizeof(float32);
+	const sizeType Float32	= sizeof(float32);
 
-	const size_t Float64	= sizeof(float64);
+	const sizeType Float64	= sizeof(float64);
 
-	const size_t Float128	= sizeof(float128);
+	const sizeType Float128	= sizeof(float128);
 
-	const size_t uIntPtr	= sizeof(uintptr);
+	const sizeType uIntPtr	= sizeof(uintptr);
 
 
-	const size_t DefaultAlignment = 8;
+	const sizeType DefaultAlignment = 8;
 
 };
 
@@ -293,8 +299,8 @@ inline static void SafeRelease( T*& p )
 }
 
 
-template< typename T, size_t SIZE >
-inline static size_t ArraySize( const T (&)[SIZE] )
+template< typename T, sizeType SIZE >
+inline static sizeType ArraySize( const T (&)[SIZE] )
 {   
     return SIZE;
 }

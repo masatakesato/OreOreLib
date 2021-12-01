@@ -32,14 +32,13 @@ namespace OreOreLib
 
 	// https://stackoverflow.com/questions/32921192/c-variadic-template-limit-number-of-args
 
-	template < int64 N >
+	template < int64 N, typename SizeType >
 	class NDShape
 	{
+		
+
 	public:
-
-		using SHAPE_TYPE = uint32;
-
-
+//using SizeType = uint32;//sizeType;//
 		// Default constructor
 		NDShape()
 			: m_Shape{ 0 } 
@@ -50,16 +49,16 @@ namespace OreOreLib
 
 
 		// Constructor(variadic tempaltes)
-		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SHAPE_TYPE, Args...>::value >* = nullptr >
+		template < typename ... Args, std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SizeType, Args...>::value >* = nullptr >
 		NDShape( const Args& ... args )// ...w, z, y, x
-			: m_Shape{ SHAPE_TYPE(args)... }
+			: m_Shape{ SizeType(args)... }
 		{
 			InitStrides();
 		}
 
 
 		// Constructor(initializer list)
-		template < typename T, std::enable_if_t< std::is_convertible<T, SHAPE_TYPE>::value >* = nullptr >
+		template < typename T, std::enable_if_t< std::is_convertible<T, SizeType>::value >* = nullptr >
 		NDShape( std::initializer_list<T> indexND )// ...w, z, y, x
 		{
 			Init( indexND );
@@ -82,31 +81,31 @@ namespace OreOreLib
 
 
 		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SHAPE_TYPE, Args...>::value, void >
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SizeType, Args...>::value, void >
 		Init( const Args& ... args )// ...w, z, y, x
 		{
 			auto p = m_Shape;
 			for( const auto& val : { args... } )
-				*(p++) = (SHAPE_TYPE)val;
+				*(p++) = (SizeType)val;
 
 			InitStrides();
 		}
 
 
 		template < typename T >
-		std::enable_if_t< std::is_convertible<T, SHAPE_TYPE>::value, void >
+		std::enable_if_t< std::is_convertible<T, SizeType>::value, void >
 		Init( std::initializer_list<T> indexND )// ...w, z, y, x
 		{
 			auto p = m_Shape;
 			for( const auto& val : indexND )
-				*(p++) = (SHAPE_TYPE)val;
+				*(p++) = (SizeType)val;
 
 			InitStrides();
 		}
 
 
 		template < typename T >
-		std::enable_if_t< std::is_convertible<T, SHAPE_TYPE>::value, void >
+		std::enable_if_t< std::is_convertible<T, SizeType>::value, void >
 		Init( const T indexND[] ) 
 		{
 			MemCopy( m_Shape, indexND, N );
@@ -129,7 +128,7 @@ namespace OreOreLib
 		// indexND[2] * m_Strides[0] +	// y
 		// indexND[3] +					// x
 
-		template < typename T=SHAPE_TYPE, typename ... Args >// variadic template version
+		template < typename T=SizeType, typename ... Args >// variadic template version
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<T, Args...>::value, T >
 		To1D( const Args& ... args ) const// ...w, z, y, x
 		{
@@ -148,8 +147,8 @@ namespace OreOreLib
 		}
 
 
-		template < typename T=SHAPE_TYPE >// initializer_list version
-		std::enable_if_t< std::is_convertible<SHAPE_TYPE, T>::value, T >
+		template < typename T=SizeType >// initializer_list version
+		std::enable_if_t< std::is_convertible<SizeType, T>::value, T >
 		To1D( std::initializer_list<T> indexND ) const// ...w, z, y, x
 		{
 			auto itr = std::rbegin( indexND );
@@ -164,8 +163,8 @@ namespace OreOreLib
 		}
 
 
-		template < typename T=SHAPE_TYPE >
-		std::enable_if_t< std::is_convertible_v<T, SHAPE_TYPE>, T >
+		template < typename T=SizeType >
+		std::enable_if_t< std::is_convertible_v<T, SizeType>, T >
 		To1D( const T indexND[] ) const
 		{
 			T index = indexND[N-1];
@@ -180,10 +179,10 @@ namespace OreOreLib
 
 
 		template < typename T >
-		std::enable_if_t< std::is_convertible_v<T, uint64>, int64 >
+		std::enable_if_t< std::is_convertible_v<T, SizeType>, T >
 		From3DTo1D( const T& z, const T& y, const T& x ) const
 		{
-			return z * m_Strides[1] + y * m_Strides[0] + x;
+			return (T)( z * m_Strides[1] + y * m_Strides[0] + x );
 		}
 
 
@@ -195,7 +194,7 @@ namespace OreOreLib
 		// indexND[3]	= ( id % m_Strides[2] ) % m_Strides[1] % m_Strides[0];
 		// ...
 
-		template < typename T_INDEX=SHAPE_TYPE, typename T=SHAPE_TYPE >
+		template < typename T_INDEX=SizeType, typename T=SizeType >
 		std::enable_if_t< std::is_convertible_v<T_INDEX, T>, T* >
 		ToND( T_INDEX indexd1D, T indexND[] ) const
 		{
@@ -212,24 +211,26 @@ namespace OreOreLib
 
 
 		//　Single dim only
-		template < typename T_INDEX=SHAPE_TYPE, typename T=SHAPE_TYPE >
-		std::enable_if_t< std::is_convertible_v<T_INDEX, T>, T >
-		ToND( T_INDEX indexd1D, uint16 dim ) const
+		template < typename T=SizeType >
+		std::enable_if_t< std::is_convertible_v<T, SizeType>, T >
+		ToND( sizeType indexd1D, uint16 dim ) const
 		{
-			T index = (T)indexd1D;
+			SizeType index = (SizeType)indexd1D;
 			for( int i=1; i<=dim; ++i )
-				index = index % (T)m_Strides[ N-1-i ];
+				index = index % m_Strides[ N-1-i ];
 
 			if( dim < N-1 )
-				index /= (T)m_Strides[ N-2-dim ];
+				index /= m_Strides[ N-2-dim ];
 
-			return index;
+			return (T)index;
 		}
 
 
-		template < typename T_INDEX=SHAPE_TYPE, typename ... Args >// C-style array version
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<T_INDEX, Args...>::value, void >
-		ToND( T_INDEX index1D, Args& ... args ) const
+
+
+		template < typename ... Args >// C-style array version
+		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SizeType, Args...>::value, void >
+		ToND( sizeType index1D, Args& ... args ) const
 		{
 			using T = typename TypeTraits::first_type<Args...>::type;
 			T* indexND[ N ] = { &args... };
@@ -242,9 +243,11 @@ namespace OreOreLib
 				*indexND[ i ] /= stride;
 			}
 		}
+
+
 		//template < typename ... Args >// initializer_list version. slower than above implementation. 
-		//std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<uint64, Args...>::value, void >
-		//ToND( uint64 index1D, Args& ... args ) const
+		//std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible<SizeType, Args...>::value, void >
+		//ToND( sizeType index1D, Args& ... args ) const
 		//{
 		//	using T = typename TypeTraits::first_type<Args...>::type;
 
@@ -267,7 +270,7 @@ namespace OreOreLib
 
 
 		//template < typename T_INDEX, typename T >// initializer_list version. Deprecated. Very slow
-		//std::enable_if_t< std::is_convertible<SHAPE_TYPE, T>::value, void >
+		//std::enable_if_t< std::is_convertible<SizeType, T>::value, void >
 		//ToND( T_INDEX index1D, std::initializer_list<T*> indexND ) const
 		//{
 		//	
@@ -287,21 +290,21 @@ namespace OreOreLib
 
 
 
-		template < typename T=SHAPE_TYPE >
-		/*uint64*/T NumDims() const
+		template < typename T=SizeType >
+		T NumDims() const
 		{
 			return (T)N;
 		}
 
 
-		template < typename T=SHAPE_TYPE >
+		template < typename T=SizeType >
 		T Dim( int32 i ) const
 		{
 			return (T)m_Shape[i];//i<N ? m_Shape[ i ] : 0;
 		}
 
 
-		template < typename T=SHAPE_TYPE >
+		template < typename T=SizeType >
 		T Size() const
 		{
 			return (T)m_Strides[ N-1 ];
@@ -320,8 +323,8 @@ namespace OreOreLib
 
 	private:
 
-		SHAPE_TYPE	m_Shape[ N ];
-		SHAPE_TYPE	m_Strides[ N ];// strides for multidimensional element access.
+		SizeType	m_Shape[ N ];
+		SizeType	m_Strides[ N ];// strides for multidimensional element access.
 
 
 		const void InitStrides()

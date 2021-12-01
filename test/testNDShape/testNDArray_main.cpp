@@ -25,7 +25,7 @@ void Access( NDArrayBase<T, Ns...>& arr )
 
 
 
-#define PERFORMANCE_CHECK
+//#define PERFORMANCE_CHECK
 
 #ifdef PERFORMANCE_CHECK
 
@@ -93,7 +93,7 @@ int main()
 
 		for( int i=0; i<c_LoopCount; ++i )
 		{
-			arr.SetValues( {-5.0, -6.0, -7.0, -8.0} );
+			arr.SetValues( -5.0, -6.0, -7.0, -8.0 );
 		}
 		#ifndef PERFORMANCE_CHECK
 			arr.Display();
@@ -107,9 +107,9 @@ int main()
 	tcout << tendl;
 
 
-	return 0;
+	//return 0;
 
-
+	
 
 
 	{
@@ -119,7 +119,9 @@ int main()
 		NDArrayView<double, 2> view;
 		view.Init( arr2d, 1, 1, 2, 2 );
 		view.SetValues( -5, -6, -7, -8 );
-//		view.Display();
+		#ifndef PERFORMANCE_CHECK
+			view.Display();
+		#endif
 
 		end = std::chrono::system_clock::now();  // 計測終了時間
 		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end-start ).count(); //処理に要した時間をミリ秒に変換
@@ -127,7 +129,7 @@ int main()
 	}
 
 	tcout << tendl;
-
+	
 	{
 		std::chrono::system_clock::time_point  start, end; // 型は auto で可
 		start = std::chrono::system_clock::now(); // 計測開始時間
@@ -221,7 +223,7 @@ int main()
 	tcout << tendl;
 
 	{
-		NDArray</*Vec4f*/double, 2>	rgbimage( 16384, 16384 );
+		NDArray<double, 2>	rgbimage( 16384, 16384 );//Vec4f
 
 	//	rgbimage[0].x = 0.5f;
 	//	rgbimage[1].x = 0.5f;
@@ -258,5 +260,5 @@ int main()
 
 
 	return 0;
-
+	
 }

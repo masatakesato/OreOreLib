@@ -10,16 +10,16 @@
 //										Helper functions										     //
 //###################################################################################################//
 
-inline static size_t byteOffset( uint32 b )
+inline static sizeType byteOffset( sizeType b )
 {
-	return (size_t)b / BitSize::uInt8;
+	return (sizeType)b / BitSize::uInt8;
 }
 
 
 
-inline static size_t bitOffset( uint32 b )
+inline static sizeType bitOffset( sizeType b )
 {
-	return (size_t)b % BitSize::uInt8;
+	return (sizeType)b % BitSize::uInt8;
 }
 
 
@@ -29,47 +29,47 @@ inline static size_t bitOffset( uint32 b )
 //											Bit Operations										     //
 //###################################################################################################//
 
-inline static void SetBit( uint32 b, uint8 bytes[] )
+inline static void SetBit( sizeType b, uint8 bytes[] )
 {
 	bytes[ byteOffset( b ) ] |= 1 << bitOffset( b );
 }
 
 
 
-inline static void SetBit( uint32 b, int val, uint8 bytes[] )
+inline static void SetBit( sizeType b, bool val, uint8 bytes[] )
 {
-	size_t boffset	= bitOffset( b );
-	size_t byteoffset = byteOffset( b );
-	bytes[ byteoffset ] = bytes[ byteoffset ] & ~( 1 << boffset ) | val << boffset;
+	sizeType boffset	= bitOffset( b );
+	sizeType byteoffset = byteOffset( b );
+	bytes[ byteoffset ] = bytes[ byteoffset ] & ~( 1 << boffset ) | static_cast<sizeType>(val) << boffset;
 }
 
 
 
-inline static void UnsetBit( uint32 b, uint8 bytes[] )
+inline static void UnsetBit( sizeType b, uint8 bytes[] )
 {
 	bytes[byteOffset( b )] &= ~( 1 << bitOffset( b ) );
 }
 
 
 
-inline static void FlipBit( uint32 b, uint8 bytes[] )
+inline static void FlipBit( sizeType b, uint8 bytes[] )
 {
 	bytes[byteOffset( b )] ^= 1 << bitOffset( b );
 }
 
 
 
-inline static int GetBit( uint32 b, uint8 bytes[] )
+inline static bool GetBit( sizeType b, uint8 bytes[] )
 {
-	return int( ( bytes[byteOffset( b )] & 1 << bitOffset( b ) ) > 0 );
+	return ( bytes[byteOffset( b )] & 1 << bitOffset( b ) ) > 0;
 }
 
 
 
-static void DisplayBitArray( uint8 bytes[], int bitlength )
+static void DisplayBitArray( uint8 bytes[], sizeType bitlength )
 {
 	tcout << "Bit Array[" << bitlength << "]:\n";
-	for( int i=bitlength-1; i>=0; --i )
+	for( sizeType i=bitlength; i-->0; )//for( sizeType i=bitlength-1; i>=0; --i )
 	{
 		tcout << GetBit(i, bytes);
 		if( i % BitSize::uInt8 == 0 ) tcout << " ";
@@ -205,49 +205,50 @@ inline static uint32 GetMSB( uint64 val )
 }
 
 
-
-inline static int testMSB( uint8 bytes[], int size )
+template < typename IntType = int32 >
+inline typename std::enable_if_t< std::is_signed_v<IntType> && std::is_integral_v<IntType>, IntType >
+testMSB( uint8 bytes[], sizeType size )
 {
-	int byteoffset = size >= (int)ByteSize::uInt64 ? size - (int)ByteSize::uInt64 : size;
-	int msb = 0;
+	IntType byteoffset = static_cast<IntType>( size >= ByteSize::uInt64 ? size - ByteSize::uInt64 : size );
+	IntType msb = 0;
 
 	//========== 64 bit iterative check ===========//
-	for( int i=0; i<size/(int)ByteSize::uInt64; ++i, byteoffset-=(int)ByteSize::uInt64 )
+	for( sizeType i=0; i<size/ByteSize::uInt64; ++i, byteoffset-=(IntType)ByteSize::uInt64 )
 	{
 		//tcout << "64 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt64 - 1 << "]" << tendl;
-		msb = (int)_MSB( (uint64&)bytes[ byteoffset ] );
+		msb = static_cast<IntType>( _MSB( (uint64&)bytes[ byteoffset ] ) );
 		if( msb > 0 )
-			return msb + (int)BitSize::uInt8 * byteoffset - 1;
+			return msb + (IntType)BitSize::uInt8 * byteoffset - 1;
 	}
 
 	//=============== 32 bit check ================//
-	if( byteoffset >= (int)ByteSize::uInt32 )
+	if( byteoffset >= (IntType)ByteSize::uInt32 )
 	{
-		byteoffset -= (int)ByteSize::uInt32;
+		byteoffset -= (IntType)ByteSize::uInt32;
 		//tcout << "32 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt32 - 1 << "]" << tendl;
-		msb = (int)_MSB( (uint32&)bytes[byteoffset] );
+		msb = static_cast<IntType>( _MSB( (uint32&)bytes[byteoffset] ) );
 		if( msb > 0 || byteoffset <= 0 )// return if msb found or all bits are checked
-			return msb + (int)BitSize::uInt8 * byteoffset - 1;
+			return msb + (IntType)BitSize::uInt8 * byteoffset - 1;
 	}
 
 	//=============== 16 bit check ================//
-	if( byteoffset >= (int)ByteSize::uInt16 )
+	if( byteoffset >= (IntType)ByteSize::uInt16 )
 	{
-		byteoffset -= (int)ByteSize::uInt16;
+		byteoffset -= (IntType)ByteSize::uInt16;
 		//tcout << "16 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt16 - 1 << "]" << tendl;
-		msb = (int)_MSB( (uint16&)bytes[byteoffset] );
+		msb = static_cast<IntType>( _MSB( (uint16&)bytes[byteoffset] ) );
 		if( msb > 0 || byteoffset <= 0 )// return if msb found or all bits are checked
-			return msb + (int)BitSize::uInt8 * byteoffset - 1;
+			return msb + (IntType)BitSize::uInt8 * byteoffset - 1;
 	}
 
 	//=============== 8 bit check ================//
-	if( byteoffset >= (int)ByteSize::uInt8 )
+	if( byteoffset >= (IntType)ByteSize::uInt8 )
 	{
-		byteoffset -= (int)ByteSize::uInt8;
+		byteoffset -= (IntType)ByteSize::uInt8;
 		//tcout << "8 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt8 - 1 << "]" << tendl;
-		msb = (int)_MSB( (uint8&)bytes[byteoffset] );
+		msb = static_cast<IntType>( _MSB( (uint8&)bytes[byteoffset] ) );
 		if( msb > 0 || byteoffset <= 0 )// return if msb found or all bits are checked
-			return msb + (int)BitSize::uInt8 * byteoffset - 1;
+			return msb + (IntType)BitSize::uInt8 * byteoffset - 1;
 	}
 
 	return -1;
@@ -374,16 +375,18 @@ inline static uint32 GetLSB( uint64 val )
 
 
 
-inline static int testLSB( uint8 bytes[], int size )
+template < typename IntType = int32 >
+inline typename std::enable_if_t< std::is_signed_v<IntType> && std::is_integral_v<IntType>, IntType >
+testLSB( uint8 bytes[], sizeType size )
 {
-	int byteoffset = 0;
-	int lsb;
+	IntType byteoffset = 0;
+	IntType lsb;
 
 	//========== 64 bit iterative check ===========//
-	for( int i=0; i<size/ByteSize::uInt64; ++i, byteoffset+=ByteSize::uInt64 )
+	for( sizeType i=0; i<size/ByteSize::uInt64; ++i, byteoffset+=ByteSize::uInt64 )
 	{
 		//tcout << "64 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt64 - 1 << "]" << tendl;
-		lsb = (int)_LSB( (uint64&)bytes[ byteoffset ] );
+		lsb = static_cast<IntType>( _LSB( (uint64&)bytes[ byteoffset ] ) );
 		if( lsb > 0 )
 			return lsb + BitSize::uInt8 * byteoffset - 1;
 	}
@@ -392,7 +395,7 @@ inline static int testLSB( uint8 bytes[], int size )
 	if( size - byteoffset >= ByteSize::uInt32 )
 	{
 		//tcout << "32 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt32 - 1 << "]" << tendl;
-		lsb = (int)_LSB( (uint32&)bytes[byteoffset] );
+		lsb = static_cast<IntType>( _LSB( (uint32&)bytes[byteoffset] ) );
 		if( lsb > 0 || size - byteoffset == ByteSize::uInt32 )
 			return lsb + BitSize::uInt8 * byteoffset - 1;
 
@@ -403,7 +406,7 @@ inline static int testLSB( uint8 bytes[], int size )
 	if( size - byteoffset >= ByteSize::uInt16 )
 	{
 		//tcout << "16 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt16 - 1 << "]" << tendl;
-		lsb = (int)_LSB( (uint16&)bytes[byteoffset] );
+		lsb = static_cast<IntType>( _LSB( (uint16&)bytes[byteoffset] ) );
 		if( lsb > 0 || size - byteoffset == ByteSize::uInt16 )
 			return lsb + BitSize::uInt8 * byteoffset - 1;
 
@@ -414,7 +417,7 @@ inline static int testLSB( uint8 bytes[], int size )
 	if( size - byteoffset >= ByteSize::uInt8 )
 	{
 		//tcout << "8 bit MSB check: [" << BitSize::uInt8 * byteoffset << ", " <<  BitSize::uInt8 * byteoffset + BitSize::uInt8 - 1 << "]" << tendl;
-		lsb = (int)_LSB( (uint8&)bytes[byteoffset] );
+		lsb = static_cast<IntType>( _LSB( (uint8&)bytes[byteoffset] ) );
 		if( lsb > 0 )
 			return lsb + BitSize::uInt8 * byteoffset - 1;
 	}

@@ -9,7 +9,8 @@ namespace OreOreLib
 {
 	namespace detail
 	{
-		const int64 DynamicSize = -1;
+		const sizeType DynamicSize = (~0u);
+		//-1;
 
 
 		//================= ArrayView specific structs =================//
@@ -30,7 +31,7 @@ namespace OreOreLib
 	}
 
 
-	template< typename T, int64 Size, typename enable=void > class ArrayBase; 
+	template< typename T, sizeType Size, typename enable=void > class ArrayBase; 
 
 
 	// Dynamic array
@@ -39,7 +40,7 @@ namespace OreOreLib
 
 
 	// Static array
-	template< typename T, int64 Size >
+	template< typename T, sizeType Size >
 	using StaticArray = ArrayBase< T, Size, std::enable_if_t< Size!=detail::DynamicSize > >;
 
 

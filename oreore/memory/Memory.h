@@ -1,16 +1,44 @@
 ﻿#ifndef MEMORY_H
 #define	MEMORY_H
 
-#include	<algorithm>
+//#include	<algorithm>
 
 #include	"../common/Utility.h"
 #include	"../meta/TypeTraits.h"
 #include	"../mathlib/MathLib.h"
 
-
+TODO: Replace SizeType with MemSizeType
 
 namespace OreOreLib
 {
+
+	//##############################################################################################################//
+	//																												//
+	//										Memory size_type definitions											//
+	//																												//
+	//##############################################################################################################//
+
+
+	#if defined( MEM_64 )
+
+		using MemSizeType = typedef uint64;// 64bit
+
+	#elif defined( MEM_86 )
+
+		using MemSizeType = typedef uint32;// 32bit
+
+	#elif defined( MEM_ENVIRONMENT )
+	
+		using MemSizeType = typename sizeType;// platform dependent
+
+	#else
+
+		using MemSizeType = typename uint32;// default configuration
+
+	#endif
+
+
+
 
 
 	#if __cplusplus >= 201703L
@@ -25,7 +53,7 @@ namespace OreOreLib
 
 	// Memory Copy
 	template < class SrcIter, class DstIter >
-	DstIter* MemCopy( DstIter* pDst, SrcIter* pSrc, size_t size )
+	DstIter* MemCopy( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -49,7 +77,7 @@ namespace OreOreLib
 
 	//// Memory Copy
 	//template < class Iter >
-	//Iter* MemCopy( Iter* pDst, Iter* pSrc, size_t size )
+	//Iter* MemCopy( Iter* pDst, Iter* pSrc, sizeType size )
 	//{
 	//	if constexpr ( std::is_trivially_copyable_v<Iter> )
 	//	{
@@ -75,7 +103,7 @@ namespace OreOreLib
 
 	// Memory Move
 	template < class SrcIter, class DstIter >
-	DstIter* MemMove( DstIter* pDst, SrcIter* pSrc, size_t size )
+	DstIter* MemMove( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -99,7 +127,7 @@ namespace OreOreLib
 
 	//// Memory Move
 	//template < class Iter >
-	//Iter* MemMove( Iter* pDst, Iter* pSrc, size_t size )
+	//Iter* MemMove( Iter* pDst, Iter* pSrc, sizeType size )
 	//{
 	//	if constexpr ( std::is_trivially_copyable_v<Iter> )
 	//	{
@@ -135,14 +163,14 @@ namespace OreOreLib
 	// Trivial Memcpy
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemCopy( Iter* pDst, const Iter* pSrc, size_t size )
+	MemCopy( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
 	}
 
 	template < class SrcIter, class DstIter >
 	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	MemCopy( DstIter* pDst, const SrcIter* pSrc, size_t size )
+	MemCopy( DstIter* pDst, const SrcIter* pSrc, sizeType size )
 	{
 		SrcIter* begin = (SrcIter*)pSrc;
 		const SrcIter* end = pSrc + size;
@@ -160,7 +188,7 @@ namespace OreOreLib
 	//// Single type Non-Trivial Memcpy( single template type )
 	//template < class Iter >
 	//std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
-	//MemCopy( Iter* pDst, const Iter* pSrc, size_t size )
+	//MemCopy( Iter* pDst, const Iter* pSrc, sizeType size )
 	//{
 	//	Iter* begin = (Iter*)pSrc;
 	//	const Iter* end = pSrc + size;
@@ -180,7 +208,7 @@ namespace OreOreLib
 	// Trivial MemMove
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemMove( Iter* pDst, const Iter* pSrc, size_t size )
+	MemMove( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
 	}
@@ -188,7 +216,7 @@ namespace OreOreLib
 	// Non-Trivial MemMove
 	template < class SrcIter, class DstIter >
 	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	MemMove( DstIter* pDst, const SrcIter* pSrc, size_t size )
+	MemMove( DstIter* pDst, const SrcIter* pSrc, sizeType size )
 	{
 		SrcIter* begin = (SrcIter*)pSrc;
 		const SrcIter* end = pSrc + size;
@@ -206,7 +234,7 @@ namespace OreOreLib
 	//// Non-Trivial MemMove( single template type )
 	//template < class Iter >
 	//std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
-	//MemMove( Iter* pDst, const Iter* pSrc, size_t size )
+	//MemMove( Iter* pDst, const Iter* pSrc, sizeType size )
 	//{
 	//	Iter* begin = (Iter*)pSrc;
 	//	const Iter* end = pSrc + size;
@@ -237,6 +265,8 @@ namespace OreOreLib
 	template< typename T >
 	struct Memory
 	{
+		using SizeType = typename uint32;//sizeType;//int32;//uint64;//
+
 	public:
 
 		// Default constructor
@@ -251,14 +281,13 @@ namespace OreOreLib
 
 
 		// Constructor
-		Memory( int len, T* pdata=nullptr )
+		Memory( SizeType len, T* pdata=nullptr )
 			: m_Length( len )
 			, m_AllocSize( len * sizeof(T) )
 			, m_Capacity( len )
 			, m_pData( new T[len]() )
 		{
 			//tcout << _T("Memory constructor(dynamic allocation)...\n");
-			assert( len > 0 );
 
 			if( pdata )
 				MemCopy( m_pData, pdata, m_Length );
@@ -278,9 +307,9 @@ namespace OreOreLib
 
 		// Constructor with initializer_list
 		Memory( std::initializer_list<T> ilist )
-			: m_Length( int(ilist.size()) )
-			, m_AllocSize( int(ilist.size()) * sizeof(T) )
-			, m_Capacity( int(ilist.size()) )
+			: m_Length( SizeType( ilist.size() ) )
+			, m_AllocSize( SizeType( ilist.size() * sizeof(T) ) )
+			, m_Capacity( SizeType( ilist.size() ) )
 			, m_pData( new T[ ilist.size() ] )
 		{
 			auto p = m_pData;
@@ -292,10 +321,10 @@ namespace OreOreLib
 		// Constructor with iterator
 		template < class Iter >
 		Memory( Iter first, Iter last )
-			: m_Length( int(last - first) )
+			: m_Length( SizeType( last - first ) )
 			, m_AllocSize( m_Length * sizeof(T) )
-			, m_Capacity( int(last - first) )
-			, m_pData( new T[ int(last - first) ]() )
+			, m_Capacity( SizeType(last - first) )
+			, m_pData( new T[ last - first ]() )
 		{
 			auto p = m_pData;
 			for(; first != last; ++first )
@@ -394,21 +423,21 @@ namespace OreOreLib
 
 
 		// Subscript operator for read only.( called if Memory is const )
-		inline const T& operator[]( std::size_t n ) const&
+		inline const T& operator[]( SizeType n ) const&
 		{
 			return m_pData[n];
 		}
 
 
 		// Subscript operator for read-write.( called if Memory is non-const )
-		inline T& operator[]( std::size_t n ) &
+		inline T& operator[]( SizeType n ) &
 		{
 			return m_pData[n];
 		}
 
 
 		// Subscript operator. ( called by following cases: "T a = Memory<T>(10)[n]", "auto&& a = Memory<T>(20)[n]" )
-		inline T operator[]( std::size_t n ) const&&
+		inline T operator[]( SizeType n ) const&&
 		{
 			return std::move(m_pData[n]);// return object
 		}
@@ -433,10 +462,8 @@ namespace OreOreLib
 
 
 
-		void Init( int len, T* pdata=nullptr )
+		void Init( SizeType len, T* pdata=nullptr )
 		{
-			assert( len>0 );
-
 			m_Length	= len;
 			m_AllocSize	= c_ElementSize * len;
 
@@ -467,7 +494,7 @@ namespace OreOreLib
 
 		void Init( std::initializer_list<T> ilist )
 		{
-			m_Length	= int( ilist.size() );
+			m_Length	= static_cast<SizeType>( ilist.size() );
 			m_AllocSize	= c_ElementSize * m_Length;
 
 			if( m_Length > m_Capacity )
@@ -483,19 +510,17 @@ namespace OreOreLib
 
 			//SafeDeleteArray( m_pData );
 
-			//m_Length	= int( ilist.size() );
+			//m_Length	= ilist.size();
 			//m_AllocSize	= m_Length * sizeof(T);
-			//m_Capacity	= int( ilist.size() );
+			//m_Capacity	= ilist.size();
 			//m_pData		= new T[ m_Capacity ];	
 
 			//MemCopy( begin(), ilist.begin(), ilist.size() );
 		}
 
 
-		void Init( int len, const T& fill )
+		void Init( SizeType len, const T& fill )
 		{
-			assert( len>0 );
-
 			m_Length	= len;
 			m_AllocSize	= c_ElementSize * len;
 
@@ -523,14 +548,14 @@ namespace OreOreLib
 
 		void Clear()
 		{
-			if( m_Length>0 )
+			if( m_Length > 0 )
 				memset( m_pData, 0, m_AllocSize );
 		}
 
 
-		void SetValues( uint8* pdata, int len )
+		void SetValues( uint8* pdata, SizeType len )
 		{
-			assert( len>0 && pdata );
+			ASSERT( pdata );
 			MemCopy( m_pData, (T*)pdata, Min( m_Length, len ) );
 		}
 
@@ -540,7 +565,7 @@ namespace OreOreLib
 		SetValues( const Args& ... args )
 		{
 			auto values = { (T)args... };
-			MemCopy( m_pData, values.begin(), Min( (size_t)m_Length, values.size() ) );
+			MemCopy( m_pData, values.begin(), Min( m_Length, (SizeType)values.size() ) );
 		}
 
 
@@ -548,24 +573,23 @@ namespace OreOreLib
 		std::enable_if_t< std::is_convertible_v<Type, T>/*  std::is_same_v<Type, T>*/, void >
 		SetValues( std::initializer_list<Type> ilist )
 		{
-			MemCopy( m_pData, ilist.begin(), Min( (size_t)m_Length, ilist.size() ) );
+			MemCopy( m_pData, ilist.begin(), Min( m_Length, (SizeType)ilist.size() ) );
 		}
 
 
-		inline bool Resize( int newlen )
-		{
-			assert( newlen > 0 );
 
+		inline bool Resize( SizeType newlen )
+		{
 			if( newlen < m_Length )
 			{
 				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
 					iter->~T();
-				//for( int i=m_Length; i<newlen; ++i )	m_pData[i].~T();
+				//for( SizeType i=m_Length; i<newlen; ++i )	m_pData[i].~T();
 			}
 			else if( newlen > m_Capacity )
 			{
 				T *newdata	= new T[ newlen ]();
-				int newallocsize = c_ElementSize * newlen;
+				SizeType newallocsize = c_ElementSize * newlen;
 
 				if( m_pData )
 				{
@@ -584,7 +608,7 @@ namespace OreOreLib
 
 			//if( newlen <= m_Capacity )
 			//{
-			//	for( auto& iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )	iter.~T();//for( int i=m_Length; i<newlen; ++i )	m_pData[i].~T();
+			//	for( auto& iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )	iter.~T();//for( SizeType i=m_Length; i<newlen; ++i )	m_pData[i].~T();
 
 			//	m_Length	= newlen;
 			//	m_AllocSize	= c_ElementSize * newlen;
@@ -592,7 +616,7 @@ namespace OreOreLib
 			//else
 			//{
 			//	T *newdata	= new T[ newlen ]();
-			//	int newallocsize = c_ElementSize * newlen;
+			//	SizeType newallocsize = c_ElementSize * newlen;
 
 			//	if( m_pData )
 			//	{
@@ -610,20 +634,18 @@ namespace OreOreLib
 		}
 
 
-		inline bool Resize( int newlen, const T& fill )
+		inline bool Resize( SizeType newlen, const T& fill )
 		{
-			assert( newlen > 0 );
-
 			if( newlen < m_Length )
 			{
 				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
 					iter->~T();
-				//for( int i=m_Length; i<newlen; ++i )	m_pData[i].~T();
+				//for( SizeType i=m_Length; i<newlen; ++i )	m_pData[i].~T();
 			}
 			else if( newlen > m_Capacity )
 			{
 				T *newdata	= new T[ newlen ]();
-				int newallocsize = c_ElementSize * newlen;
+				SizeType newallocsize = c_ElementSize * newlen;
 
 				if( m_pData )
 				{
@@ -634,7 +656,7 @@ namespace OreOreLib
 				m_pData		= newdata;
 			}
 
-			for( int i=m_Length; i<newlen; ++i )
+			for( SizeType i=m_Length; i<newlen; ++i )
 				m_pData[i] = fill;
 
 			m_Length	= newlen;
@@ -646,7 +668,7 @@ namespace OreOreLib
 
 			//if( newlen <= m_Capacity )
 			//{
-			//	for( int i=m_Length; i<newlen; ++i )
+			//	for( SizeType i=m_Length; i<newlen; ++i )
 			//		m_pData[i] = fill;
 
 			//	m_Length	= newlen;
@@ -655,7 +677,7 @@ namespace OreOreLib
 			//else
 			//{
 			//	T *newdata	= new T[ newlen ]();
-			//	int newallocsize = c_ElementSize * newlen;
+			//	SizeType newallocsize = c_ElementSize * newlen;
 
 			//	if( m_pData )
 			//	{
@@ -663,7 +685,7 @@ namespace OreOreLib
 			//		SafeDeleteArray( m_pData );
 			//	}
 
-			//	for( int i=m_Length; i<newlen; ++i )
+			//	for( SizeType i=m_Length; i<newlen; ++i )
 			//		newdata[i] = fill;
 
 			//	m_pData		= newdata;
@@ -675,7 +697,7 @@ namespace OreOreLib
 		}
 
 
-		inline bool Reserve( int newlen )
+		inline bool Reserve( SizeType newlen )
 		{
 			if( newlen <= m_Capacity )
 				return false;
@@ -695,13 +717,13 @@ namespace OreOreLib
 		}
 
 
-		inline bool Extend( int numelms )
+		inline bool Extend( SizeType numelms )
 		{
 			return Resize( m_Length + numelms );
 		}
 
 
-		inline bool Shrink( int numelms )
+		inline bool Shrink( SizeType numelms )
 		{
 			if( m_Length > numelms )	return Resize( m_Length - numelms );
 			return false;
@@ -720,25 +742,25 @@ namespace OreOreLib
 		}
 
 
-		int ElementSize() const
+		SizeType ElementSize() const
 		{
 			return c_ElementSize;
 		}
 
 
-		int Length() const
+		SizeType Length() const
 		{
 			return m_Length;
 		}
 
 
-		int Capacity() const
+		SizeType Capacity() const
 		{
 			return m_Capacity;
 		}
 
 
-		int AllocatedSize() const
+		SizeType AllocatedSize() const
 		{
 			return m_AllocSize;
 		}
@@ -796,13 +818,13 @@ namespace OreOreLib
 
 	protected:
 
-		const int c_ElementSize = sizeof(T);
+		const SizeType c_ElementSize = (SizeType)sizeof(T);
 
-		int	m_Length;
-		int m_AllocSize;
-		T*	m_pData;
+		SizeType	m_Length;
+		SizeType	m_AllocSize;
+		T*			m_pData;
 
-		int	m_Capacity;
+		SizeType	m_Capacity;
 
 
 	};
@@ -818,7 +840,7 @@ namespace OreOreLib
 
 
 	template < typename T >
-	inline int64 Find( const Memory<T>& arr, const T& item )
+	inline sizeType Find( const Memory<T>& arr, const T& item )
 	{
 		for( const auto& elm : arr )
 		{
@@ -846,9 +868,9 @@ namespace OreOreLib
 
 
 	template < typename T >
-	inline bool Exists( int numelms, const T data[], const T& item )
+	inline bool Exists( sizeType numelms, const T data[], const T& item )
 	{
-		for( int i=0; i<numelms; ++i )
+		for( sizeType i=0; i<numelms; ++i )
 		{
 			if( data[i] == item )
 				return true;

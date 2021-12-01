@@ -19,6 +19,7 @@ namespace OreOreLib
 	template< typename T >
 	class ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize > : public Memory<T>
 	{
+		using SizeType = typename Memory<T>::SizeType;
 		using Ptr = T*;
 		using ConstPtr = const T*;
 
@@ -32,7 +33,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		ArrayBase( ConstPtr const pdata, int length )
+		ArrayBase( ConstPtr const pdata, SizeType length )
 		{
 			Init( pdata, length );
 		}
@@ -62,7 +63,7 @@ namespace OreOreLib
 
 
 
-		void Init( ConstPtr const pdata, int length )
+		void Init( ConstPtr const pdata, SizeType length )
 		{
 			this->m_pData		= (Ptr)pdata;
 			this->m_Length		= length;
@@ -95,7 +96,7 @@ namespace OreOreLib
 		{
 			tcout << typeid(*this).name() << _T("[ ") << this->m_Length << _T(" ]:\n" );
 
-			for( int i=0; i<this->m_Length; ++i )
+			for( SizeType i=0; i<this->m_Length; ++i )
 				tcout << _T("  [") << i << _T("]: ") << this->m_pData[i] << tendl;
 
 			tcout << tendl;
@@ -108,11 +109,11 @@ namespace OreOreLib
 		using Memory<T>::Init;
 		using Memory<T>::Release;
 
-		bool Resize( int ) = delete;//using Memory<T>::Resize;
-		bool Resize( int, const T& ) = delete;
-		bool Reserve( int ) = delete;
-		bool Extend( int ) = delete;//using Memory<T>::Extend;
-		bool Shrink( int ) = delete;//using Memory<T>::Shrink;
+		bool Resize( SizeType ) = delete;//using Memory<T>::Resize;
+		bool Resize( SizeType, const T& ) = delete;
+		bool Reserve( SizeType ) = delete;
+		bool Extend( SizeType ) = delete;//using Memory<T>::Extend;
+		bool Shrink( SizeType ) = delete;//using Memory<T>::Shrink;
 
 
 	};

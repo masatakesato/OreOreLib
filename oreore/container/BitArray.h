@@ -30,21 +30,21 @@ public:
 
 
 	// Constructor
-	BitArray( int bitlength )
+	BitArray( sizeType bitlength )
 		: m_pWords( nullptr )
 	{
-		//tcout << _T( "BitArray::BitArray( int bitlength )...\n" );
+		//tcout << _T( "BitArray::BitArray( sizeType bitlength )...\n" );
 		Init( bitlength );
 	}
 
 
 	// Constructor
-	BitArray( int bitlength, const tstring& tstr )
+	BitArray( sizeType bitlength, const tstring& tstr )
 		: m_BitLength( bitlength )
-		, m_ByteSize( DivUp( m_BitLength, (int)BitSize::uInt8 ) )
+		, m_ByteSize( DivUp( m_BitLength, BitSize::uInt8 ) )
 		, m_pWords( /*new uint8[ m_ByteSize ]()*/nullptr )
 	{
-		TCharToChar( tstr.c_str(), Min(tstr.length(), size_t(m_ByteSize) ), (char*&)m_pWords );
+		TCharToChar( tstr.c_str(), Min(tstr.length(), m_ByteSize ), (char*&)m_pWords );
 	}
 
 
@@ -126,26 +126,26 @@ public:
 	}
 
 
-	void Init( int bitlength )
+	void Init( sizeType bitlength )
 	{
 		Release();
 
 		m_BitLength	= bitlength;
-		m_ByteSize	= DivUp( m_BitLength, (int)BitSize::uInt8 );
+		m_ByteSize	= DivUp( m_BitLength, BitSize::uInt8 );
 
 		m_pWords	= new uint8[ m_ByteSize ];
 		UnsetAll();
 	}
 
 
-	void Init( int bitlength, const tstring& tstr )
+	void Init( sizeType bitlength, const tstring& tstr )
 	{
 		Release();
 
 		m_BitLength	= bitlength;
-		m_ByteSize	= DivUp( m_BitLength, (int)BitSize::uInt8 );
+		m_ByteSize	= DivUp( m_BitLength, BitSize::uInt8 );
 
-		TCharToChar( tstr.c_str(), Min(tstr.length(), size_t(m_ByteSize) ), (char*&)m_pWords );
+		TCharToChar( tstr.c_str(), Min(tstr.length(), m_ByteSize ), (char*&)m_pWords );
 	}
 
 
@@ -157,19 +157,19 @@ public:
 	}
 
 
-	void Set( int b )
+	void Set( sizeType b )
 	{
 		m_pWords[ byteOffset( b )] |= 1 << bitOffset( b );
 	}
 
 
-	void Unset( int b )
+	void Unset( sizeType b )
 	{
 		m_pWords[ byteOffset( b ) ] &= ~( 1 << bitOffset( b ) );
 	}
 
 
-	void Flip( int b )
+	void Flip( sizeType b )
 	{
 		m_pWords[ byteOffset( b ) ] ^= 1 << bitOffset( b );
 	}
@@ -189,12 +189,12 @@ public:
 	}
 
 
-	void Randomize( int start, int length )// randomize length bits from start potition.
+	void Randomize( sizeType start, sizeType length )// randomize length bits from start potition.
 	{
-		int numFlips = int( OreOreLib::genrand_real1() * length );
-		for( int b=0; b<numFlips; ++b )
+		auto numFlips = sizeType( OreOreLib::genrand_real1() * length );
+		for( sizeType b=0; b<numFlips; ++b )
 		{
-			int idx	= int( OreOreLib::genrand_real2() * length ) + start;
+			auto idx = sizeType( OreOreLib::genrand_real2() * length ) + start;
 			Flip( idx );
 		}
 	}
@@ -204,38 +204,38 @@ public:
 	{
 		UnsetAll();
 
-		int numFlips = int( OreOreLib::genrand_real1() * m_BitLength );
-		for( int b=0; b<numFlips; ++b )
+		auto numFlips = sizeType( OreOreLib::genrand_real1() * m_BitLength );
+		for( sizeType b=0; b<numFlips; ++b )
 		{
-			int idx	= int( OreOreLib::genrand_real2() * m_BitLength );
+			auto idx	= sizeType( OreOreLib::genrand_real2() * m_BitLength );
 			Flip( idx );
 		}
 	}
 
 
-	int BitLength() const
+	sizeType BitLength() const
 	{
 		return m_BitLength;
 	}
 
 
-	int ByteSize() const
+	sizeType ByteSize() const
 	{
 		return m_ByteSize;
 	}
 
 
-	int GetBit( int b ) const
+	bool GetBit( sizeType b ) const
 	{
-		return int( ( m_pWords[ byteOffset( b ) ] & 1 << bitOffset( b ) ) > 0 );
+		return ( m_pWords[ byteOffset( b ) ] & 1 << bitOffset( b ) ) > 0;
 	}
 
 
-	void SetBit( int b, int val )
+	void SetBit( sizeType b, bool val )
 	{
 		auto byteoffset = byteOffset( b );
 		auto bitoffset	= bitOffset( b );
-		m_pWords[ byteoffset ]	= m_pWords[ byteoffset ] & ~( 1 << bitoffset ) | val << bitoffset;
+		m_pWords[ byteoffset ]	= m_pWords[ byteoffset ] & ~( 1 << bitoffset ) | static_cast<sizeType>(val) << bitoffset;
 	}
 
 
@@ -247,7 +247,7 @@ public:
 
 	int GetLSB() const
 	{
-		return Max( testLSB( m_pWords, m_ByteSize ), -1 );
+		return Max( testLSB<int>( m_pWords, m_ByteSize ), -1 );
 	}
 
 
@@ -258,9 +258,9 @@ public:
 	}
 
 
-	void CopyFrom( int dst_start, const BitArray* pSrc, int src_start, int length )
+	void CopyFrom( sizeType dst_start, const BitArray* pSrc, sizeType src_start, sizeType length )
 	{
-		for( int dst=dst_start, src=src_start; dst<Min( dst_start+length, m_BitLength ); ++dst, ++src )
+		for( sizeType dst=dst_start, src=src_start; dst<Min( dst_start+length, m_BitLength ); ++dst, ++src )
 			SetBit( dst, pSrc->GetBit( src ) );
 	}
 
@@ -292,12 +292,12 @@ public:
 
 protected:
 
-	int		m_BitLength = 0;
-	int		m_ByteSize = 0;
-	uint8*	m_pWords;
+	sizeType	m_BitLength = 0;
+	sizeType	m_ByteSize = 0;
+	uint8*		m_pWords;
 
 
-	template< int N >
+	template< sizeType N >
 	friend class StaticBitArray;
 
 };
@@ -311,7 +311,7 @@ protected:
 //																	//
 //##################################################################//
  
-template < int N >
+template < sizeType N >
 class StaticBitArray : public BitArray
 {
 public:
@@ -322,7 +322,7 @@ public:
 		//tcout << _T( "StaticBitArray::StaticBitArray()...\n" );
 
 		m_BitLength	= N;
-		m_ByteSize	= DivUp( m_BitLength, (int)BitSize::uInt8 );
+		m_ByteSize	= DivUp( m_BitLength, BitSize::uInt8 );
 		m_pWords	= &m_Words[0];
 
 		memset( m_Words, 0, m_ByteSize );
@@ -335,7 +335,7 @@ public:
 		//tcout << _T( "StaticBitArray::StaticBitArray( const BitArray& obj )...\n" );
 
 		m_BitLength = N;
-		m_ByteSize	= DivUp( m_BitLength, (int)BitSize::uInt8 );
+		m_ByteSize	= DivUp( m_BitLength, BitSize::uInt8 );
 		m_pWords	= &m_Words[0];
 
 		memset( m_Words, 0, m_ByteSize );
@@ -351,7 +351,7 @@ public:
 		//tcout << _T( "StaticBitArray( const StaticBitArray& obj )...\n" );
 
 		m_BitLength = N;
-		m_ByteSize	= DivUp( m_BitLength, (int)BitSize::uInt8 );
+		m_ByteSize	= DivUp( m_BitLength, BitSize::uInt8 );
 		m_pWords	= &m_Words[0];
 
 		memset( m_Words, 0, m_ByteSize );
@@ -389,13 +389,13 @@ public:
 		tcout << tendl;
 	}
 
-	void Init( int bitlength ) = delete;
+	void Init( sizeType ) = delete;
 	void Release() = delete;
 
 
 private:
 
-	uint8	m_Words[ DivUp( N, (int)BitSize::uInt8 ) ];
+	uint8	m_Words[ DivUp( N, BitSize::uInt8 ) ];
 
 
 	//using BitArray::Init;
