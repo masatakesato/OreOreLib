@@ -67,7 +67,9 @@ namespace OreOreLib
 
 			while( begin != end )
 			{
-				*out = *(DstIter*)begin;
+//out->~DstIter();// Desctuct existing data
+new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
+//*out = *(DstIter*)begin;
 				++begin; ++out;
 			}
 			
@@ -91,6 +93,8 @@ namespace OreOreLib
 
 	//		while( begin != end )
 	//		{
+//out->~Iter();// Desctuct existing data
+//new ( out ) Iter( *begin );// Call copy constructor
 	//			*out = *begin;
 	//			++begin; ++out;
 	//		}
@@ -117,7 +121,9 @@ namespace OreOreLib
 
 			while(begin != end)
 			{
-				*out = *(DstIter*)begin;
+//out->~DstIter();// Desctuct existing data
+new ( out ) DstIter( std::move( *(DstIter*)begin ) );// Call move constructor
+//				*out = *(DstIter*)begin;
 				++begin; ++out;
 			}
 
@@ -141,6 +147,8 @@ namespace OreOreLib
 
 	//		while(begin != end)
 	//		{
+////out->~Iter();// Desctuct existing data
+//new ( out ) Iter( std::move( *begin ) );// Call move constructor
 	//			*out = *begin;
 	//			++begin; ++out;
 	//		}
@@ -178,8 +186,10 @@ namespace OreOreLib
 
 		while( begin != end )
 		{
-			*out = *(DstIter*)begin;
-			++begin; ++out;
+//out->~DstIter();// Desctuct existing data
+new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
+//			*out = *(DstIter*)begin;
+			++begin; ++out;// expecting copy assignment operator implementation
 		}
 		
 		return out;
@@ -196,7 +206,9 @@ namespace OreOreLib
 
 	//	while( begin != end )
 	//	{
-	//		*out = *begin;
+//out->~Iter();// Desctuct existing data
+//new ( out ) Iter( *begin );// Call copy constructor
+	//		//*out = *begin;
 	//		++begin; ++out;
 	//	}
 	//
@@ -224,7 +236,9 @@ namespace OreOreLib
 
 		while( begin != end )
 		{
-			*out = *(DstIter*)begin;
+//out->~DstIter();// Desctuct existing data
+new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
+//*out = *(DstIter*)begin;
 			++begin; ++out;
 		}
 		
@@ -242,6 +256,8 @@ namespace OreOreLib
 
 	//	while( begin != end )
 	//	{
+//out->~Iter();// Desctuct existing data
+//new ( out ) Iter( std::move(*begin) );// Call move constructor
 	//		*out = *begin;
 	//		++begin; ++out;
 	//	}
@@ -539,6 +555,12 @@ namespace OreOreLib
 
 		void Release()
 		{
+
+// for byte array allocation
+//for( auto iter=m_pData; iter !=m_pData+m_Capacity; ++iter )
+//	iter->~T();
+//SafeDeleteArray( (uint8*&)m_pData );
+
 			m_Length	= 0;
 			m_AllocSize	= 0;
 			m_Capacity	= 0;
@@ -589,15 +611,17 @@ namespace OreOreLib
 			else if( newlen > m_Capacity )
 			{
 				T *newdata	= new T[ newlen ]();
+//uint8* mem = new uint8[ newlen * /*c_ElementSize*/sizeof(T) ];// for bytearray allocation
+
 				SizeType newallocsize = c_ElementSize * newlen;
 
 				if( m_pData )
 				{
-					MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+					MemCopy( newdata/*mem*/, m_pData, Min(m_Length, newlen) );
 					SafeDeleteArray( m_pData );
 				}
 				m_Capacity	= newlen;
-				m_pData		= newdata;
+				m_pData		= newdata;//*/(T*)(mem);
 			}
 
 			m_Length	= newlen;

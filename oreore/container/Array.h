@@ -115,7 +115,7 @@ namespace OreOreLib
 
 		inline SizeType AddToFront( T&& src )
 		{
-			return InsertBefore( 0, src );
+			return InsertBefore( 0, (T&&)src );
 		}
 
 		inline SizeType AddToTail( const T& src )
@@ -125,7 +125,7 @@ namespace OreOreLib
 
 		inline SizeType AddToTail( T&& src )
 		{
-			return InsertBefore( this->m_Length, src );
+			return InsertBefore( this->m_Length, (T&&)src );
 		}
 
 
@@ -134,7 +134,7 @@ namespace OreOreLib
 			if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
-			this->m_pData[elm] = src;
+			T* val = new ( &this->m_pData[elm] ) T(src);//this->m_pData[elm] = src;
 			return elm;
 		}
 
@@ -144,7 +144,8 @@ namespace OreOreLib
 			if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
-			this->m_pData[elm] = src;
+			//this->m_pData[elm] = src;
+			T* val = new ( &this->m_pData[elm] ) T( (T&&)src );
 			return elm;
 		}
 
@@ -157,7 +158,7 @@ namespace OreOreLib
 
 		inline SizeType InsertAfter( SizeType elm, T&& src )
 		{
-			return InsertBefore( elm+1, src );
+			return InsertBefore( elm+1, (T&&)src );
 		}
 
 

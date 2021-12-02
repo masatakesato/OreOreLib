@@ -19,23 +19,146 @@ using fArray = OreOreLib::Array<float>;
 using fSArray16 = OreOreLib::StaticArray<float, 16>;
 
 
+//struct Val
+//{
+//	Val() : value()
+//	{
+//	tcout << "Val()\n";
+//	}
+//	Val( float val )
+//		: value( val )
+//	{
+//		tcout << "Val( float val )\n";
+//	}
+//
+//	~Val()
+//	{
+//		tcout << "~Val()\n";
+//		//value = -999999999.9f;
+//	}
+//
+//	Val( const Val& obj )
+//		: value( obj.value )
+//	{
+//		tcout << "Val( const Val& obj )\n";
+//	}
+//
+//	//Val( Val&& obj )
+//	//	: value( obj.value )
+//	//{
+//	//	 obj.value = nullptr;
+//	//}
+//
+//
+//	float value;
+//
+//};
+
+
+
+struct Val
+{
+	Val() : value(nullptr)
+	{
+	tcout << "Val()\n";
+	}
+	Val( float val )
+		: value( new float(val) )
+	{
+		tcout << "Val( float val )\n";
+	}
+
+	~Val()
+	{
+		tcout << "~Val(): " << *value << tendl;
+		SafeDelete( value );
+	}
+
+	Val( const Val& obj )
+		: value( new float(*obj.value)  )
+	{
+		tcout << "Val( const Val& obj ) : " << *value << tendl;
+	}
+
+	//Val( Val&& obj )
+	//	: value( obj.value )
+	//{
+	//	tcout << "Val( Val&& obj )\n";
+	//	 obj.value = nullptr;
+	//}
+
+
+	float* value;
+
+};
+
+
+
 
 int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+
+
+	{
+
+//		Val a(0.5f);
+//		Val b;
+//		b = Val( std::move(a) );// Array::AddToTail( T&& src )はこれと同じ内部処理をやってる. 一次変数Valを作成した後代入演算子使ってるだけ. ムーブできてない
+//		TODO: ムーブするにはどうすればいい？
+//			1. move assignment operatorをValクラスに実装すれば、b = std::move(a);を記述できるようになる
+//			2. Val b = Val( std::move(a) ); もしくは Val b( std::move(a) ); と記述してムーブコンストラクタを呼び出す
+
+
+		//std::vector<Val> aaa;
+
+		//aaa.push_back( 33333.33f );
+		//aaa.push_back( 44444.44f );
+
+		//Val v(999.5f);
+		//aaa.push_back( v );
+
+		//aaa.clear();
+
+
+
+
+		//OreOreLib::Array<Val> aaa;
+
+		//aaa.AddToTail( 33333.33f );		//aaa.AddToTail( Val(0.111f) );
+
+		//////aaa.AddToTail( 999.5f );
+		//const Val v(999.5f);
+		//aaa.AddToTail( v );
+
+		//aaa.Release();
+
+
+
+		Val src[] = { 1.1f, 2.2f, 3.3f };
+		Val dst[] = { 0.0f, 0.0f, 0.0f };
+
+		// これはダメ. assignment operatorでDeepCopy実装しないとクラッシュする
+		//std::copy( std::begin(src), std::end(src), std::begin(dst) );
+		memccpy( dst, src, sizeof(Val)*3 );
+
+
+		// こっちはOK？ -> メモリリーク発生する -> デストラクタ呼び出し追加した.
+		//OreOreLib::MemCopy( dst, src, 3 );
+
+//		*src[2].value = -666.6f;
+
+		return 0;
+	}
+
 
 	{
 		float aaa[3] = {1.0f, 2.0f, 3.0f};
 
 		fArray faaa;//( std::begin(aaa), std::end(aaa) );
 		faaa.Init( 3, aaa );
+
 	}
-	//fSArray16 pp;
-
-	//fArray a0(5);
-
-	//a0 = pp;
-
 
 
 	fArray	arr1{ 0.5f, 0.1f, 0.3f, 0.6f, 0.8f, 0.9f, 1.1f, -5.5f, 9.6f, 0.0f };

@@ -31,7 +31,7 @@ namespace OreOreLib
 		T Dequeue();
 
 		int next( int index ) const { return ( index + 1 ) % m_Queue.Length(); }
-		bool IsFull() const { return m_ActiveSize >= m_Queue.Length(); }
+		bool IsFull() const { return m_ActiveSize >= m_Queue.Length<int>(); }
 		bool IsEmpty() const { return m_ActiveSize==0; }
 
 		void Display();
