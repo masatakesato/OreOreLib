@@ -70,7 +70,7 @@ struct Val
 
 	~Val()
 	{
-		tcout << "~Val(): " << *value << tendl;
+		tcout << "~Val(): " << tendl;
 		SafeDelete( value );
 	}
 
@@ -80,12 +80,12 @@ struct Val
 		tcout << "Val( const Val& obj ) : " << *value << tendl;
 	}
 
-	//Val( Val&& obj )
-	//	: value( obj.value )
-	//{
-	//	tcout << "Val( Val&& obj )\n";
-	//	 obj.value = nullptr;
-	//}
+	Val( Val&& obj )
+		: value( obj.value )
+	{
+		tcout << "Val( Val&& obj )\n";
+		 obj.value = nullptr;
+	}
 
 
 	float* value;
@@ -122,25 +122,25 @@ int main()
 
 
 
+TODO: newの際に発生する無駄なデフォルトコンストラクタ実行を抑える
+		OreOreLib::Array<Val> aaa;
 
-		//OreOreLib::Array<Val> aaa;
-
-		//aaa.AddToTail( 33333.33f );		//aaa.AddToTail( Val(0.111f) );
+		aaa.AddToTail( 33333.33f );		//aaa.AddToTail( Val(0.111f) );
 
 		//////aaa.AddToTail( 999.5f );
-		//const Val v(999.5f);
-		//aaa.AddToTail( v );
+		const Val v(999.5f);
+		aaa.AddToTail( v );
 
-		//aaa.Release();
+		aaa.Release();
 
 
 
-		Val src[] = { 1.1f, 2.2f, 3.3f };
-		Val dst[] = { 0.0f, 0.0f, 0.0f };
+		//Val src[] = { 1.1f, 2.2f, 3.3f };
+		//Val dst[] = { 0.0f, 0.0f, 0.0f };
 
 		// これはダメ. assignment operatorでDeepCopy実装しないとクラッシュする
 		//std::copy( std::begin(src), std::end(src), std::begin(dst) );
-		memccpy( dst, src, sizeof(Val)*3 );
+		//memcpy( dst, src, sizeof(Val)*3 );
 
 
 		// こっちはOK？ -> メモリリーク発生する -> デストラクタ呼び出し追加した.

@@ -67,9 +67,13 @@ namespace OreOreLib
 
 			while( begin != end )
 			{
-//out->~DstIter();// Desctuct existing data
-new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-//*out = *(DstIter*)begin;
+				// Placement new version
+				//out->~DstIter();// Desctuct existing data from destination memory
+				new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
+
+				// Copy assignment operator version
+				//*out = *(DstIter*)begin;
+
 				++begin; ++out;
 			}
 			
@@ -93,8 +97,11 @@ new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
 
 	//		while( begin != end )
 	//		{
-//out->~Iter();// Desctuct existing data
-//new ( out ) Iter( *begin );// Call copy constructor
+	//			// Placement new version
+	//			out->~Iter();// Desctuct existing data from destination memory
+	//			new ( out ) Iter( *begin );// Call copy constructor
+	//
+	//			// Copy assignment operator version
 	//			*out = *begin;
 	//			++begin; ++out;
 	//		}
@@ -121,9 +128,13 @@ new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
 
 			while(begin != end)
 			{
-//out->~DstIter();// Desctuct existing data
-new ( out ) DstIter( std::move( *(DstIter*)begin ) );// Call move constructor
-//				*out = *(DstIter*)begin;
+				// Placement new version
+				//out->~DstIter();// Desctuct existing data from destination memory
+				new ( out ) DstIter( (DstIter&&)( *begin ) );// Call move constructor
+				
+				// Copy assignment operator version
+				//*out = *(DstIter*)begin;
+				
 				++begin; ++out;
 			}
 
@@ -147,9 +158,13 @@ new ( out ) DstIter( std::move( *(DstIter*)begin ) );// Call move constructor
 
 	//		while(begin != end)
 	//		{
-////out->~Iter();// Desctuct existing data
-//new ( out ) Iter( std::move( *begin ) );// Call move constructor
+	//			// Placement new version
+	//			//out->~Iter();// Desctuct existing data from destination memory
+	//			new ( out ) Iter( (Iter&&)( *begin ) );// Call move constructor
+	//
+	//			// Copy assignment operator version
 	//			*out = *begin;
+	//
 	//			++begin; ++out;
 	//		}
 
@@ -186,9 +201,13 @@ new ( out ) DstIter( std::move( *(DstIter*)begin ) );// Call move constructor
 
 		while( begin != end )
 		{
-//out->~DstIter();// Desctuct existing data
-new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-//			*out = *(DstIter*)begin;
+			// Placement new version
+			//out->~DstIter();// Desctuct existing data from destination memory
+			new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
+
+			// Copy assignment operator version
+			//*out = *(DstIter*)begin;
+
 			++begin; ++out;// expecting copy assignment operator implementation
 		}
 		
@@ -206,9 +225,13 @@ new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
 
 	//	while( begin != end )
 	//	{
-//out->~Iter();// Desctuct existing data
-//new ( out ) Iter( *begin );// Call copy constructor
+	//		// Placement new version
+	//		//out->~Iter();// Desctuct existing data from destination memory
+	//		new ( out ) Iter( *begin );// Call copy constructor
+	//
+	//		// Copy assignment operator version
 	//		//*out = *begin;
+	//
 	//		++begin; ++out;
 	//	}
 	//
@@ -236,9 +259,13 @@ new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
 
 		while( begin != end )
 		{
-//out->~DstIter();// Desctuct existing data
-new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
-//*out = *(DstIter*)begin;
+			// Placement new version
+			//out->~DstIter();// Desctuct existing data
+			new ( out ) DstIter( (DstIter&&)( *begin ) );// Desctuct existing data from destination memory
+
+			// Copy assignment operator version
+			//*out = *(DstIter*)begin;
+
 			++begin; ++out;
 		}
 		
@@ -256,9 +283,13 @@ new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
 
 	//	while( begin != end )
 	//	{
-//out->~Iter();// Desctuct existing data
-//new ( out ) Iter( std::move(*begin) );// Call move constructor
+	//		// Placement new version
+	//		//out->~Iter();// Desctuct existing data from destination memory
+	//		new ( out ) Iter( (Iter&&)( *begin ) );// Call move constructor
+	//
+	//		// Copy assignment operator version
 	//		*out = *begin;
+	//
 	//		++begin; ++out;
 	//	}
 	//
@@ -494,17 +525,6 @@ new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
 			{
 				MemCopy( m_pData, pdata, m_Length );
 			}
-
-
-			//SafeDeleteArray( m_pData );
-
-			//m_Length	= len;
-			//m_AllocSize	= c_ElementSize * len;
-			//m_Capacity	= len;
-			//m_pData		= new T[ m_Capacity ]();
-
-			//if( pdata )
-			//	MemCopy( m_pData, pdata, m_Length );
 		}
 
 
@@ -521,17 +541,6 @@ new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
 			}
 
 			MemCopy( begin(), ilist.begin(), ilist.size() );
-
-
-
-			//SafeDeleteArray( m_pData );
-
-			//m_Length	= ilist.size();
-			//m_AllocSize	= m_Length * sizeof(T);
-			//m_Capacity	= ilist.size();
-			//m_pData		= new T[ m_Capacity ];	
-
-			//MemCopy( begin(), ilist.begin(), ilist.size() );
 		}
 
 
@@ -612,12 +621,9 @@ new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
 			{
 				T *newdata	= new T[ newlen ]();
 //uint8* mem = new uint8[ newlen * /*c_ElementSize*/sizeof(T) ];// for bytearray allocation
-
-				SizeType newallocsize = c_ElementSize * newlen;
-
 				if( m_pData )
 				{
-					MemCopy( newdata/*mem*/, m_pData, Min(m_Length, newlen) );
+					MemMove( newdata, m_pData, Min(m_Length, newlen) );//MemCopy( newdata/*mem*/, m_pData, Min(m_Length, newlen) );
 					SafeDeleteArray( m_pData );
 				}
 				m_Capacity	= newlen;
@@ -628,33 +634,6 @@ new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
 			m_AllocSize	= c_ElementSize * m_Length;
 
 			return true;
-
-
-			//if( newlen <= m_Capacity )
-			//{
-			//	for( auto& iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )	iter.~T();//for( SizeType i=m_Length; i<newlen; ++i )	m_pData[i].~T();
-
-			//	m_Length	= newlen;
-			//	m_AllocSize	= c_ElementSize * newlen;
-			//}
-			//else
-			//{
-			//	T *newdata	= new T[ newlen ]();
-			//	SizeType newallocsize = c_ElementSize * newlen;
-
-			//	if( m_pData )
-			//	{
-			//		MemCopy( newdata, m_pData, Min(m_Length, newlen) );
-			//		SafeDeleteArray( m_pData );
-			//	}
-
-			//	m_pData		= newdata;
-			//	m_Length	= newlen;
-			//	m_Capacity	= newlen;
-			//	m_AllocSize	= newallocsize;
-			//}
-
-			//return true;
 		}
 
 
@@ -669,11 +648,10 @@ new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
 			else if( newlen > m_Capacity )
 			{
 				T *newdata	= new T[ newlen ]();
-				SizeType newallocsize = c_ElementSize * newlen;
 
 				if( m_pData )
 				{
-					MemCopy( newdata, m_pData, Min(m_Length, newlen) );
+					MemMove( newdata, m_pData, Min(m_Length, newlen) );//MemCopy( newdata, m_pData, Min(m_Length, newlen) );
 					SafeDeleteArray( m_pData );
 				}
 				m_Capacity	= newlen;
@@ -687,37 +665,6 @@ new ( out ) DstIter( std::move(*(DstIter*)begin) );// Call move constructor
 			m_AllocSize	= c_ElementSize * m_Length;
 
 			return true;
-
-
-
-			//if( newlen <= m_Capacity )
-			//{
-			//	for( SizeType i=m_Length; i<newlen; ++i )
-			//		m_pData[i] = fill;
-
-			//	m_Length	= newlen;
-			//	m_AllocSize	= c_ElementSize * newlen;
-			//}
-			//else
-			//{
-			//	T *newdata	= new T[ newlen ]();
-			//	SizeType newallocsize = c_ElementSize * newlen;
-
-			//	if( m_pData )
-			//	{
-			//		MemCopy( newdata, m_pData, Min(m_Length, newlen) );
-			//		SafeDeleteArray( m_pData );
-			//	}
-
-			//	for( SizeType i=m_Length; i<newlen; ++i )
-			//		newdata[i] = fill;
-
-			//	m_pData		= newdata;
-			//	m_Length	= newlen;
-			//	m_AllocSize	= newallocsize;
-			//}
-
-			//return true;
 		}
 
 
