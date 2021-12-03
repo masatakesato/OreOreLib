@@ -156,7 +156,7 @@ inline const T Log( const T& a, const T& b )
 template< typename T >
 inline const T Floor( const T& val, const T& unit )
 {
-	return	(T)floor( double( val ) / double( unit ) ) * double( unit );
+	return	static_cast<T>( floor( float64( val ) / float64( unit ) ) * float64( unit ) );
 }
 
 
@@ -164,7 +164,7 @@ inline const T Floor( const T& val, const T& unit )
 template< typename T >
 inline const T Ceil( const T& val, const T& unit )
 {
-	return	(T)ceil( double( val ) / double( unit ) ) * double( unit );
+	return	static_cast<T>( ceil( float64( val ) / float64( unit ) ) * float64( unit ) );
 }
 
 

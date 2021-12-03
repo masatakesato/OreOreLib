@@ -334,7 +334,7 @@ namespace OreOreLib
 			: m_Length( len )
 			, m_AllocSize( len * sizeof(T) )
 			, m_Capacity( len )
-			, m_pData( AllocateBuffer(len)/*new T[len]()*/ )
+			, m_pData( AllocateBuffer(len) )
 		{
 			//tcout << _T("Memory constructor(dynamic allocation)...\n");
 
@@ -349,7 +349,7 @@ namespace OreOreLib
 			: m_Length( sizeof ...(Args) )
 			, m_AllocSize( sizeof ...(Args) * sizeof(T) )
 			, m_Capacity( sizeof ...(Args) )
-			, m_pData( AllocateBuffer( SizeType( sizeof ...(Args) ) )  )//new T[ sizeof ...(Args) ]{args...} )
+			, m_pData( AllocateBuffer( SizeType( sizeof ...(Args) ) )  )
 		{
 			auto p = m_pData;
 			for( const auto& val : std::initializer_list<T>{args...} )
@@ -361,7 +361,7 @@ namespace OreOreLib
 			: m_Length( SizeType( ilist.size() ) )
 			, m_AllocSize( SizeType( ilist.size() * sizeof(T) ) )
 			, m_Capacity( SizeType( ilist.size() ) )
-			, m_pData( AllocateBuffer( SizeType( ilist.size() ) ) /*new T[ ilist.size() ]*/ )
+			, m_pData( AllocateBuffer( SizeType( ilist.size() ) ) )
 		{
 			auto p = m_pData;
 			for( const auto& val : ilist )
@@ -375,7 +375,7 @@ namespace OreOreLib
 			: m_Length( SizeType( last - first ) )
 			, m_AllocSize( m_Length * sizeof(T) )
 			, m_Capacity( SizeType(last - first) )
-			, m_pData( AllocateBuffer( SizeType(last - first) ) )//new T[ last - first ]() )
+			, m_pData( AllocateBuffer( SizeType(last - first) ) )
 		{
 			auto p = m_pData;
 			for(; first != last; ++first )
@@ -401,7 +401,7 @@ namespace OreOreLib
 			//tcout << _T("Memory copy constructor...\n");
 			if( obj.m_pData )
 			{
-m_pData	= AllocateBuffer( m_Capacity );//m_pData = new T[ m_Capacity ];
+				AllocateBuffer( m_Capacity );
 				MemCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 			}
 		}
@@ -433,11 +433,11 @@ m_pData	= AllocateBuffer( m_Capacity );//m_pData = new T[ m_Capacity ];
 				m_Length	= obj.m_Length;
 				m_AllocSize	= obj.m_AllocSize;
 				m_Capacity	= obj.m_Capacity;
-DeallocateBuffer();//SafeDeleteArray( m_pData );
+				DeallocateBuffer();
 				
 				if( obj.m_pData )
 				{
-T* m_pData	= AllocateBuffer( m_Capacity );//m_pData = new T[ m_Capacity ];
+					AllocateBuffer( m_Capacity );
 					MemCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 				}
 			}
@@ -454,7 +454,7 @@ T* m_pData	= AllocateBuffer( m_Capacity );//m_pData = new T[ m_Capacity ];
 				//tcout << _T("Memory move assignment operator...\n");
 
 				// free current m_pData first.
-DeallocateBuffer();//SafeDeleteArray( m_pData );
+				DeallocateBuffer();
 
 				// copy data to *this
 				m_Length		= obj.m_Length;
@@ -520,9 +520,9 @@ DeallocateBuffer();//SafeDeleteArray( m_pData );
 
 			if( m_Length > m_Capacity )
 			{
-DeallocateBuffer();//SafeDeleteArray( m_pData );
+				DeallocateBuffer();
 				m_Capacity	= m_Length;
-m_pData	= AllocateBuffer( m_Capacity, true ); //m_pData		= new T[ m_Capacity ]();
+				AllocateBuffer( m_Capacity, true );
 			}
 
 			if( pdata )
@@ -539,9 +539,9 @@ m_pData	= AllocateBuffer( m_Capacity, true ); //m_pData		= new T[ m_Capacity ]()
 
 			if( m_Length > m_Capacity )
 			{
-DeallocateBuffer();
+				DeallocateBuffer();
 				m_Capacity	= m_Length;
-m_pData	= AllocateBuffer( m_Capacity, true );
+				AllocateBuffer( m_Capacity, true );
 			}
 
 			MemCopy( begin(), ilist.begin(), ilist.size() );
@@ -555,9 +555,9 @@ m_pData	= AllocateBuffer( m_Capacity, true );
 
 			if( m_Length > m_Capacity )
 			{
-DeallocateBuffer();
+				DeallocateBuffer();
 				m_Capacity	= m_Length;
-m_pData	= AllocateBuffer( m_Capacity, true );
+				AllocateBuffer( m_Capacity, true );
 			}
 
 			for( auto& data : m_pData )
@@ -612,7 +612,7 @@ m_pData	= AllocateBuffer( m_Capacity, true );
 				return false;
 
 			m_Capacity	= newlen;
-			T* newdata	= AllocateBuffer( m_Capacity );
+			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * m_Capacity ) );
 
 			if( m_pData )
 			{
@@ -654,12 +654,14 @@ m_pData	= AllocateBuffer( m_Capacity, true );
 
 		inline bool Extend( SizeType numelms )
 		{
+			if( numelms==0 || numelms==~0u )	return false;
 			return Resize( m_Length + numelms );
 		}
 
 
 		inline bool Extend( SizeType numelms, const T& fill )
 		{
+			if( numelms==0 || numelms==~0u )	return false;
 			return Resize( m_Length + numelms, fill );
 		}
 
