@@ -121,16 +121,15 @@ int main()
 		//aaa.clear();
 
 
-
-TODO: newの際に発生する無駄なデフォルトコンストラクタ実行を抑える
 		OreOreLib::Array<Val> aaa;
 
 		aaa.AddToTail( 33333.33f );		//aaa.AddToTail( Val(0.111f) );
 
 		//////aaa.AddToTail( 999.5f );
 		const Val v(999.5f);
-		aaa.AddToTail( v );
+		aaa.AddToFront( v );
 
+		aaa.Resize(5);
 		aaa.Release();
 
 

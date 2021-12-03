@@ -4,6 +4,7 @@
 #include	<iterator>
 
 #include	"../common/Utility.h"
+#include	"../meta/TypeTraits.h"
 
 
 
@@ -169,6 +170,38 @@ namespace OreOreLib
 	}
 
 
+
+
+	//##############################################################################################################//
+	//																												//
+	//												Element manipulaion												//
+	//																												//
+	//##############################################################################################################//
+
+
+	// https://stackoverflow.com/questions/58598763/how-to-assign-variadic-template-arguments-to-stdarray
+	template < typename ForwardIterator, typename T, typename ... Args >
+	std::enable_if_t< TypeTraits::all_same<T, Args...>::value, void >
+	SetValues( ForwardIterator first, ForwardIterator last, Args const & ... args )
+	{
+		for( const auto& val : std::initializer_list<T>{args...} )
+		{
+			*first++ = val;
+			if( first == last )	break;
+		}
+	}
+
+
+
+	//template < typename ForwardIterator, typename T >
+	//void Clear( ForwardIterator first, ForwardIterator last )
+	//{
+	//	while( first != last )
+	//	{
+	//		first->~T();
+
+	//	}
+	//}
 
 
 
