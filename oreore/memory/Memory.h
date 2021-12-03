@@ -433,7 +433,7 @@ m_pData	= AllocateBuffer( m_Capacity );//m_pData = new T[ m_Capacity ];
 				m_Length	= obj.m_Length;
 				m_AllocSize	= obj.m_AllocSize;
 				m_Capacity	= obj.m_Capacity;
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
+DeallocateBuffer();//SafeDeleteArray( m_pData );
 				
 				if( obj.m_pData )
 				{
@@ -454,7 +454,7 @@ T* m_pData	= AllocateBuffer( m_Capacity );//m_pData = new T[ m_Capacity ];
 				//tcout << _T("Memory move assignment operator...\n");
 
 				// free current m_pData first.
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
+DeallocateBuffer();//SafeDeleteArray( m_pData );
 
 				// copy data to *this
 				m_Length		= obj.m_Length;
@@ -520,7 +520,7 @@ DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
 
 			if( m_Length > m_Capacity )
 			{
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
+DeallocateBuffer();//SafeDeleteArray( m_pData );
 				m_Capacity	= m_Length;
 m_pData	= AllocateBuffer( m_Capacity, true ); //m_pData		= new T[ m_Capacity ]();
 			}
@@ -539,9 +539,9 @@ m_pData	= AllocateBuffer( m_Capacity, true ); //m_pData		= new T[ m_Capacity ]()
 
 			if( m_Length > m_Capacity )
 			{
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
+DeallocateBuffer();
 				m_Capacity	= m_Length;
-m_pData	= AllocateBuffer( m_Capacity, true );//m_pData		= new T[ m_Capacity ]();
+m_pData	= AllocateBuffer( m_Capacity, true );
 			}
 
 			MemCopy( begin(), ilist.begin(), ilist.size() );
@@ -555,9 +555,9 @@ m_pData	= AllocateBuffer( m_Capacity, true );//m_pData		= new T[ m_Capacity ]();
 
 			if( m_Length > m_Capacity )
 			{
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
+DeallocateBuffer();
 				m_Capacity	= m_Length;
-m_pData	= AllocateBuffer( m_Capacity, true );//m_pData		= new T[ m_Capacity ]();
+m_pData	= AllocateBuffer( m_Capacity, true );
 			}
 
 			for( auto& data : m_pData )
@@ -568,7 +568,7 @@ m_pData	= AllocateBuffer( m_Capacity, true );//m_pData		= new T[ m_Capacity ]();
 
 		void Release()
 		{
-			DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
+			DeallocateBuffer();
 			m_Length	= 0;
 			m_AllocSize	= 0;
 			m_Capacity	= 0;
@@ -606,33 +606,34 @@ m_pData	= AllocateBuffer( m_Capacity, true );//m_pData		= new T[ m_Capacity ]();
 		}
 
 
-// TODO: 要素初期化しなくていいリサイズもあっていい -> Array::AddToTailとかで使う
+		inline bool Reserve( SizeType newlen )
+		{
+			if( newlen <= m_Capacity )
+				return false;
+
+			m_Capacity	= newlen;
+			T* newdata	= AllocateBuffer( m_Capacity );
+
+			if( m_pData )
+			{
+				MemCopy( newdata, m_pData, m_Length );
+				DeallocateBuffer();
+			}
+
+			m_pData = newdata;
+
+			return true;
+		}
+
 
 		inline bool Resize( SizeType newlen )
 		{
-			if( newlen < m_Length )
-			{
-				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
-					iter->~T();
-				//for( SizeType i=m_Length; i<newlen; ++i )	m_pData[i].~T();
-			}
-			else if( newlen > m_Capacity )
-			{
-T *newdata	= AllocateBuffer( newlen );//T *newdata	= new T[ newlen ]();
+			// Reallocate memory
+			auto oldlen = m_Length;
+			ReallocateBuffer( newlen );
 
-				if( m_pData )
-				{
-					MemMove( newdata, m_pData, Min(m_Length, newlen) );//MemCopy( newdata/*mem*/, m_pData, Min(m_Length, newlen) );
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
-				}
-				m_Capacity	= newlen;
-				m_pData		= newdata;//*/(T*)(mem);
-			}
-
-			for( auto iter=m_pData+m_Length; iter !=m_pData+newlen; ++iter )	new ( iter ) T();
-
-			m_Length	= newlen;
-			m_AllocSize	= c_ElementSize * m_Length;
+			// Initialize allocated elements using placement new default constructor
+			for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T();
 
 			return true;
 		}
@@ -640,50 +641,12 @@ DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
 
 		inline bool Resize( SizeType newlen, const T& fill )
 		{
-			if( newlen < m_Length )
-			{
-				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
-					iter->~T();
-				//for( SizeType i=m_Length; i<newlen; ++i )	m_pData[i].~T();
-			}
-			else if( newlen > m_Capacity )
-			{
-T *newdata	= AllocateBuffer( newlen );//T *newdata	= new T[ newlen ]();
+			// Reallocate memory
+			auto oldlen = m_Length;
+			ReallocateBuffer( newlen );
 
-				if( m_pData )
-				{
-					MemMove( newdata, m_pData, Min(m_Length, newlen) );//MemCopy( newdata, m_pData, Min(m_Length, newlen) );
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
-				}
-				m_Capacity	= newlen;
-				m_pData		= newdata;
-			}
-
-			for( SizeType i=m_Length; i<newlen; ++i )
-				m_pData[i] = fill;
-
-			m_Length	= newlen;
-			m_AllocSize	= c_ElementSize * m_Length;
-
-			return true;
-		}
-
-
-		inline bool Reserve( SizeType newlen )
-		{
-			if( newlen <= m_Capacity )
-				return false;
-
-			m_Capacity	= newlen;
-T* newdata	= AllocateBuffer( m_Capacity );//T* newdata	= new T[ m_Capacity ]();
-
-			if( m_pData )
-			{
-				MemCopy( newdata, m_pData, m_Length );
-DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
-			}
-
-			m_pData = newdata;
+			// Initialize allocated elements using placement new copy constructor
+			for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T( fill );
 
 			return true;
 		}
@@ -695,9 +658,15 @@ DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
 		}
 
 
+		inline bool Extend( SizeType numelms, const T& fill )
+		{
+			return Resize( m_Length + numelms, fill );
+		}
+
+
 		inline bool Shrink( SizeType numelms )
 		{
-			if( m_Length > numelms )	return Resize( m_Length - numelms );
+			if( m_Length > numelms )	return ReallocateBuffer( m_Length - numelms );
 			return false;
 		}
 
@@ -802,32 +771,64 @@ DeallocateBuffer( m_pData );//SafeDeleteArray( m_pData );
 
 		// new delete memory without constructor
 		// https://stackoverflow.com/questions/4576307/c-allocate-memory-without-activating-constructors/4576402
-		T* AllocateBuffer( SizeType len, bool init=false )
+		inline T* AllocateBuffer( SizeType len, bool init=false )
 		{
 			// Allocate memory
-			T* buffer = static_cast<T*>( ::operator new( c_ElementSize * len ) );
+			/*T* buffer*/m_pData = static_cast<T*>( ::operator new( c_ElementSize * len ) );
 			
 			// Call default constructor
 			if( init )
 			{
-				for( auto iter=buffer; iter !=buffer+len; ++iter )
+				for( auto iter=m_pData; iter !=m_pData+len; ++iter )
 					new ( iter ) T();
 			}
 
-			return buffer;
+			return m_pData;
 		}
 
 
-		void DeallocateBuffer( T*& buffer )
+		inline void DeallocateBuffer()
 		{
-			if( buffer==nullptr )
+			if( m_pData==nullptr )
 				return;
 
-			for( auto iter=buffer; iter !=buffer+m_Capacity; ++iter )	iter->~T();
-			::operator delete( buffer );
+			for( auto iter=m_pData; iter !=m_pData+m_Capacity; ++iter )	iter->~T();
+			::operator delete( m_pData );
 
-			buffer = nullptr;
+			m_pData = nullptr;
 		}
+
+
+		inline bool ReallocateBuffer( SizeType newlen )
+		{
+			if( newlen < m_Length )
+			{
+				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
+					iter->~T();
+			}
+			else if( newlen > m_Capacity )
+			{
+				T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+
+				if( m_pData )
+				{
+					MemMove( newdata, m_pData, Min(m_Length, newlen) );
+					DeallocateBuffer();
+				}
+				m_Capacity	= newlen;
+				m_pData		= newdata;
+			}
+
+			//for( SizeType i=m_Length; i<newlen; ++i )
+			//	new ( m_pData+i ) T();
+
+			m_Length	= newlen;
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			return true;
+		}
+
+
 
 	};
 

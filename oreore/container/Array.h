@@ -95,7 +95,7 @@ namespace OreOreLib
 
 		inline SizeType InsertBefore( SizeType elm )
 		{
-			if( this->Extend( 1 )==false )
+			if( this->ReallocateBuffer( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
 			this->m_pData[elm] = T();
@@ -131,7 +131,7 @@ namespace OreOreLib
 
 		inline SizeType InsertBefore( SizeType elm, const T& src )
 		{
-			if( this->Extend( 1 )==false )
+			if( this->ReallocateBuffer( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
 			T* val = new ( &this->m_pData[elm] ) T(src);//this->m_pData[elm] = src;
@@ -141,7 +141,7 @@ namespace OreOreLib
 
 		inline SizeType InsertBefore( SizeType elm, T&& src )
 		{
-			if( this->Extend( 1 )==false )
+			if( this->ReallocateBuffer( this->m_Length + 1)==false )//if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
 			//this->m_pData[elm] = src;

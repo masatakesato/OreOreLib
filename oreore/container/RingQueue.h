@@ -14,24 +14,26 @@ namespace OreOreLib
 	template< typename T >
 	class RingQueue
 	{
+		using SizeType = typename MemSizeType;
+
 	public:
 
 		RingQueue();
-		RingQueue( int max_size );
+		RingQueue( SizeType max_size );
 		virtual ~RingQueue();
 
-		void Init( int max_size );
+		void Init( SizeType max_size );
 		void Clear();
 		void Release();
 
-		void Extend( int numelms );
-		bool Shrink( int numelms );
+		void Extend( SizeType numelms );
+		bool Shrink( SizeType numelms );
 
 		void Enqueue( T elm );
 		T Dequeue();
 
-		int next( int index ) const { return ( index + 1 ) % m_Queue.Length(); }
-		bool IsFull() const { return m_ActiveSize >= m_Queue.Length<int>(); }
+		int next( SizeType index ) const { return ( index + 1 ) % m_Queue.Length(); }
+		bool IsFull() const { return m_ActiveSize >= m_Queue.Length(); }
 		bool IsEmpty() const { return m_ActiveSize==0; }
 
 		void Display();
@@ -39,10 +41,10 @@ namespace OreOreLib
 
 	private:
 		
-		int			m_ActiveSize;
+		SizeType	m_ActiveSize;
 		Memory<T>	m_Queue;
-		int			front;// キュー先頭のオブジェクトが入っている要素のインデックス
-		int			rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
+		SizeType	front;// キュー先頭のオブジェクトが入っている要素のインデックス
+		SizeType	rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
 
 	};
 
@@ -52,15 +54,15 @@ namespace OreOreLib
 	template< typename T >
 	RingQueue<T>::RingQueue()
 		: m_ActiveSize( 0 )
-		, front( -1 )
-		, rear( -1 )
+		, front( ~0u )
+		, rear( ~0u )
 	{
 	}
 
 
 
 	template< typename T >
-	RingQueue<T>::RingQueue( int max_size )
+	RingQueue<T>::RingQueue( SizeType max_size )
 		: m_ActiveSize( 0 )
 		, m_Queue( max_size )
 		, front( 0 )
@@ -79,7 +81,7 @@ namespace OreOreLib
 
 
 	template< typename T >
-	void RingQueue<T>::Init( int max_size )
+	void RingQueue<T>::Init( SizeType max_size )
 	{
 		Release();
 		
@@ -106,22 +108,20 @@ namespace OreOreLib
 	{
 		m_Queue.Release();
 		m_ActiveSize	= 0;
-		front			= -1;
-		rear			= -1;
+		front			= ~0u;
+		rear			= ~0u;
 	}
 
 
 
 	template< typename T >
-	void RingQueue<T>::Extend( int numelms )
+	void RingQueue<T>::Extend( SizeType numelms )
 	{
-		assert( numelms > 0 );
-
 		m_Queue.Extend( numelms );
 
 		if( rear < front )
 		{
-			int newfront = front + numelms;
+			int32 newfront = front + static_cast<int32>( numelms );
 			memmove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) * sizeof(T) );
 			front = newfront;
 		}
@@ -144,11 +144,9 @@ namespace OreOreLib
 
 
 	template< typename T >
-	bool RingQueue<T>::Shrink( int numelms )
+	bool RingQueue<T>::Shrink( SizeType numelms )
 	{
-		assert( numelms > 0 );
-
-		int new_length = m_Queue.Length() - numelms;
+		auto new_length = m_Queue.Length() - Min( numelms, m_Queue.Length() );
 		if( new_length < m_ActiveSize )// 縮小可能な下限値を割り込んだ場合は中止.
 			return false;
 		
@@ -237,9 +235,9 @@ namespace OreOreLib
 	{
 		tcout << typeid(*this).name() << "[" << front << ", " << rear << "]" << tendl;
 
-		for( int i=0; i<m_ActiveSize; ++i )
+		for( SizeType i=0; i<m_ActiveSize; ++i )
 		{
-			int idx = (front + i) % m_Queue.Length();
+			SizeType idx = (front + i) % m_Queue.Length();
 			tcout << "[" << idx << "]: " << m_Queue[idx] << tendl;
 			if((idx+1)% m_Queue.Length()==rear)	break;
 		}

@@ -14,25 +14,27 @@ namespace OreOreLib
 	template< typename T >
 	class PriorityQueue
 	{
+		using SizeType = typename MemSizeType;
+
 	public:
 
 		PriorityQueue();
 		PriorityQueue( int max_size );
 		virtual ~PriorityQueue();
 
-		void Init( int max_size );
+		void Init( SizeType max_size );
 		void Clear();
 		void Release();
 
-		void Extend( int numelms );
-		bool Shrink( int numelms );
+		void Extend( SizeType numelms );
+		bool Shrink( SizeType numelms );
 
 		void Enqueue( T elm );
 		T Dequeue();
 
-		int next( int index ) const	{ return ( index + 1 ) % m_HeapArray.Length(); }
-		bool IsFull() const			{ return m_ActiveSize>=m_HeapArray.Length(); }
-		bool IsEmpty() const		{ return m_ActiveSize==0; }
+		int next( sizeType index ) const	{ return ( index + 1 ) % m_HeapArray.Length(); }
+		bool IsFull() const					{ return m_ActiveSize>=m_HeapArray.Length(); }
+		bool IsEmpty() const				{ return m_ActiveSize==0; }
 
 		void Display();
 
@@ -40,11 +42,11 @@ namespace OreOreLib
 
 	private:
 		
-		int			m_ActiveSize;
+		SizeType			m_ActiveSize;
 		/*Array*/Memory<T>	m_HeapArray;
 
-		void TrickleUp( int index );		// 下にある小さな値の要素を上に上げる
-		void TrickleDown( int index );		// 上にある大きな値の要素を下に沈める
+		void TrickleUp( SizeType index );		// 下にある小さな値の要素を上に上げる
+		void TrickleDown( SizeType index );		// 上にある大きな値の要素を下に沈める
 
 	};
 
@@ -77,7 +79,7 @@ namespace OreOreLib
 
 
 	template< typename T >
-	void PriorityQueue<T>::Init( int max_size )
+	void PriorityQueue<T>::Init( SizeType max_size )
 	{
 		Release();
 		
@@ -105,20 +107,17 @@ namespace OreOreLib
 
 
 	template< typename T >
-	void PriorityQueue<T>::Extend( int numelms )
+	void PriorityQueue<T>::Extend( SizeType numelms )
 	{
-		assert( numelms > 0 );
 		m_HeapArray.Extend( numelms );
 	}
 
 
 
 	template< typename T >
-	bool PriorityQueue<T>::Shrink( int numelms )
+	bool PriorityQueue<T>::Shrink( SizeType numelms )
 	{
-		assert( numelms > 0 );
-
-		int new_length = m_HeapArray.Length() - numelms;
+		auto new_length = m_HeapArray.Length() - Min( m_HeapArray.Length(), numelms );
 		if( new_length < m_ActiveSize )// 縮小可能な下限値を割り込んだ場合は中止.
 			return false;
 
@@ -182,7 +181,7 @@ namespace OreOreLib
 
 	// 下にある小さな値の要素を上に上げる
 	template< typename T >
-	void PriorityQueue<T>::TrickleUp( int index )
+	void PriorityQueue<T>::TrickleUp( SizeType index )
 	{
 		int parent = (index-1) / 2;
 		T bottom = m_HeapArray[index];
@@ -201,7 +200,7 @@ namespace OreOreLib
 
 	// 上にある大きな値を下に沈める
 	template< typename T >
-	void PriorityQueue<T>::TrickleDown( int index )
+	void PriorityQueue<T>::TrickleDown( SizeType index )
 	{
 		if( m_ActiveSize <= 1 )	return;
 
@@ -210,8 +209,8 @@ namespace OreOreLib
 
 		while( index < m_ActiveSize/2 )
 		{
-			int leftChild = 2*index+1;
-			int rightChild = leftChild+1;
+			SizeType leftChild = 2*index+1;
+			SizeType rightChild = leftChild+1;
 		
 			// より小さい子を見つける
 			if( rightChild < m_ActiveSize && m_HeapArray[leftChild] > m_HeapArray[rightChild] )
@@ -243,7 +242,7 @@ namespace OreOreLib
 	void PriorityQueue<T>::Display()
 	{
 		tcout << typeid(*this).name() << "[" << m_ActiveSize << "]" << tendl;
-		for( int i=0; i<m_ActiveSize; ++i )
+		for( SizeType i=0; i<m_ActiveSize; ++i )
 			tcout << "[" << i << "]: " << m_HeapArray[i] << tendl;
 	}
 

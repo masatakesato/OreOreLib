@@ -129,7 +129,11 @@ int main()
 		const Val v(999.5f);
 		aaa.AddToFront( v );
 
+		aaa.Extend( 2 );
+		aaa.Extend( 3, -0.0001f );
 		aaa.Resize(5);
+		aaa.Resize(8, 10.0f);
+		aaa.Resize(1);
 		aaa.Release();
 
 
@@ -147,7 +151,7 @@ int main()
 
 //		*src[2].value = -666.6f;
 
-		return 0;
+//		return 0;
 	}
 
 

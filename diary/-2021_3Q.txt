@@ -1,12 +1,22 @@
-[ Memory::Reize関数リファクタリング ]
-・Resize関数：使い方が3種類ある
+[ Memory::Shrink/Extend使ってる機能の動作チェック ]、、、、、、、作業中
+・PriorityQueue動作確認、、、、、、、、、、、済
+　→ついでにSizeTypeまわりも修正中
+
+・RingQueue動作確認、、、、、、、、、、、、、済
+　→ついでにSizeTypeまわりも修正中
+
+
+
+[ Memory::Reize関数リファクタリング ]、、、、、、、、、、、、、済
+・Resize関数：使い方が3種類の調査、、、、、、、、、、、、、済
 　→必要最低限のコンストラクタ呼び出しだけで初期化必要ない場合
-　　→Reallocate
+　　→ReallocateBuffer
 　→新規作成要素は全てコンストラクタで初期化済みにしてほしい場合
-　　→Reallocate + new (iter) T()
+　　→ReallocateBuffer + new (iter) T()
 　→新規作成要素を全て指定データfillで埋めてほしい場合
-　　→Reallocate + new (iter) T(fill)
-・Reallocate関数
+　　→ReallocateBuffer + new (iter) T(fill)
+・ReallocateBuffer関数の実装、、、、、、、、、、、、、、、済
+　→
 
 
 
