@@ -616,7 +616,7 @@ namespace OreOreLib
 
 			if( m_pData )
 			{
-				MemCopy( newdata, m_pData, m_Length );
+				MemMove( newdata, m_pData, m_Length );//MemCopy( newdata, m_pData, m_Length );
 				DeallocateBuffer();
 			}
 
