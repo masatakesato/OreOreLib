@@ -1,7 +1,7 @@
-﻿#include <crtdbg.h>
-#include <vector>
+﻿#include <vector>
 
 #include	<oreore/common/TString.h>
+#include	<oreore/memory/DebugNew.h>
 #include	<oreore/memory/Memory.h>
 using namespace OreOreLib;
 
