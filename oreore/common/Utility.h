@@ -134,7 +134,7 @@ namespace ByteSize
 
 
 
-namespace MinPrecision
+namespace MinLimit
 {
 	const auto uInt8	= (std::numeric_limits<uint8>::min)();
 	const auto Int8		= (std::numeric_limits<int8>::min)();
@@ -157,7 +157,7 @@ namespace MinPrecision
 
 
 
-namespace MaxPrecision
+namespace MaxLimit
 {
 	const auto uInt8	= (std::numeric_limits<uint8>::max)();
 	const auto Int8		= (std::numeric_limits<int8>::max)();

@@ -57,7 +57,7 @@ namespace OreOreLib
 		// Move constructor
 		Pair( Pair&& obj )
 			: first( std::forward<T1>( obj.first ) )
-			, second( std::forward<T1>( obj.second ) )
+			, second( std::forward<T2>( obj.second ) )
 		{
 
 		}
@@ -89,7 +89,7 @@ namespace OreOreLib
 			if( this != &obj )
 			{
 				first	= std::forward<T1>( obj.first );
-				second	= std::forward<T1>( obj.second );
+				second	= std::forward<T2>( obj.second );
 			}
 
 			return *this;
