@@ -240,7 +240,8 @@ namespace OreOreLib
 	private:
 
 		// Delete unnecessary parent methods
-		void Init( SizeType, uint8* ) = delete;
+		void Init( SizeType ) = delete;
+		void Init( SizeType, const T& ) = delete;
 		template < typename ... Args >	void Init( Args const & ... args ) = delete;
 		void Release() = delete;
 		//void Clear() = delete;

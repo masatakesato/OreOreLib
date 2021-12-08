@@ -122,13 +122,13 @@ namespace OreOreLib
 		}
 
 
-		template < typename ... Args >
-		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< SizeType, Args... >::value, void >
-		Init( const Args& ... args )
-		{
-			m_Shape.Init( args... );
-			Memory<T>::Init( m_Shape.Size() );
-		}
+		//template < typename ... Args >
+		//std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< SizeType, Args... >::value, void >
+		//Init( const Args& ... args )
+		//{
+		//	m_Shape.Init( args... );
+		//	Memory<T>::Init( m_Shape.Size() );
+		//}
 
 
 		template < typename T_INDEX >

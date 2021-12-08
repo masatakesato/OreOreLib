@@ -43,8 +43,8 @@ namespace OreOreLib
 		// Constructor with initializer list
 		ArrayBase( std::initializer_list<T> ilist ) : Memory<T>( ilist ) {}
 
-		// Constructor with external buffer
-		ArrayBase( SizeType len, T* pdata ): Memory<T>( len, pdata ) {}
+		// Constructor with default value
+		ArrayBase( SizeType len, const T& fill ): Memory<T>( len, fill ) {}
 
 		// Constructor using Memory
 		ArrayBase( const Memory<T>& obj ) : Memory<T>( obj ) {}

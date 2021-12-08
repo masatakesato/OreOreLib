@@ -330,19 +330,28 @@ namespace OreOreLib
 
 
 		// Constructor
-		Memory( SizeType len, T* pdata=nullptr )
+		Memory( SizeType len )
 			: m_Length( len )
-			, m_AllocSize( len * sizeof(T) )
+			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
-			, m_pData( AllocateBuffer(len) )
+			, m_pData( AllocateBuffer(len, true) )
 		{
 			//tcout << _T("Memory constructor(dynamic allocation)...\n");
-
-			if( pdata )
-				MemCopy( m_pData, pdata, m_Length );
 		}
 
 		
+		// Constructor
+		Memory( SizeType len, const T& fill )
+			: m_Length( len )
+			, m_AllocSize( len * c_ElementSize )
+			, m_Capacity( len )
+			, m_pData( AllocateBuffer(len) )
+		{
+			for( auto& data : m_pData )
+				data = fill;
+		}
+
+
 		// Constructor
 		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
 		Memory( Args const & ... args )
@@ -377,9 +386,7 @@ namespace OreOreLib
 			, m_Capacity( SizeType(last - first) )
 			, m_pData( AllocateBuffer( SizeType(last - first) ) )
 		{
-			auto p = m_pData;
-			for(; first != last; ++first )
-				*(p++) = T(*first);
+			MemCopy( begin(), first, m_Length );
 		}
 
 
@@ -513,7 +520,7 @@ namespace OreOreLib
 
 
 
-		void Init( SizeType len, T* pdata=nullptr )
+		void Init( SizeType len )
 		{
 			m_Length	= len;
 			m_AllocSize	= c_ElementSize * len;
@@ -524,27 +531,6 @@ namespace OreOreLib
 				m_Capacity	= m_Length;
 				AllocateBuffer( m_Capacity, true );
 			}
-
-			if( pdata )
-			{
-				MemCopy( m_pData, pdata, m_Length );
-			}
-		}
-
-
-		void Init( std::initializer_list<T> ilist )
-		{
-			m_Length	= static_cast<SizeType>( ilist.size() );
-			m_AllocSize	= c_ElementSize * m_Length;
-
-			if( m_Length > m_Capacity )
-			{
-				DeallocateBuffer();
-				m_Capacity	= m_Length;
-				AllocateBuffer( m_Capacity, true );
-			}
-
-			MemCopy( begin(), ilist.begin(), ilist.size() );
 		}
 
 
@@ -564,6 +550,39 @@ namespace OreOreLib
 				data = fill;
 		}
 
+
+		void Init( std::initializer_list<T> ilist )
+		{
+			m_Length	= static_cast<SizeType>( ilist.size() );
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			if( m_Length > m_Capacity )
+			{
+				DeallocateBuffer();
+				m_Capacity	= m_Length;
+				AllocateBuffer( m_Capacity, true );
+			}
+
+			MemCopy( begin(), ilist.begin(), ilist.size() );
+		}
+
+
+		// Constructor with iterator
+		template < class Iter >
+		void Init( Iter first, Iter last )
+		{
+			m_Length	= static_cast<SizeType>( last - first );
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			if( m_Length > m_Capacity )
+			{
+				DeallocateBuffer();
+				m_Capacity	= m_Length;
+				AllocateBuffer( m_Capacity, true );
+			}
+
+			MemCopy( begin(), first, m_Length );
+		}
 
 
 		void Release()

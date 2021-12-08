@@ -28,7 +28,7 @@ int main()
 	
 		// Init
 		const int defaultval[] = {-1, -2, -3, -4};
-		mem.Init( 4, (int*)defaultval );
+		mem.Init( &defaultval[0], &defaultval[4] );//4, (int*)defaultval );
 		tcout << mem[2] << tendl;
 
 		// Reinit

@@ -159,7 +159,7 @@ int main()
 		float aaa[3] = {1.0f, 2.0f, 3.0f};
 
 		fArray faaa;//( std::begin(aaa), std::end(aaa) );
-		faaa.Init( 3, aaa );
+		faaa.Init( &aaa[0], &aaa[3] );
 
 	}
 
@@ -184,7 +184,7 @@ int main()
 	float *data = new float[10];
 	for( int i=0; i<10; ++i )	data[i] = (float)pow(2, i);
 
-	fArray arr2( 10, data );// constructor
+	fArray arr2( &data[0], &data[10] );// constructor
 	fArray arr2_1 = arr2;// copy constructor
 	fArray arr2_2(arr2);// copy constructor
 
