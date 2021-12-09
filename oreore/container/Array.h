@@ -54,10 +54,10 @@ namespace OreOreLib
 		ArrayBase( Iter first, Iter last ) : Memory<T>( first, last ) {}
 
 		// Copy constructor
-		ArrayBase( const ArrayBase& obj ) : Memory<T>( obj ) {}
+		ArrayBase( const ArrayBase& obj ) : Memory<T>( (const Memory<T>&)obj ) {}
 
 		// Move constructor
-		ArrayBase( ArrayBase&& obj ) : Memory<T>( (ArrayBase&&)obj ) {}
+		ArrayBase( ArrayBase&& obj ) : Memory<T>( (Memory<T>&&)obj ) {}
 
 
 		// Copy Assignment opertor =
