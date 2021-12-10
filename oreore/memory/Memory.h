@@ -520,7 +520,7 @@ namespace OreOreLib
 
 
 
-		Init( SizeType len )
+		void Init( SizeType len )
 		{
 			m_Length	= len;
 			m_AllocSize	= c_ElementSize * len;
