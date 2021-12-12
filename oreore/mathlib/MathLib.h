@@ -82,22 +82,6 @@ inline const T Min( const T& a, const T& b )
 
 
 
-//template< typename ForwardIterator >
-//inline size_t ArgMax( ForwardIterator first, ForwardIterator last )
-//{
-//	return std::distance( first, std::max_element( first, last ) );
-//}
-//
-//
-//
-//template< typename ForwardIterator >
-//inline size_t ArgMin( ForwardIterator first, ForwardIterator last )
-//{
-//	return std::distance( first, std::min_element( first, last ) );
-//}
-
-
-
 template< typename T >
 inline const T Saturate( const T& a )
 {
