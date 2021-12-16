@@ -593,7 +593,7 @@ namespace OreOreLib
 			m_Capacity	= 0;
 		}
 
-
+TODO: CALL DESCRUCTOR!!!
 		void Clear()
 		{
 			if( m_Length > 0 )

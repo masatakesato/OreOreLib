@@ -115,7 +115,7 @@ namespace OreOreLib
 
 		void Release()
 		{
-			for( int i=1; i<N; ++i )
+			for( int i=0; i<N; ++i )
 				m_Shape[i] = m_Strides[i] = 0;
 		}
 
