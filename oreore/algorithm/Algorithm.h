@@ -179,6 +179,15 @@ namespace OreOreLib
 	//##############################################################################################################//
 
 
+	template < class ForwardIter, class T >
+	inline void Fill( ForwardIter first, ForwardIter last, const T& value )
+	{
+		while( first != last )
+			*first++ = value;
+	}
+
+
+
 	// https://stackoverflow.com/questions/58598763/how-to-assign-variadic-template-arguments-to-stdarray
 	template < typename ForwardIterator, typename T, typename ... Args >
 	std::enable_if_t< TypeTraits::all_same<T, Args...>::value, void >

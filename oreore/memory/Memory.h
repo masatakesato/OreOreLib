@@ -49,7 +49,7 @@ namespace OreOreLib
 
 	//##############################################################################################################//
 	//																												//
-	//										MemCopy / MemMove (above C++17)											//
+	//											MemCopy (above C++17)												//
 	//																												//
 	//##############################################################################################################//
 
@@ -114,6 +114,12 @@ namespace OreOreLib
 
 
 
+	//##############################################################################################################//
+	//																												//
+	//											MemMove (above C++17)												//
+	//																												//
+	//##############################################################################################################//
+
 	// Memory Move
 	template < class SrcIter, class DstIter >
 	DstIter* MemMove( DstIter* pDst, SrcIter* pSrc, sizeType size )
@@ -175,13 +181,43 @@ namespace OreOreLib
 	//}
 
 
+	//##############################################################################################################//
+	//																												//
+	//											MemClear (above C++17)												//
+	//																												//
+	//##############################################################################################################//
+
+	// Memory Clear
+	template < class Iter >
+	Iter* MemClear( Iter* pDst, sizeType size )
+	{
+		if constexpr ( std::is_trivially_copyable_v<Iter> )
+		{
+			return (Iter*)memset( pDst, 0, sizeof Iter * size );
+		}
+		else
+		{
+			Iter* begin = pDst;
+			const Iter* end = pDst + size;
+
+			while( begin != end )
+			{
+				begin->~Iter();// Desctuct existing data
+				++begin;
+			}
+		
+			return pDst;
+		}
+	}
+
+
 
 	#else
 	
 
 	//##############################################################################################################//
 	//																												//
-	//										MemCopy / MemMove (below C++14)											//
+	//											MemCopy (below C++14)												//
 	//																												//
 	//##############################################################################################################//
 
@@ -242,6 +278,12 @@ namespace OreOreLib
 
 
 
+	//##############################################################################################################//
+	//																												//
+	//											MemMove (below C++14)												//
+	//																												//
+	//##############################################################################################################//
+
 	// Trivial MemMove
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
@@ -300,7 +342,41 @@ namespace OreOreLib
 
 
 
+	//##############################################################################################################//
+	//																												//
+	//											MemClear (below C++14)												//
+	//																												//
+	//##############################################################################################################//
+
+	// Trivial MemClear
+	template < class Iter >
+	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
+	MemClear( Iter* pDst, sizeType size )
+	{
+		return (Iter*)memset( pDst, 0, sizeof Iter * size );
+	}
+
+	// Non-Trivial MemClear
+	template < class Iter >
+	std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
+	MemClear( Iter* pDst, sizeType size )
+	{
+		Iter* begin = pDst;
+		const Iter* end = pDst + size;
+
+		while( begin != end )
+		{
+			begin->~Iter();// Desctuct existing data
+			++begin;
+		}
+	
+		return pDst;
+	}
+
+
+
 	#endif//__cplusplus
+
 
 
 
@@ -347,8 +423,8 @@ namespace OreOreLib
 			, m_Capacity( len )
 			, m_pData( AllocateBuffer(len) )
 		{
-			for( auto& data : m_pData )
-				data = fill;
+			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
+				new ( iter ) T( fill );
 		}
 
 
@@ -522,46 +598,48 @@ namespace OreOreLib
 
 		void Init( SizeType len )
 		{
-			m_Length	= len;
-			m_AllocSize	= c_ElementSize * len;
-
-			if( m_Length > m_Capacity )
+			if( len > m_Capacity )
 			{
 				DeallocateBuffer();
-				m_Capacity	= m_Length;
+				m_Capacity	= len;
 				AllocateBuffer( m_Capacity, true );
 			}
+
+			m_Length = len;
+			m_AllocSize	= c_ElementSize * len;
 		}
 
 
 		void Init( SizeType len, const T& fill )
 		{
-			m_Length	= len;
-			m_AllocSize	= c_ElementSize * len;
-
-			if( m_Length > m_Capacity )
+			if( len > m_Capacity )
 			{
 				DeallocateBuffer();
-				m_Capacity	= m_Length;
-				AllocateBuffer( m_Capacity, true );
+				m_Capacity	= len;
+				AllocateBuffer( m_Capacity, false );
 			}
 
-			for( auto& data : m_pData )
-				data = fill;
+			m_Length = len;
+			m_AllocSize	= c_ElementSize * len;
+
+			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
+				new ( iter ) T( fill );
 		}
 
 
 		void Init( std::initializer_list<T> ilist )
 		{
-			m_Length	= static_cast<SizeType>( ilist.size() );
-			m_AllocSize	= c_ElementSize * m_Length;
+			SizeType len = static_cast<SizeType>( ilist.size() );
 
-			if( m_Length > m_Capacity )
+			if( len > m_Capacity )
 			{
 				DeallocateBuffer();
-				m_Capacity	= m_Length;
-				AllocateBuffer( m_Capacity, true );
+				m_Capacity	= len;
+				AllocateBuffer( m_Capacity, false );
 			}
+
+			m_Length = len;
+			m_AllocSize	= c_ElementSize * len;
 
 			MemCopy( begin(), ilist.begin(), ilist.size() );
 		}
@@ -571,15 +649,17 @@ namespace OreOreLib
 		template < class Iter >
 		void Init( Iter first, Iter last )
 		{
-			m_Length	= static_cast<SizeType>( last - first );
-			m_AllocSize	= c_ElementSize * m_Length;
+			SizeType len = static_cast<SizeType>( last - first );
 
-			if( m_Length > m_Capacity )
+			if( len > m_Capacity )
 			{
 				DeallocateBuffer();
-				m_Capacity	= m_Length;
-				AllocateBuffer( m_Capacity, true );
+				m_Capacity	= len;
+				AllocateBuffer( m_Capacity, false );
 			}
+
+			m_Length = len;
+			m_AllocSize	= c_ElementSize * len;
 
 			MemCopy( begin(), first, m_Length );
 		}
@@ -593,11 +673,10 @@ namespace OreOreLib
 			m_Capacity	= 0;
 		}
 
-TODO: CALL DESCRUCTOR!!!
+
 		void Clear()
 		{
-			if( m_Length > 0 )
-				memset( m_pData, 0, m_AllocSize );
+			MemClear( m_pData, m_Length );
 		}
 
 
@@ -635,7 +714,7 @@ TODO: CALL DESCRUCTOR!!!
 
 			if( m_pData )
 			{
-				MemMove( newdata, m_pData, m_Length );//MemCopy( newdata, m_pData, m_Length );
+				MemMove( newdata, m_pData, m_Length );
 				DeallocateBuffer();
 			}
 
@@ -813,7 +892,7 @@ TODO: CALL DESCRUCTOR!!!
 			if( m_pData==nullptr )
 				return;
 
-			for( auto iter=m_pData; iter !=m_pData+m_Capacity; ++iter )	iter->~T();
+			for( auto iter=m_pData; iter!=m_pData+m_Length; ++iter )	iter->~T();
 			::operator delete( m_pData );
 
 			m_pData = nullptr;
@@ -824,7 +903,7 @@ TODO: CALL DESCRUCTOR!!!
 		{
 			if( newlen < m_Length )
 			{
-				for( auto iter=m_pData+m_Length; iter !=m_pData+m_Capacity; ++iter )
+				for( auto iter=m_pData+newlen; iter!=m_pData+m_Capacity; ++iter )
 					iter->~T();
 			}
 			else if( newlen > m_Capacity )
@@ -919,17 +998,6 @@ TODO: CALL DESCRUCTOR!!!
 
 		return -1;
 	}
-
-
-
-	template < class ForwardIter, class T >
-	inline void Fill( ForwardIter first, ForwardIter last, const T& value )
-	{
-		while( first != last )
-			*first++ = value;
-	}
-
-
 
 
 

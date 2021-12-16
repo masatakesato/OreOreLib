@@ -48,15 +48,27 @@
 
 
 
-float a;
+float a=0.066f;
 
 /*struct*/class Data
 {
 public:
 
-	Data() : value( a ) {}
-	Data( float val ) : value(val){}
-	~Data(){}
+	Data()
+		: value( a )
+	{
+		tcout << "Data()\n";
+	}
+
+	Data( float val ) : value(val)
+	{
+		tcout << "Data( float val )\n";
+	}
+
+	~Data()
+	{
+		tcout << "~Data()\n";
+	}
 
 	//Data( const Data& ) = delete;
 
@@ -69,22 +81,26 @@ public:
 
 
 
-//using strArray = OreOreLib::Array<Data>;
 
 
 int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
+	Data d;
 
+	OreOreLib::Array<Data>	arr1(6, d);
+	arr1.Init(4, d);
+	arr1.Reserve(4);//Resize(4);//
+	arr1.Clear();
+	arr1.Release();
 
-//	strArray	arr1;
-//	arr1.Resize(4);
+	//std::vector<Data> vecarr1;
+	//vecarr1.resize(6, d);
+	//vecarr1.reserve(4);
+	//vecarr1.clear();
 
-
-	std::vector<Data> arr1;
-
-	arr1.resize(4);
+	//std::fill( vecarr1.begin(), vecarr1.end(), d );
 
 	return 0;
 
