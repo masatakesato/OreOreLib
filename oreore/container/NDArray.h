@@ -166,7 +166,7 @@ namespace OreOreLib
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< SizeType, Args... >::value, const T& >
 		operator()( const Args& ... args ) const&// x, y, z, w...
 		{
-			return this->m_pData[ m_Shape.To1D( { static_cast<SizeType>(args)... } ) ];// faster
+			return this->m_pData[ m_Shape.To1D( { static_cast<SizeType>(args)... }/*{ args... }*/ ) ];// faster
 			// return this->m_pData[ m_Shape.To1D( args... ) ];// slower
 		}
 
@@ -176,7 +176,7 @@ namespace OreOreLib
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< SizeType, Args... >::value, T& >
 		operator()( const Args& ... args ) &// x, y, z, w...
 		{
-			return this->m_pData[ m_Shape.To1D( { static_cast<SizeType>(args)... } ) ];// faster
+			return this->m_pData[ m_Shape.To1D( { static_cast<SizeType>(args)... }/*{ args... }*/ ) ];// faster
 			//return this->m_pData[ m_Shape.To1D( args... ) ];// slower
 		}
 
@@ -186,7 +186,7 @@ namespace OreOreLib
 		std::enable_if_t< (sizeof...(Args)==N) && TypeTraits::all_convertible< SizeType, Args... >::value, T >
 		operator()( const Args& ... args ) const&&// x, y, z, w...
 		{
-			return (T&&)this->m_pData[ m_Shape.To1D( { static_cast<SizeType>(args)... } ) ];// faster
+			return (T&&)this->m_pData[ m_Shape.To1D( { static_cast<SizeType>(args)... }/*{ args... }*/ ) ];// faster
 			//return (T&&)this->m_pData[ m_Shape.To1D( args... ) ];// slower
 		}
 
