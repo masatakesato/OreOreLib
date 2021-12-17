@@ -106,7 +106,7 @@ namespace OreOreLib
 				{
 					FilePath	path ={ dirname, tstring( fd.cFileName ) };
 
-					for( int i=0; i<m_Exts.size(); ++i )
+					for( size_t i=0; i<m_Exts.size(); ++i )
 					{
 						if( path.filename.find( m_Exts[i] ) != tstring::npos )	file_list.push_back( path );
 						//if( path.filename.find(".jpg") != tstring::npos )	file_list.push_back( path );
