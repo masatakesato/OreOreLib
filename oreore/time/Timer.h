@@ -1,7 +1,8 @@
 ﻿#ifndef TIMER_H
 #define	TIMER_H
 
-#include	<Windows.h>
+#include	<chrono>
+#include	<thread>
 
 #include	"../common/Utility.h"
 
@@ -10,20 +11,15 @@
 namespace OreOreLib
 {
 
-	//template < typename T >
 	class Timer
 	{
 	public:
 
-
-		void Init()
-		{
-			m_Start = (float)timeGetTime();
-			m_End = m_Start;
-		}
+		Timer(){}
+		~Timer(){}
 
 
-		void SetSleepTime( const float& val )
+		void SetSleepTime( const int64& val )
 		{
 			m_SleepTime = val;
 		}
@@ -31,19 +27,19 @@ namespace OreOreLib
 
 		void Start()
 		{
-			m_Start = (float)timeGetTime();
+			m_Start = std::chrono::system_clock::now();//(float)timeGetTime();
 		}
 
 
 		void End()
 		{
-			m_End = (float)timeGetTime();
+			m_End = std::chrono::system_clock::now();//(float)timeGetTime();
 
-			auto timeElapsed = m_End - m_Start;
+			int64 timeElapsed = std::chrono::duration_cast<std::chrono::milliseconds>( m_End - m_Start ).count();
 			auto wait = m_SleepTime - timeElapsed;
 			if( wait > 0 )
 			{
-				Sleep( wait );
+				std::this_thread::sleep_for( std::chrono::milliseconds(wait) );//	Sleep( wait );
 				timeElapsed += wait;
 			}
 
@@ -52,7 +48,7 @@ namespace OreOreLib
 		}
 
 
-		float DeltaTime()
+		int64 DeltaTime()
 		{
 			return m_DetlaTime;
 		}
@@ -61,12 +57,12 @@ namespace OreOreLib
 
 	private:
 
-		float	m_DetlaTime;
+		int64	m_DetlaTime;
+		int64	m_SleepTime;
 
-		float	m_Start;
-		float	m_End;
+		std::chrono::system_clock::time_point	m_Start;
+		std::chrono::system_clock::time_point	m_End;
 
-		float	m_SleepTime;
 	};
 
 

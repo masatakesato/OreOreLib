@@ -1,4 +1,13 @@
-[ Memory::Shrink/Extend使ってる機能の動作チェック ]、、、、、、、作業中
+[ HTTP通信クラス実装 ]、、、、、、、、、、、、、、、、作業中
+
+
+
+
+[ Timerクラス実装 ]、、、、、、、、済
+
+
+
+[ Memory::Shrink/Extend使ってる機能の動作チェック ]、、、、、、、済
 ・PriorityQueue動作確認、、、、、、、、、、、済
 　→ついでにSizeTypeまわりも修正中
 
