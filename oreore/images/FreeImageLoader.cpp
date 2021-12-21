@@ -1,10 +1,7 @@
-﻿#include	"ImageLoader.h"
+﻿#include	"FreeImageLoader.h"
+
 
 #if defined( FREEIMAGE_SUPPORT )
-#include	<FreeImage.h>
-#pragma comment( lib, "freeimage.lib" )
-#endif
-
 
 
 namespace OreOreLib
@@ -43,35 +40,35 @@ namespace OreOreLib
 
 
 
-	ImageLoader::ImageLoader()
+	FreeImageLoader::FreeImageLoader()
 	{
 		FreeImage_Initialise();
 	}
 
 
 
-	ImageLoader::~ImageLoader()
+	FreeImageLoader::~FreeImageLoader()
 	{
 		FreeImage_DeInitialise();
 	}
 
 
 
-	bool ImageLoader::Load( const tstring& filepath, bool bFloat, bool bFlip )
+	FIBITMAP* FreeImageLoader::Load( const tstring& filepath, bool bFloat, bool bFlip )
 	{
 		// Check(or estimate) filetype
 		auto fif = FreeImage_GetFileTypeU( filepath.c_str() );
 
 		if( fif == FIF_UNKNOWN )
-			/*FreeImage_GetFIFFromFilename*/FreeImage_GetFIFFromFilenameU( /*filename*/filepath.c_str() );
+			/*FreeImage_GetFIFFromFilename*/FreeImage_GetFIFFromFilenameU( filepath.c_str() );
 
 		if( fif==FIF_UNKNOWN )
-			return false;
+			return nullptr;
 
 		// Load Image data
 		auto dib = FreeImage_LoadU( fif, filepath.c_str() );
 		if( !dib )
-			return false;
+			return nullptr;
 
 		// Flip
 		if( bFlip )
@@ -96,14 +93,14 @@ namespace OreOreLib
 
 
 		// Uload Freeimage buffer
-		FreeImage_Unload( dib );
+		//FreeImage_Unload( dib );
 
-		return true;
+		return dib;
 	}
 
 
 
-	bool ImageLoader::Save( const tstring& filepath, const void* pData, uint32 width, uint32 height, uint32 pixelByteSize, bool bFlip )
+	bool FreeImageLoader::Save( const tstring& filepath, const void* pData, uint32 width, uint32 height, uint32 pixelByteSize, bool bFlip )
 	{
 		//// Check filetype from extension
 		//FREE_IMAGE_FORMAT fif	= /*FreeImage_GetFIFFromFilename*/FreeImage_GetFIFFromFilenameU( filepath.c_str() );
@@ -129,3 +126,6 @@ namespace OreOreLib
 
 
 }// end of namespace OreOreLib
+
+
+#endif
