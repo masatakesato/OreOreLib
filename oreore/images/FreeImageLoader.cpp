@@ -7,39 +7,6 @@
 namespace OreOreLib
 {
 
-	static uint32 FINumChannels( FIBITMAP* dib )
-	{
-		auto coltype = FreeImage_GetColorType( dib );
-
-		switch( coltype )
-		{
-		case FIC_MINISWHITE:
-			return 1;
-
-		case FIC_MINISBLACK:
-			return 1;
-
-		case FIC_RGB:
-			return 3;
-
-		case FIC_PALETTE:
-			return 3;
-
-		case FIC_RGBALPHA:
-			return 4;
-
-		case FIC_CMYK:
-			return 4;
-
-		default:
-			return -1;
-		}
-
-	}
-
-
-
-
 	FreeImageLoader::FreeImageLoader()
 	{
 		FreeImage_Initialise();
