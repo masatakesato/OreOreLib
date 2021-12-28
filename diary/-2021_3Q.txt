@@ -1,3 +1,17 @@
+[ EntityComponentSystem ]、、、、、、、、、、、、、作業中
+・調査
+　→Entity Component System概要
+　　https://youtu.be/04NJNA8ypw0?t=250
+
+　→実装例
+　　https://austinmorlan.com/posts/entity_component_system/
+
+・プロトタイピング、、、、、、、作業中
+
+
+
+
+
 [ HTTP通信クラス実装 ]、、、、、、、、、、、、、、、、作業中
 
 

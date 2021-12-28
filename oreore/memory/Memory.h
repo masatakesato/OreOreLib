@@ -783,44 +783,50 @@ namespace OreOreLib
 		}
 
 
-		SizeType ElementSize() const
+		inline SizeType ElementSize() const
 		{
 			return c_ElementSize;
 		}
 
 
 		template < typename Type=SizeType >
-		Type Length() const
+		inline Type Length() const
 		{
 			return static_cast<Type>( m_Length );
 		}
 
 
-		SizeType Capacity() const
+		inline SizeType Capacity() const
 		{
 			return m_Capacity;
 		}
 
 
-		SizeType AllocatedSize() const
+		inline SizeType AllocatedSize() const
 		{
 			return m_AllocSize;
 		}
 
 
-		bool Empty() const
+		inline bool Empty() const
 		{
 			return (!m_pData) | (m_Length==0);
 		}
 
 
-		T& Front() const
+		inline T& Front()
 		{
 			return *m_pData;
 		}
 
 
-		T& Back() const
+		inline const T& Front() const
+		{
+			return *m_pData;
+		}
+
+
+		inline T& Back()
 		{
 			auto tmp = end();
 			--tmp;
@@ -828,6 +834,14 @@ namespace OreOreLib
 			return *tmp;
 		}
 
+
+		inline const T& Back() const
+		{
+			auto tmp = end();
+			--tmp;
+
+			return *tmp;
+		}
 
 
 
