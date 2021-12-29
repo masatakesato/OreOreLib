@@ -30,7 +30,7 @@ public:
 	{
 		const char* typeName = typeid(T).name();
 
-		ASSERT( mComponentTypes.Exists( typeName ) && "System does not exist." );
+		ASSERT( mSystems.Exists( typeName ) && "System does not exist." );
 
 		mSignatures.Put( typeName, signature );
 	}

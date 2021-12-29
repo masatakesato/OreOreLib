@@ -43,19 +43,31 @@ public:
 	template < typename T >
 	void AddComponent( Entity entity, T component )
 	{
+		mComponentManager.AddComponent<T>( entity, component );
 
+		auto signature = mEntityManager.GetSignature( entity );
+		signature.Set( mComponentManager.GetComponentType<T>() );
+		mEntityManager.SetSignature( entity, signature );
+
+		mSystemManager.EntitySignatureChanged( entity, signature );
 	}
 
 
 	template < typename T >
 	void RemoveComponent( Entity entity )
 	{
+		mComponentManager.RemoveComponent<T>( entity );
 
+		auto signature = mEntityManager.GetSignature( entity );
+		signature.Unset( mComponentManager.GetComponentType<T>() );
+		mEntityManager.SetSignature( entity, signature );
+
+		mSystemManager.EntitySignatureChanged( entity, signature );
 	}
 
 	
 	template < typename T >
-	T& GetComponent( Entity entity, T component )
+	T& GetComponent( Entity entity )
 	{
 		return mComponentManager.GetComponent<T>( entity );
 	}
@@ -72,14 +84,14 @@ public:
 	template < typename T >
 	T* RegisterSystem()
 	{
-
+		return mSystemManager.RegisterSystem<T>();
 	}
 
 
 	template < typename T >
 	void SetSystemSignature( Signature signature )
 	{
-		
+		mSystemManager.SetSignature<T>( signature );
 	}
 
 
