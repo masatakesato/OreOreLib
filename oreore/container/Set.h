@@ -72,6 +72,7 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
+//TODO: HashMapと実装重複
 	template < typename T, size_t TableSize >
 	struct KeyHash
 	{
@@ -87,22 +88,22 @@ namespace OreOreLib
 
 	// https://stackoverflow.com/questions/8094790/how-to-get-hash-code-of-a-string-in-c
 
-	inline uint64 hashCode( const tstring& text )
-	{
-		uint64 hash = 0, strlen = text.length(), i;
-		TCHAR character;
+	//inline uint64 hashCode( const tstring& text )
+	//{
+	//	uint64 hash = 0, strlen = text.length(), i;
+	//	TCHAR character;
 
-		if( strlen == 0 )
-			return hash;
+	//	if( strlen == 0 )
+	//		return hash;
 
-		for( i=0; i<strlen; ++i )
-		{
-			character = text.at(i);
-			hash = (31 * hash) + character;
-		}
+	//	for( i=0; i<strlen; ++i )
+	//	{
+	//		character = text.at(i);
+	//		hash = (31 * hash) + character;
+	//	}
 
-		return hash;
-	}
+	//	return hash;
+	//}
 
 
 	// https://web.stanford.edu/class/archive/cs/cs106b/cs106b.1178/lectures/27-Inheritance/code/Inheritance/lib/StanfordCPPLib/collections/hashcode.h

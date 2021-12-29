@@ -95,7 +95,7 @@ private:
 
 		ASSERT( mComponentTypes.Exists( typeName ) && "Component not registered." );
 
-		return mComponentArrays[ typename ];
+		return mComponentArrays[ typeName ];
 	}
 
 

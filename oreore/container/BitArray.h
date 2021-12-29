@@ -127,10 +127,8 @@ public:
 
 
 	// AND operator
-	inline BitArray& operator &=( const BitArray& rhs ) noexcept
+	inline BitArray& operator &=( const BitArray& rhs )
 	{
-		//BitArray result( Min( m_BitLength, rhs.m_BitLength ) );
-		
 		auto size = Min( m_ByteSize, rhs.m_ByteSize );
 		sizeType byteoffset = 0;
 
@@ -165,10 +163,8 @@ public:
 
 
 	// OR operator
-	inline BitArray& operator |=( const BitArray& rhs ) noexcept
+	inline BitArray& operator |=( const BitArray& rhs )
 	{
-		//BitArray result( Min( m_BitLength, rhs.m_BitLength ) );
-		
 		auto size = Min( m_ByteSize, rhs.m_ByteSize );
 		sizeType byteoffset = 0;
 
@@ -203,10 +199,8 @@ public:
 
 
 	// XOR operator
-	inline BitArray& operator ^=( const BitArray& rhs ) noexcept
+	inline BitArray& operator ^=( const BitArray& rhs )
 	{
-		//BitArray result( Min( m_BitLength, rhs.m_BitLength ) );
-		
 		auto size = Min( m_ByteSize, rhs.m_ByteSize );
 		sizeType byteoffset = 0;
 
@@ -239,6 +233,52 @@ public:
 		return *this;
 	}
 
+
+	// == 
+	inline bool operator ==( const BitArray& rhs ) const
+	{
+		bool result = true;
+		auto size = Min( m_ByteSize, rhs.m_ByteSize );
+		sizeType byteoffset = 0;
+
+
+		//========== 64 bit iterative check ===========//
+		for( sizeType i=0; i<size/ByteSize::uInt64; ++i, byteoffset+=ByteSize::uInt64 )
+		{
+			result &= (uint64&)m_pWords[ byteoffset ] == (uint64&)rhs.m_pWords[ byteoffset ];
+			if( !result )	return result;
+		}
+
+		//=============== 32 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt32 )
+		{
+			result &= (uint32&)m_pWords[ byteoffset ] == (uint32&)rhs.m_pWords[ byteoffset ];
+			if( !result )	return result;
+			byteoffset += ByteSize::uInt32;
+		}
+		
+		//=============== 16 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt16 )
+		{
+			result &= (uint16&)m_pWords[ byteoffset ] == (uint16&)rhs.m_pWords[ byteoffset ];
+			if( !result )	return result;
+			byteoffset += ByteSize::uInt16;
+		}
+
+		//=============== 8 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt8 )
+		{
+			result &= (uint8&)m_pWords[ byteoffset ] == (uint8&)rhs.m_pWords[ byteoffset ];
+		}
+
+		return result;
+	}
+
+
+	inline bool operator !=( const BitArray& rhs ) const
+	{
+		return !(*this==rhs);
+	}
 
 
 	void Init( sizeType bitlength )

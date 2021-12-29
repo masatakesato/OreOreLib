@@ -27,12 +27,12 @@ public:
 
 	template < typename T >
 	void SetSignature( Signature signature )
-	{typeid(T).
+	{
 		const char* typeName = typeid(T).name();
 
 		ASSERT( mComponentTypes.Exists( typeName ) && "System does not exist." );
 
-		mSignatures.Put( typrName, signature );
+		mSignatures.Put( typeName, signature );
 	}
 
 
@@ -54,11 +54,15 @@ public:
 			const auto& system = pair.second;
 			const auto& systemSignature = mSignatures[ type ];
 
-			if( (entitySignature & systemSignature) )
-
+			if( ( entitySignature & systemSignature ) == systemSignature )
+			{
+				system->mEntities.Put( entity );
+			}
+			else
+			{
+				system->mEntities.Remove( entity );
+			}
 		}
-
-
 	}
 
 
