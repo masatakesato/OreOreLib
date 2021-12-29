@@ -126,6 +126,121 @@ public:
 	}
 
 
+	// AND operator
+	inline BitArray& operator &=( const BitArray& rhs ) noexcept
+	{
+		//BitArray result( Min( m_BitLength, rhs.m_BitLength ) );
+		
+		auto size = Min( m_ByteSize, rhs.m_ByteSize );
+		sizeType byteoffset = 0;
+
+		//========== 64 bit iterative check ===========//
+		for( sizeType i=0; i<size/ByteSize::uInt64; ++i, byteoffset+=ByteSize::uInt64 )
+		{
+			(uint64&)m_pWords[ byteoffset ] &= (uint64&)rhs.m_pWords[ byteoffset ];
+		}
+
+		//=============== 32 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt32 )
+		{
+			(uint32&)m_pWords[ byteoffset ] &= (uint32&)rhs.m_pWords[ byteoffset ];
+			byteoffset += ByteSize::uInt32;
+		}
+
+		//=============== 16 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt16 )
+		{
+			(uint16&)m_pWords[ byteoffset ] &= (uint16&)rhs.m_pWords[ byteoffset ];
+			byteoffset += ByteSize::uInt16;
+		}
+
+		//=============== 8 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt8 )
+		{
+			(uint8&)m_pWords[ byteoffset ] &= (uint8&)rhs.m_pWords[ byteoffset ];
+		}
+
+		return *this;
+	}
+
+
+	// OR operator
+	inline BitArray& operator |=( const BitArray& rhs ) noexcept
+	{
+		//BitArray result( Min( m_BitLength, rhs.m_BitLength ) );
+		
+		auto size = Min( m_ByteSize, rhs.m_ByteSize );
+		sizeType byteoffset = 0;
+
+		//========== 64 bit iterative check ===========//
+		for( sizeType i=0; i<size/ByteSize::uInt64; ++i, byteoffset+=ByteSize::uInt64 )
+		{
+			(uint64&)m_pWords[ byteoffset ] |= (uint64&)rhs.m_pWords[ byteoffset ];
+		}
+
+		//=============== 32 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt32 )
+		{
+			(uint32&)m_pWords[ byteoffset ] |= (uint32&)rhs.m_pWords[ byteoffset ];
+			byteoffset += ByteSize::uInt32;
+		}
+
+		//=============== 16 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt16 )
+		{
+			(uint16&)m_pWords[ byteoffset ] |= (uint16&)rhs.m_pWords[ byteoffset ];
+			byteoffset += ByteSize::uInt16;
+		}
+
+		//=============== 8 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt8 )
+		{
+			(uint8&)m_pWords[ byteoffset ] |= (uint8&)rhs.m_pWords[ byteoffset ];
+		}
+
+		return *this;
+	}
+
+
+	// XOR operator
+	inline BitArray& operator ^=( const BitArray& rhs ) noexcept
+	{
+		//BitArray result( Min( m_BitLength, rhs.m_BitLength ) );
+		
+		auto size = Min( m_ByteSize, rhs.m_ByteSize );
+		sizeType byteoffset = 0;
+
+		//========== 64 bit iterative check ===========//
+		for( sizeType i=0; i<size/ByteSize::uInt64; ++i, byteoffset+=ByteSize::uInt64 )
+		{
+			(uint64&)m_pWords[ byteoffset ] ^= (uint64&)rhs.m_pWords[ byteoffset ];
+		}
+
+		//=============== 32 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt32 )
+		{
+			(uint32&)m_pWords[ byteoffset ] ^= (uint32&)rhs.m_pWords[ byteoffset ];
+			byteoffset += ByteSize::uInt32;
+		}
+
+		//=============== 16 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt16 )
+		{
+			(uint16&)m_pWords[ byteoffset ] ^= (uint16&)rhs.m_pWords[ byteoffset ];
+			byteoffset += ByteSize::uInt16;
+		}
+
+		//=============== 8 bit check ================//
+		if( size - byteoffset >= ByteSize::uInt8 )
+		{
+			(uint8&)m_pWords[ byteoffset ] ^= (uint8&)rhs.m_pWords[ byteoffset ];
+		}
+
+		return *this;
+	}
+
+
+
 	void Init( sizeType bitlength )
 	{
 		Release();
@@ -273,20 +388,23 @@ public:
 
 
 
-//uint8* Ptr() const { return m_pWords; }jyhdjhgfjhd
-//
-//
-//void SetPtr( uint8* src ) gragfagsdg
-//{
-//	memcpy( m_pWords, src, m_ByteSize );
-//}
-
-
 	virtual void Display()
 	{
 		tcout << _T( "//======= ") << typeid(*this).name() << _T( " =======//\n");
 		DisplayBitArray( (uint8*)m_pWords, m_BitLength );
 		tcout << tendl;
+	}
+
+
+
+	friend tostream& operator<<( tostream& stream, const BitArray& obj )
+	{
+		for( sizeType i=obj.m_BitLength; i-->0; )
+		{
+			stream << obj.GetBit(i);
+			if( i % BitSize::uInt8 == 0 ) stream << " ";
+		}
+		return stream;
 	}
 
 
@@ -403,6 +521,188 @@ private:
 	//using BitArray::Release;
 
 };
+
+
+
+
+//##################################################################################################//
+//																									//
+//										BitArray Operations 									    //
+//																									//
+//##################################################################################################//
+
+
+// AND
+inline static BitArray operator &( const BitArray& lhs, const BitArray& rhs ) noexcept
+{
+	BitArray result( lhs );
+	return result &= rhs;
+}
+
+
+
+// OR
+inline static BitArray operator |( const BitArray& lhs, const BitArray& rhs ) noexcept
+{
+	BitArray result( lhs );
+	return result |= rhs;
+}
+
+
+
+// XOR
+inline static BitArray operator ^( const BitArray& lhs, const BitArray& rhs ) noexcept
+{
+	BitArray result = lhs;
+	return result ^= rhs;
+}
+
+
+
+
+//##################################################################################################//
+//																									//
+//								StaticBitArray Operations (above C++17)							    //
+//																									//
+//##################################################################################################//
+
+
+#if __cplusplus >= 201703L
+// If using Visual c++, folowing command must be added for __cplusplus macro activation.
+//   /Zc:__cplusplus
+
+// AND
+template < sizeType NL, sizeType NR >
+inline static StaticBitArray<Min(NL, NR)> operator &( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	if constexpr( NL <= NR )
+	{
+		StaticBitArray<NL> result(lhs);
+		return result &= rhs;
+	}
+	else
+	{
+		StaticBitArray<NR> result(rhs);
+		return result &= lhs;
+	}
+}
+
+
+
+// OR
+template < sizeType NL, sizeType NR >
+inline static StaticBitArray<Min(NL, NR)> operator |( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	if constexpr( NL <= NR )
+	{
+		StaticBitArray<NL> result(lhs);
+		return result |= rhs;
+	}
+	else
+	{
+		StaticBitArray<NR> result(rhs);
+		return result |= lhs;
+	}
+}
+
+
+
+// XOR
+template < sizeType NL, sizeType NR >
+inline static StaticBitArray<Min(NL, NR)> operator ^( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	if constexpr( NL <= NR )
+	{
+		StaticBitArray<NL> result(lhs);
+		return result ^= rhs;
+	}
+	else
+	{
+		StaticBitArray<NR> result(rhs);
+		return result ^= lhs;
+	}
+}
+
+
+
+#else
+
+
+//##################################################################################################//
+//																									//
+//								StaticBitArray Operations (below C++14)							    //
+//																									//
+//##################################################################################################//
+
+// AND
+template < sizeType NL, sizeType NR >
+std::enable_if_t< (NL <= NR), StaticBitArray<NL> >
+inline static operator &( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	StaticBitArray<NL> result(lhs);
+	return result &= rhs;
+}
+
+
+template < sizeType NL, sizeType NR >
+std::enable_if_t< (NL > NR), StaticBitArray<NR> >
+inline static operator &( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	StaticBitArray<NR> result(rhs);
+	return result &= lhs;
+}
+
+
+
+// OR
+template < sizeType NL, sizeType NR >
+std::enable_if_t< (NL <= NR), StaticBitArray<NL> >
+inline static operator |( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	StaticBitArray<NL> result(lhs);
+	return result |= rhs;
+}
+
+
+template < sizeType NL, sizeType NR >
+std::enable_if_t< (NL > NR), StaticBitArray<NR> >
+inline static operator |( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	StaticBitArray<NR> result(rhs);
+	return result |= lhs;
+}
+
+
+
+// XOR
+template < sizeType NL, sizeType NR >
+std::enable_if_t< (NL <= NR), StaticBitArray<NL> >
+inline static operator ^( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	StaticBitArray<NL> result(lhs);
+	return result ^= rhs;
+}
+
+
+template < sizeType NL, sizeType NR >
+std::enable_if_t< (NL > NR), StaticBitArray<NR> >
+inline static operator ^( const StaticBitArray<NL>& lhs, const StaticBitArray<NR>& rhs ) noexcept
+{
+	StaticBitArray<NR> result(rhs);
+	return result ^= lhs;
+}
+
+
+
+#endif
+
+
+
+
+
+
+
+
 
 
 

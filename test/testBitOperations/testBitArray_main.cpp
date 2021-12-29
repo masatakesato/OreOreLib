@@ -100,6 +100,12 @@ int main()
 	StaticBitArray<88> bitArray5( bitArray4 );
 	bitArray5.Display();
 
+	
+	tcout << bitArray3 << tendl;
+	tcout << bitArray5 << tendl;
+	tcout << (bitArray3 & bitArray5) << tendl;
+	tcout << (bitArray5 & bitArray3) << tendl;
+
 	BitArray array6( bitArray3 );// OK
 	array6.Display();
 

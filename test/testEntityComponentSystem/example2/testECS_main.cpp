@@ -6,13 +6,14 @@ using namespace OreOreLib;
 
 int main()
 {
+//	tcout << typeid(int).hash_code() << tendl;
+//	tcout << typeid(uint32).hash_code() << tendl;
+
 	Array<int32> a;
 
 	for( int32 i=0; i<10; ++i )
 		a.AddToTail( i );
 
-
-	a .Remove( 5 )
 
 	return 0;
 }
