@@ -11,14 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\test\testEntityComponentSystem\example2\PhysicsSystem.cpp" />
     <ClCompile Include="..\..\..\test\testEntityComponentSystem\example2\testECS_main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\ComponentArray.h" />
     <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\ComponentManager.h" />
+    <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\Components.h" />
     <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\Coordinator.h" />
     <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\ECSCommon.h" />
     <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\EntityManager.h" />
+    <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\PhysicsSystem.h" />
     <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\System.h" />
     <ClInclude Include="..\..\..\test\testEntityComponentSystem\example2\SystemManager.h" />
   </ItemGroup>

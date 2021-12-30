@@ -81,16 +81,16 @@ namespace OreOreLib
 	//######################################################################//
 
 //TODO: Setと実装重複
-	template < typename K, size_t TableSize >
-	struct KeyHash
-	{
-		uint64 operator()( const K& key ) const
-		{
-			return HashCode( key ) % TableSize;
-			//return *(uint64*)( &key ) % TableSize;
-		}
+	//template < typename K, size_t TableSize >
+	//struct KeyHash
+	//{
+	//	uint64 operator()( const K& key ) const
+	//	{
+	//		return HashCode( key ) % TableSize;
+	//		//return *(uint64*)( &key ) % TableSize;
+	//	}
 
-	};
+	//};
 
 
 //TODO: Setと実装重複

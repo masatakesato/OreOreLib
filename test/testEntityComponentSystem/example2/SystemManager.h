@@ -19,7 +19,8 @@ public:
 
 		ASSERT( !mSystems.Exists( typeName ) && "System already exists." );
 
-		mSystems.Put( typeName, new T() );
+		auto system = new T();
+		mSystems.Put( typeName, system );
 
 		return system;
 	}

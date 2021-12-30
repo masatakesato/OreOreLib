@@ -18,24 +18,6 @@ namespace OreOreLib
 
 	//######################################################################//
 	//																		//
-	//								Exception								//
-	//																		//
-	//######################################################################//
-
-	class OutOfBoundsException : public std::exception
-	{
-	public:
-		const char* what() const noexcept override
-		{
-			return "Out of bounds exception.";
-		}
-	};
-
-
-
-
-	//######################################################################//
-	//																		//
 	//								SetNode									//
 	//																		//
 	//######################################################################//
@@ -73,16 +55,16 @@ namespace OreOreLib
 	//######################################################################//
 
 //TODO: HashMapと実装重複
-	template < typename T, size_t TableSize >
-	struct KeyHash
-	{
-		uint64 operator()( const T& value ) const
-		{
-			return HashCode( value ) % TableSize;
-			//return *(uint64*)( &value ) % TableSize;
-		}
+	//template < typename T, size_t TableSize >
+	//struct KeyHash
+	//{
+	//	uint64 operator()( const T& value ) const
+	//	{
+	//		return HashCode( value ) % TableSize;
+	//		//return *(uint64*)( &value ) % TableSize;
+	//	}
 
-	};
+	//};
 
 
 

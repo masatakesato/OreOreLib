@@ -43,21 +43,21 @@ public:
 	template < typename T >
 	void AddComponent( Entity entity, T component )
 	{
-		GetComponentArray<T>()->InsertData( entity, component );
+		GetComponentArray<T>().InsertData( entity, component );
 	}
 
 
 	template < typename T >
 	void RemoveComponent( Entity entity )
 	{
-		GetComponentArray<T>()->RemoveData( entity );
+		GetComponentArray<T>().RemoveData( entity );
 	}
 
 
 	template < typename T >
 	T& GetComponent( Entity entity )
 	{
-		return GetComponentArray<T>()->GetData( entity );
+		return GetComponentArray<T>().GetData( entity );
 	}
 
 
@@ -68,17 +68,16 @@ public:
 			const auto& component = pair.second;
 			component->EntityDestroyed( entity );
 		}
-
 	}
 
 
 
 private:
 
-	// Map from type string pointer to a component type 
+	// コンポーネント毎に採番したID(ComponentType)のマップ. コンポーネントの型情報をキーとしてアクセスする
 	OreOreLib::HashMap<const char*, ComponentType, 128>	mComponentTypes{};
 
-	// Map from type string pointer to a component array
+	// コンポーネント配列のマップ. コンポーネントの型情報をキーとしてアクセスする
 	OreOreLib::HashMap<const char*, IComponentArray*, 128>	mComponentArrays{};
 
 	// The component type to be assigned to the next registered component - starting at 0
@@ -95,7 +94,7 @@ private:
 
 		ASSERT( mComponentTypes.Exists( typeName ) && "Component not registered." );
 
-		return mComponentArrays[ typeName ];
+		return *static_cast< ComponentArray<T>* >( mComponentArrays[ typeName ] );
 	}
 
 

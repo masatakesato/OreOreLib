@@ -67,6 +67,17 @@ namespace OreOreLib
 
 
 
+	template < typename K, size_t TableSize >
+	struct KeyHash
+	{
+		uint64 operator()( const K& key ) const
+		{
+			return HashCode( key ) % TableSize;
+			//return *(uint64*)( &key ) % TableSize;
+		}
+
+	};
+
 
 
 //

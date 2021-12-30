@@ -22,7 +22,7 @@ void PhysicsSystem::Update( float dt )
 		auto& transform = gCoordinator.GetComponent<Transform>( entity );
 		const auto& gravity = gCoordinator.GetComponent<Gravity>( entity );
 
-		transform.position += rigidBody.velocity * dt;
-		rigidBody.velocity += gravity.force * dt;
+		AddScaled( transform.position, rigidBody.velocity, dt );//transform.position += rigidBody.velocity * dt;
+		AddScaled( rigidBody.velocity, gravity.force, dt );//rigidBody.velocity += gravity.force * dt;
 	}
 }

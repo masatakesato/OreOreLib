@@ -23,11 +23,11 @@ public:
 
 	Entity CreateEntity()
 	{
-		ASSERT( mLivingEntityCount < MAX_ENTITIES && _T("Too many entites exist.") );
+		ASSERT( m_NumActiveEntities < MAX_ENTITIES && _T("Too many entites exist.") );
 
 		// キューからIDを取り出す
 		Entity id = mAvailableEntities.Dequeue();
-		++mLivingEntityCount;
+		++m_NumActiveEntities;
 
 		return id;
 	}
@@ -42,7 +42,7 @@ public:
 
 		// 解放したエンティティIDをmAvailableEntitiesに戻す
 		mAvailableEntities.Enqueue( entity );
-		--mLivingEntityCount;
+		--m_NumActiveEntities;
 
 	}
 
@@ -73,7 +73,7 @@ private:
 	OreOreLib::StaticArray<Signature, MAX_ENTITIES>	mSignatures{};
 
 	// Total living entities - used to keep limits on how many exist
-	uint32	mLivingEntityCount{};
+	uint32	m_NumActiveEntities{};
 };
 
 

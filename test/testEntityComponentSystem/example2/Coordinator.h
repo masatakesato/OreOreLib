@@ -17,13 +17,14 @@ public:
 	}
 
 
-	// Entity methods
+	//================ Entity methods ===============//
+	// エンティティ(ID)を作成する
 	Entity CreateEntity()
 	{
 		return mEntityManager.CreateEntity();
 	}
 
-
+	// エンティティを解放する
 	void DestroyEntity( Entity entity )
 	{
 		mEntityManager.DestroyEntity( entity );
@@ -32,7 +33,8 @@ public:
 	}
 
 
-	// Component methods
+	//=============== Component methods ===============//
+	// 型を指定してコンポーネントを作成する
 	template < typename T >
 	void RegisterComponent()
 	{
@@ -40,15 +42,19 @@ public:
 	}
 
 
+	// エンティティにコンポーネントを追加する
 	template < typename T >
 	void AddComponent( Entity entity, T component )
 	{
+		// entityが使うコンポーネントデータ領域を確保する
 		mComponentManager.AddComponent<T>( entity, component );
 
+		// entityに対応するSignatureを更新する
 		auto signature = mEntityManager.GetSignature( entity );
-		signature.Set( mComponentManager.GetComponentType<T>() );
+		signature.Set( mComponentManager.GetComponentType<T>() );// コンポーネントIDをSignatureに追記する
 		mEntityManager.SetSignature( entity, signature );
 
+		// Signature更新をシステムに反映する
 		mSystemManager.EntitySignatureChanged( entity, signature );
 	}
 
@@ -80,7 +86,7 @@ public:
 	}
 
 
-	// System methods
+	//================= System methods =================//
 	template < typename T >
 	T* RegisterSystem()
 	{

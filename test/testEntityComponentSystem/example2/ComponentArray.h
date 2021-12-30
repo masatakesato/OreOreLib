@@ -74,10 +74,10 @@ public:
 
 private:
 
-	// コンポーネントを格納した配列. 隙間だらけになってる可能性あり
+	// Entityが使用するコンポーネントデータを格納するメモリ. 隙間だらけになってる可能性あり
 	OreOreLib::StaticArray<T, MAX_ENTITIES>	mComponentArray;
 
-	// エンティティIDからコンポーネント配列mComponentArrayインデックスへの変換テーブル
+	// エンティティIDからmComponentArrayインデックスへの変換テーブル
 	OreOreLib::HashMap<Entity, size_t, 128>	mEntityToIndexMap;
 
 	// 通し番号で利用中の要素を検索するためのインデックステーブル
