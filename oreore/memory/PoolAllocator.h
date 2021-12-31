@@ -24,8 +24,8 @@ namespace OreOreLib
 
 	struct Page
 	{
-		Page *next = nullptr;
-		Page *prev = nullptr;
+		Page* next = nullptr;
+		Page* prev = nullptr;
 		uint8 data[1];
 
 
@@ -36,6 +36,8 @@ namespace OreOreLib
 		void DisconnectNext();
 		bool IsAlone() const;
 
+
+		static const size_t HeaderSize = sizeof(Page*) * 2;// next/prev byte length
 	};
 
 
@@ -78,8 +80,10 @@ namespace OreOreLib
 	{
 	public:
 
+		static const uint32 COMMIT_BATCH_SIZE = 4;
+
 		PoolAllocator();// Default constructor
-		PoolAllocator( uint32 allocSize, uint32 blockSize, int32 commitBatchSize=c_COMMIT_BATCH_SIZE );// Constructor
+		PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize=COMMIT_BATCH_SIZE );// Constructor
 		PoolAllocator( const PoolAllocator& obj );// Copy constructor
 		PoolAllocator( PoolAllocator&& obj );// Move constructor
 		~PoolAllocator();// Destructor
@@ -87,7 +91,7 @@ namespace OreOreLib
 		PoolAllocator& operator=( const PoolAllocator& obj );// Copy assignment operator
 		PoolAllocator& operator=( PoolAllocator&& obj );// Move assignment operator
 
-		void Init( uint32 allocSize, uint32 blockSize, int32 commitBatchSize=4 );
+		void Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize=4 );
 		void Cleanup();
 
 		void* Allocate( size_t alignment=0 );//void* Allocate();
@@ -119,7 +123,7 @@ namespace OreOreLib
 		//																				//
 		//	|===== next =====|===== prev =====|=============== data ===============|	//
 		//																				//
-		//	 <----- c_DataOffset [bytes] ----> <------- m_PageSize [bytes] ------->		//
+		//	 <--- Page::HeaderSize [bytes] --> <----- m_PageDataSize [bytes] ----->		//
 		//																				//
 		//	 <----------------------- m_AllocSize [bytes] ------------------------>		//
 		//																				//
@@ -158,9 +162,9 @@ namespace OreOreLib
 
 		// Page structural paremeters
 		size_t	m_BlockSize;
-		int32	m_CommitBatchSize;	// number of pages to commit at once
+		uint32	m_CommitBatchSize;	// number of pages to commit at once
 		size_t	m_AllocSize;
-		size_t	m_PageSize;			// = m_AllocSize - c_DataOffset;
+		//size_t	m_PageDataSize;			// = m_AllocSize - Page::HeaderSize;
 		size_t	m_BitFlagSize;		// = DivUp( m_PageSize / m_BlockSize, BitSize::uInt8 );
 		size_t	m_PageTagSize;		// = RoundUp( sizeof(PageTag::NumFreeBlocks) + m_BitFlagSize, ByteSize::DefaultAlignment );
 		int32	m_NumActiveBlocks;	// = ( m_PageSize - m_PageTagSize ) / m_BlockSize;
@@ -182,12 +186,9 @@ namespace OreOreLib
 		Page*	m_DirtyFront;
 		Page*	m_UsedupFront;
 
-		static const int32 c_DataOffset = sizeof(Page::next) + sizeof(Page::prev);// 16 bytes
-		static const uint32 c_COMMIT_BATCH_SIZE = 4;
-
 
 		// Page Opearations
-		void BatchAllocatePages( int32 batchsize );
+		void BatchAllocatePages( uint32 batchsize );
 		bool FreePage2( Page*& page );
 		void ClearPages();
 

@@ -167,7 +167,7 @@ namespace OreOreLib
 		, m_CommitBatchSize( 0 )
 
 		, m_AllocSize( 0 )
-		, m_PageSize( 0 )
+		//, m_PageDataSize( 0 )
 		, m_BitFlagSize( 0 )
 		, m_PageTagSize( 0 )
 		, m_NumActiveBlocks( 0 )
@@ -192,7 +192,7 @@ namespace OreOreLib
 
 
 	// Constructor
-	PoolAllocator::PoolAllocator( uint32 allocSize, uint32 blockSize, int32 commitBatchSize )
+	PoolAllocator::PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize )
 		: m_BlockSize( blockSize )
 		, m_CommitBatchSize( commitBatchSize )
 
@@ -204,7 +204,7 @@ namespace OreOreLib
 		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pFeedFront( nullptr )
 	{
-		assert( allocSize > blockSize && blockSize > 0 );
+		ASSERT( allocSize > blockSize && blockSize > 0 );
 
 		InitPageBlockParams( allocSize, blockSize );
 		InitFeedParams( allocSize, blockSize );
@@ -220,7 +220,7 @@ namespace OreOreLib
 		, m_CommitBatchSize( obj.m_CommitBatchSize )
 
 		, m_AllocSize( obj.m_AllocSize )
-		, m_PageSize( obj.m_PageSize )
+		//, m_PageDataSize( obj.m_PageDataSize )
 		, m_BitFlagSize( obj.m_BitFlagSize )
 		, m_PageTagSize( obj.m_PageTagSize )
 		, m_NumActiveBlocks( obj.m_NumActiveBlocks )
@@ -254,7 +254,7 @@ namespace OreOreLib
 		, m_CommitBatchSize( obj.m_CommitBatchSize )
 
 		, m_AllocSize( obj.m_AllocSize )
-		, m_PageSize( obj.m_PageSize )
+		//, m_PageDataSize( obj.m_PageDataSize )
 		, m_BitFlagSize( obj.m_BitFlagSize )
 		, m_PageTagSize( obj.m_PageTagSize )
 		, m_NumActiveBlocks( obj.m_NumActiveBlocks )
@@ -332,7 +332,7 @@ namespace OreOreLib
 			m_BlockSize					= obj.m_BlockSize;
 			m_CommitBatchSize			= obj.m_CommitBatchSize;
 			m_AllocSize					= obj.m_AllocSize;
-			m_PageSize					= obj.m_PageSize;
+			//m_PageDataSize					= obj.m_PageDataSize;
 			m_BitFlagSize				= obj.m_BitFlagSize;
 			m_PageTagSize				= obj.m_PageTagSize;
 			m_NumActiveBlocks			= obj.m_NumActiveBlocks;
@@ -366,7 +366,7 @@ namespace OreOreLib
 			m_BlockSize					= obj.m_BlockSize;
 			m_CommitBatchSize			= obj.m_CommitBatchSize;
 			m_AllocSize					= obj.m_AllocSize;
-			m_PageSize					= obj.m_PageSize;
+			//m_PageDataSize					= obj.m_PageDataSize;
 			m_BitFlagSize				= obj.m_BitFlagSize;
 			m_PageTagSize				= obj.m_PageTagSize;
 			m_NumActiveBlocks			= obj.m_NumActiveBlocks;
@@ -416,9 +416,9 @@ namespace OreOreLib
 
 
 
-	void PoolAllocator::Init( uint32 allocSize, uint32 blockSize, int32 commitBatchSize )
+	void PoolAllocator::Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize )
 	{
-		assert( allocSize > blockSize && blockSize > 0 );
+		ASSERT( allocSize > blockSize && blockSize > 0 );
 
 		// Free currently allocated memory
 		ClearPages();
@@ -448,7 +448,7 @@ namespace OreOreLib
 				tcout << _T( "m_CleanFront is empty. Allocating new Clean page....\n" );
 				BatchAllocatePages( m_CommitBatchSize );
 
-				//assert( IsEmpty( m_CleanFront )==false );
+				//ASSERT( IsEmpty( m_CleanFront )==false );
 				if( IsEmpty( m_CleanFront ) )
 					return nullptr;
 			}
@@ -462,7 +462,7 @@ namespace OreOreLib
 		Page* page	= m_DirtyFront;
 		void* ptr	= AllocateBlock( page );// メモリブロックを確保する(Pageの空きブロック数がデクリメントされる)
 
-		//assert( ptr !=nullptr );
+		//ASSERT( ptr !=nullptr );
 		if( !ptr )
 			return nullptr;
 
@@ -484,7 +484,7 @@ namespace OreOreLib
 
 	//void* PoolAllocator::Allocate()
 	//{
-	//	assert( m_AllocSize > 0 && m_BlockSize > 0 );
+	//	ASSERT( m_AllocSize > 0 && m_BlockSize > 0 );
 
 	//	//==================== メモリブロック取得前の準備 ====================//
 	//	// DirtyListが空の場合
@@ -496,7 +496,7 @@ namespace OreOreLib
 	//			tcout << _T( "m_CleanFront is empty. Allocating new Clean page....\n" );
 	//			BatchAllocatePages( m_CommitBatchSize );
 
-	//			//assert( IsEmpty( m_CleanFront )==false );
+	//			//ASSERT( IsEmpty( m_CleanFront )==false );
 	//			if( IsEmpty( m_CleanFront ) )
 	//				return nullptr;
 	//		}
@@ -510,7 +510,7 @@ namespace OreOreLib
 	//	Page* page	= m_DirtyFront;
 	//	void* ptr	= AllocateBlock( page );// メモリブロックを確保する(Pageの空きブロック数がデクリメントされる)
 
-	//	//assert( ptr !=nullptr );
+	//	//ASSERT( ptr !=nullptr );
 	//	if( !ptr )
 	//		return nullptr;
 
@@ -534,7 +534,7 @@ namespace OreOreLib
 
 	bool PoolAllocator::Free( void*& ptr, Page* page )
 	{
-		assert( m_AllocSize > 0 && m_BlockSize > 0 );
+		ASSERT( m_AllocSize > 0 && m_BlockSize > 0 );
 
 		if( !ptr )	return false;
 
@@ -625,7 +625,7 @@ namespace OreOreLib
 
 	bool PoolAllocator::SafeFree( void*& ptr )
 	{
-		assert( m_AllocSize > 0 && m_BlockSize > 0 );
+		ASSERT( m_AllocSize > 0 && m_BlockSize > 0 );
 		
 		tcout << _T( "PoolAllocator::SafeFree()..." ) << ptr << tendl;
 
@@ -717,7 +717,7 @@ namespace OreOreLib
 	{
 		tcout << _T( "//========== " ) << typeid( *this ).name() << _T( " ==========//\n" );
 
-		tcout << _T( " Allocated Size: " ) << m_AllocSize << _T( "[bytes] ( linkedlist pointer: " << c_DataOffset << "[bytes], data: " << m_PageSize << "[bytes] )\n" );
+		tcout << _T( " Allocated Size: " ) << m_AllocSize << _T( "[bytes] ( linkedlist pointer: " << Page::HeaderSize << "[bytes], data: " << m_AllocSize - Page::HeaderSize/*m_PageDataSize*/ << "[bytes] )\n" );
 		tcout << _T( " Active size:    " ) << ( m_PoolSize + m_PageTagSize ) << _T( "[bytes] ( pool: " ) << m_PoolSize << _T( "[bytes], tag: " ) << m_PageTagSize << _T( "[bytes] )\n" );
 		tcout << _T( " Usage:          " ) << float32( m_PoolSize + m_PageTagSize ) / (float32)m_AllocSize * 100 << _T( "[%] ( " ) << m_AllocSize-m_PoolSize-m_PageTagSize << _T( " [bytes] wasted. ) \n" );
 
@@ -765,12 +765,12 @@ namespace OreOreLib
 
 
 
-	void PoolAllocator::BatchAllocatePages( int32 batchsize )
+	void PoolAllocator::BatchAllocatePages( uint32 batchsize )
 	{
 		uint8* reserved = nullptr;
 		Page* newPage = nullptr;
 
-		for( int32 i=0; i<batchsize; ++i )
+		for( uint32 i=0; i<batchsize; ++i )
 		{
 			// Reserve virtual address if empty
 			if( !m_pFeedFront )
@@ -1032,22 +1032,21 @@ namespace OreOreLib
 
 	PageTag* PoolAllocator::GetPageTag( const Page* page ) const
 	{
-		return (PageTag*)( (uint8*)page + c_DataOffset );
+		return (PageTag*)( (uint8*)page + Page::HeaderSize );
 	}
 
 
 
 	uint8* PoolAllocator::GetPool( const Page* page, uint32 blockIndex ) const
 	{
-		//return (uint8*)page + c_DataOffset + ((PageTag*)((uint8*)page + c_DataOffset))->PageTagSize + blockIndex * m_BlockSize;
-		return (uint8*)page + c_DataOffset + m_PageTagSize + blockIndex * m_BlockSize;
+		return (uint8*)page + Page::HeaderSize + m_PageTagSize + blockIndex * m_BlockSize;
 	}
 
 
 
 	void PoolAllocator::InitPageBlockParams( size_t allocSize, size_t blockSize )
 	{
-		size_t pageSizeLimit	= allocSize - c_DataOffset;
+		size_t pageSizeLimit	= allocSize - Page::HeaderSize;
 
 		m_BitFlagSize		= DivUp( pageSizeLimit / blockSize, BitSize::uInt8 );
 		m_PageTagSize		= RoundUp( sizeof(PageTag::NumFreeBlocks) + m_BitFlagSize, ByteSize::DefaultAlignment );
@@ -1061,9 +1060,9 @@ namespace OreOreLib
 		//tcout << "wastedSize = m_AllocSize - m_NumActiveBlocks * m_BlockSize - m_PageTagSize = " << wastedSize << tendl;
 
 		m_AllocSize = wastedSize > OSAllocator::PageSize() ?  RoundUp( (size_t)activeSize, OSAllocator::PageSize() ) : allocSize;
-		m_PageSize =  m_AllocSize - c_DataOffset;
+		//m_PageDataSize =  m_AllocSize - Page::HeaderSize;
 
-		assert( m_NumActiveBlocks > 0 );
+		ASSERT( m_NumActiveBlocks > 0 );
 	}
 
 
