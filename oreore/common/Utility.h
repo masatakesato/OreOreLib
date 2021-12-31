@@ -128,8 +128,11 @@ namespace ByteSize
 	const sizeType uIntPtr	= sizeof(uintptr);
 
 
+#ifdef ENVIRONMENT64
 	const sizeType DefaultAlignment = 8;
-
+#elif ENVIRONMENT32
+	const sizeType DefaultAlignment = 4;
+#endif
 };
 
 

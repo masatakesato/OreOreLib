@@ -43,7 +43,7 @@ namespace OreOreLib
 
 
 
-	// struct for accessing tag area of Page. Must be aligned to 8 bytes ( DEEAULT_ALIGNMENT ).
+	// struct for accessing tag area of Page. Must be aligned to DefaultAlignment ( 8 bytes for x64. 4 bytes for x86 ).
 	struct PageTag
 	{
 		//uint16	PageTagSize;
@@ -56,7 +56,7 @@ namespace OreOreLib
 
 
 
-	// VirtualMemory information. Aligned to 8 bytes( DEFUALT_ALIGNMENT ).
+	// VirtualMemory information. Aligned to DefaultAlignment ( 8 bytes for x64. 4 bytes for x86 ).
 	struct RegionTag
 	{
 		RegionTag* next = nullptr;

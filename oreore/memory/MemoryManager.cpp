@@ -208,7 +208,7 @@ namespace OreOreLib
 	{
 		tcout << _T( "MemoryManager::Allocate( size_t size, size_t alignment )...\n" );
 
-		// Invalidate 0 and 8 bytes alignment.
+		// Invalidate 0 and default bytes alignment.
 		alignment = alignment==ByteSize::DefaultAlignment ? 0 : alignment;
 		size += alignment;
 
