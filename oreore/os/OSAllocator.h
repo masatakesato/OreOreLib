@@ -47,8 +47,8 @@ namespace OreOreLib
 		
 		struct SystemInfo
 		{
-			size_t	m_PageSize;
-			size_t	m_AllocationGranularity;
+			size_t	m_PageSize;// Size of physical memory paging
+			size_t	m_AllocationGranularity;// Size of virtual memory address space
 
 			SystemInfo();
 		};

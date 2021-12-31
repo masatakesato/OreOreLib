@@ -211,7 +211,7 @@ namespace OreOreLib
 		alignment = alignment!=ByteSize::DefaultAlignment ? alignment : 0;
 		size += alignment;
 
-		if( size < c_NumSizes )
+		if( size < c_NumSizes )// PoolAllocator can handle "size" allocation
 		{
 			PoolAllocator* pAllocator = m_pSizeToPoolTable[ size ];
 		
@@ -224,11 +224,11 @@ namespace OreOreLib
 				? mem
 				: (void*)RoundUp( size_t(mem), alignment );
 		}
-		else
+		else// PoolAllocator is unavailable for large memory allocation 
 		{
 			size_t allocSize = sizeof(RegionTag) + size;
 			RegionTag* mem = (RegionTag*)OSAllocator::ReserveAndCommit( allocSize );
-			mem->Init( sizeof(RegionTag), size, 1, nullptr );
+			mem->Init( sizeof(RegionTag), size, 1, nullptr );// Set RegionTag.pAllocator to nullptr
 			//OSAllocator::DisplayMemoryInfo( mem );
 			//tcout << "  Allocated address: " << (uint8*)mem + sizeof(RegionTag) << tendl;
 
@@ -266,17 +266,17 @@ namespace OreOreLib
 		size_t base				= (size_t)OSAllocator::GetAllocationBase( mem );
 		RegionTag* pRTag		= (RegionTag*)base;
 		PoolAllocator* pAlloc	= pRTag->pAllocator; 
-		size_t prevSize			= pAlloc ? pAlloc->m_BlockSize : pRTag->RegionSize;
+		size_t oldsize			= pAlloc ? pAlloc->m_BlockSize : pRTag->RegionSize;
 		bool bIsAligned			= size_t(mem) % alignment == 0;
 
-		if( size <= prevSize && bIsAligned )
+		if( size <= oldsize && bIsAligned )// Do nothing if specified size is smaller than oldsize and alignment is satisfied.
 		{
 			return mem;
 		}
-		else
+		else// Reallocate memory and copy old data
 		{
 			void* new_mem = Allocate( size, alignment );
-			memcpy( new_mem, mem, prevSize );
+			memcpy( new_mem, mem, oldsize );
 			Free( mem );
 			
 			//OSAllocator::DisplayMemoryInfo( new_mem );
@@ -295,12 +295,12 @@ namespace OreOreLib
 		size_t offset		= Round( (size_t)mem - base, pRTag->PageSize )
 							+ Round( pRTag->RegionTagSize, OSAllocator::PageSize() );// shift if RegionTag-only page exists.
 		
-		if( !pRTag->pAllocator )
+		if( !pRTag->pAllocator )// Allocated memory without PoolAllocator
 		{
 			mem = nullptr;
 			return OSAllocator::Release( (void*)base );
 		}
-		else if( offset < pRTag->RegionSize )
+		else if( offset < pRTag->RegionSize )// Allocated memory using PoolAllocator
 		{
 			if( offset == 0 )//tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
 				offset += pRTag->RegionTagSize;
@@ -311,7 +311,7 @@ namespace OreOreLib
 
 			return result;//pRTag->pAllocator->Free( (void*&)mem, (Page*)( base + offset ) );
 		}
-		else
+		else// MemoryManager cannot trace Allocation
 		{
 			return false;
 		}

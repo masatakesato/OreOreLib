@@ -485,6 +485,13 @@ namespace OreOreLib
 
 
 
+void* PoolAllocator::Allocate( size_t alignment )
+{
+
+
+}
+
+
 
 	bool PoolAllocator::Free( void*& ptr, Page* page )
 	{

@@ -91,6 +91,7 @@ namespace OreOreLib
 		void Cleanup();
 
 		void* Allocate();
+		void* Allocate( size_t alignment );
 		bool Free( void*& ptr, Page* page=nullptr );
 		bool SafeFree( void*& ptr );
 		void Display() const;
