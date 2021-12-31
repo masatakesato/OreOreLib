@@ -90,8 +90,7 @@ namespace OreOreLib
 		void Init( uint32 allocSize, uint32 blockSize, int32 commitBatchSize=4 );
 		void Cleanup();
 
-		void* Allocate();
-		void* Allocate( size_t alignment );
+		void* Allocate( size_t alignment=0 );//void* Allocate();
 		bool Free( void*& ptr, Page* page=nullptr );
 		bool SafeFree( void*& ptr );
 		void Display() const;

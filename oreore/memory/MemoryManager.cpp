@@ -208,13 +208,14 @@ namespace OreOreLib
 	{
 		tcout << _T( "MemoryManager::Allocate( size_t size, size_t alignment )...\n" );
 
-		alignment = alignment!=ByteSize::DefaultAlignment ? alignment : 0;
+		// Invalidate 0 and 8 bytes alignment.
+		alignment = alignment==ByteSize::DefaultAlignment ? 0 : alignment;
 		size += alignment;
 
 		if( size < c_NumSizes )// PoolAllocator can handle "size" allocation
 		{
 			PoolAllocator* pAllocator = m_pSizeToPoolTable[ size ];
-		
+/*
 			//pAllocator->Display();
 			void* mem = pAllocator->Allocate();
 			//pAllocator->Display();
@@ -223,6 +224,8 @@ namespace OreOreLib
 			return alignment==0
 				? mem
 				: (void*)RoundUp( size_t(mem), alignment );
+*/
+			return pAllocator->Allocate( alignment );
 		}
 		else// PoolAllocator is unavailable for large memory allocation 
 		{
@@ -236,9 +239,7 @@ namespace OreOreLib
 				? (uint8*)mem + sizeof(RegionTag)
 				: (void*)RoundUp( size_t( (uint8*)mem + sizeof(RegionTag) ), alignment );
 		}
-
 	}
-
 
 
 

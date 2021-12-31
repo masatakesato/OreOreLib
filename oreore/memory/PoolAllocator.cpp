@@ -240,7 +240,7 @@ namespace OreOreLib
 		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pFeedFront( nullptr )
 	{
-		tcout << _T("Copy constructor...\n");
+		tcout << _T( "Copy constructor...\n" );
 
 
 		//BatchAllocatePages( m_CommitBatchSize );
@@ -274,7 +274,7 @@ namespace OreOreLib
 		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pFeedFront( obj.m_pFeedFront )
 	{
-		tcout << _T("Move constructor...\n");
+		tcout << _T( "Move constructor...\n" );
 
 		// Move pages from obj to *this
 		if( obj.m_Nil.next != &obj.m_Nil )
@@ -321,7 +321,7 @@ namespace OreOreLib
 	// Copy assignment operator
 	PoolAllocator& PoolAllocator::operator=( const PoolAllocator& obj )
 	{
-		tcout << _T("Copy assignment operator...\n");
+		tcout << _T( "Copy assignment operator...\n" );
 
 		if( this != &obj )
 		{
@@ -355,7 +355,7 @@ namespace OreOreLib
 	// Move assignment operator
 	PoolAllocator& PoolAllocator::operator=( PoolAllocator&& obj )
 	{
-		tcout << _T("Move assignment operator...\n");
+		tcout << _T( "Move assignment operator...\n" );
 
 		if( this != &obj )
 		{
@@ -434,19 +434,18 @@ namespace OreOreLib
 
 
 
-	void* PoolAllocator::Allocate()
+	void* PoolAllocator::Allocate( size_t alignment )
 	{
-		assert( m_AllocSize > 0 && m_BlockSize > 0 );
+		ASSERT( m_AllocSize > 0 && m_BlockSize > 0 && alignment < m_BlockSize );
 
 		//==================== メモリブロック取得前の準備 ====================//
-
 		// DirtyListが空の場合
 		if( IsEmpty( m_DirtyFront ) )
 		{
 			// Extend cleap pages if empty
 			if( IsEmpty( m_CleanFront ) )
 			{
-				tcout << "m_CleanFront is empty. Allocating new Clean page....\n";
+				tcout << _T( "m_CleanFront is empty. Allocating new Clean page....\n" );
 				BatchAllocatePages( m_CommitBatchSize );
 
 				//assert( IsEmpty( m_CleanFront )==false );
@@ -454,7 +453,7 @@ namespace OreOreLib
 					return nullptr;
 			}
 
-			tcout << "m_DirtyFront is empty. Acquiring a clean page from m_CleanFront...\n";
+			tcout << _T( "m_DirtyFront is empty. Acquiring a clean page from m_CleanFront...\n" );
 			m_DirtyFront = m_CleanFront;
 			m_CleanFront = m_CleanFront->next;
 		}
@@ -480,16 +479,56 @@ namespace OreOreLib
 				m_UsedupFront = page;
 		}
 
-		return ptr;
+		return alignment==0 ? ptr : (void*)RoundUp( size_t(ptr), alignment );
 	}
 
+	//void* PoolAllocator::Allocate()
+	//{
+	//	assert( m_AllocSize > 0 && m_BlockSize > 0 );
 
+	//	//==================== メモリブロック取得前の準備 ====================//
+	//	// DirtyListが空の場合
+	//	if( IsEmpty( m_DirtyFront ) )
+	//	{
+	//		// Extend cleap pages if empty
+	//		if( IsEmpty( m_CleanFront ) )
+	//		{
+	//			tcout << _T( "m_CleanFront is empty. Allocating new Clean page....\n" );
+	//			BatchAllocatePages( m_CommitBatchSize );
 
-void* PoolAllocator::Allocate( size_t alignment )
-{
+	//			//assert( IsEmpty( m_CleanFront )==false );
+	//			if( IsEmpty( m_CleanFront ) )
+	//				return nullptr;
+	//		}
 
+	//		tcout << _T( "m_DirtyFront is empty. Acquiring a clean page from m_CleanFront...\n" );
+	//		m_DirtyFront = m_CleanFront;
+	//		m_CleanFront = m_CleanFront->next;
+	//	}
 
-}
+	//	//====================== メモリブロックの確保 ======================//
+	//	Page* page	= m_DirtyFront;
+	//	void* ptr	= AllocateBlock( page );// メモリブロックを確保する(Pageの空きブロック数がデクリメントされる)
+
+	//	//assert( ptr !=nullptr );
+	//	if( !ptr )
+	//		return nullptr;
+
+	//	if( GetPageTag( page )->NumFreeBlocks == 0 )// pageがUsedupになった場合
+	//	{
+	//		// Update m_DirtyFront
+	//		if( m_DirtyFront->next != m_CleanFront )
+	//			m_DirtyFront = m_DirtyFront->next;
+	//		else
+	//			m_DirtyFront = &m_Nil;
+
+	//		// Update m_UsedupFront if necessary
+	//		if( IsEmpty(m_UsedupFront) )
+	//			m_UsedupFront = page;
+	//	}
+
+	//	return ptr;
+	//}
 
 
 
@@ -518,7 +557,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		if( stateBefore==Usedup && stateAfter==Dirty )
 		{
-			tcout << "  Usedup -> Dirty...\n";
+			tcout << _T( "  Usedup -> Dirty...\n" );
 
 			Page* pPivot = IsEmpty( m_DirtyFront ) ? m_CleanFront : m_DirtyFront;
 
@@ -538,7 +577,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		else if( stateBefore==Dirty && stateAfter==Clean )
 		{
-			tcout << "  Dirty -> Clean...\n";	
+			tcout << _T( "  Dirty -> Clean...\n" );	
 
 			if( page->next != m_CleanFront )
 			{
@@ -556,7 +595,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		else if( stateBefore==Usedup && stateAfter==Clean )// Occurs only when Page contains single block.
 		{
-			tcout << "  Usedup -> Clean...\n";
+			tcout << _T( "  Usedup -> Clean...\n" );
 
 			if( page->next != m_CleanFront )
 			{
@@ -574,7 +613,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		else if( stateBefore==Dirty && stateAfter==Dirty )// Do nothing.
 		{
-			tcout << "  Dirty -> Dirty...\n";
+			tcout << _T( "  Dirty -> Dirty...\n" );
 		}
 
 		tcout << tendl;
@@ -595,7 +634,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		if( !page )
 		{
-			tcout << "  Aborting: Could not find ptr...\n";
+			tcout << _T( "  Aborting: Could not find ptr...\n" );
 			return false;
 		}
 
@@ -608,7 +647,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		if( stateBefore==Usedup && stateAfter==Dirty )
 		{
-			tcout << "  Usedup -> Dirty...\n";
+			tcout << _T( "  Usedup -> Dirty...\n" );
 
 			Page* pPivot = IsEmpty( m_DirtyFront ) ? m_CleanFront : m_DirtyFront;
 
@@ -628,7 +667,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		else if( stateBefore==Dirty && stateAfter==Clean )
 		{
-			tcout << "  Dirty -> Clean...\n";	
+			tcout << _T( "  Dirty -> Clean...\n" );	
 
 			if( page->next != m_CleanFront )
 			{
@@ -646,7 +685,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		else if( stateBefore==Usedup && stateAfter==Clean )// Occurs only when Page contains single block.
 		{
-			tcout << "  Usedup -> Clean...\n";
+			tcout << _T( "  Usedup -> Clean...\n" );
 
 			if( page->next != m_CleanFront )
 			{
@@ -664,7 +703,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		else if( stateBefore==Dirty && stateAfter==Dirty )// Do nothing.
 		{
-			tcout << "  Dirty -> Dirty...\n";
+			tcout << _T( "  Dirty -> Dirty...\n" );
 		}
 
 		tcout << tendl;
@@ -680,13 +719,13 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 		tcout << _T( " Allocated Size: " ) << m_AllocSize << _T( "[bytes] ( linkedlist pointer: " << c_DataOffset << "[bytes], data: " << m_PageSize << "[bytes] )\n" );
 		tcout << _T( " Active size:    " ) << ( m_PoolSize + m_PageTagSize ) << _T( "[bytes] ( pool: " ) << m_PoolSize << _T( "[bytes], tag: " ) << m_PageTagSize << _T( "[bytes] )\n" );
-		tcout << _T( " Usage:          " ) << float32( m_PoolSize + m_PageTagSize ) / (float32)m_AllocSize * 100 << _T( "[%] ( ") << m_AllocSize-m_PoolSize-m_PageTagSize << _T(" [bytes] wasted. ) \n" );
+		tcout << _T( " Usage:          " ) << float32( m_PoolSize + m_PageTagSize ) / (float32)m_AllocSize * 100 << _T( "[%] ( " ) << m_AllocSize-m_PoolSize-m_PageTagSize << _T( " [bytes] wasted. ) \n" );
 
 		tcout << _T( " Block Size:     " ) << m_BlockSize << _T( "[bytes]\n" );
 		tcout << _T( " Active Blocks:  " ) << m_NumActiveBlocks << tendl;
 
-		tcout << _T( " OSAllocSize:     ") << m_OSAllocSize << _T( "[bytes]\n" );
-		tcout << _T( " OSAllocationGranularity:  ") << m_OSAllocationGranularity << _T( "[bytes]\n" );
+		tcout << _T( " OSAllocSize:     " ) << m_OSAllocSize << _T( "[bytes]\n" );
+		tcout << _T( " OSAllocationGranularity:  " ) << m_OSAllocationGranularity << _T( "[bytes]\n" );
 		tcout << _T( " Commit Batch Size:  " ) << m_CommitBatchSize << tendl;
 
 		tcout << tendl;
@@ -834,12 +873,12 @@ void* PoolAllocator::Allocate( size_t alignment )
 		{
 			if( IsInUse( feed ) == false )
 			{
-				tcout << _T("  Unused Feed found: " ) << (unsigned *)feed << tendl;
+				tcout << _T( "  Unused Feed found: " ) << (unsigned *)feed << tendl;
 
 				prev->DisconnectNext();
 				
 				// Remove clean pages commited from feed
-				tcout << _T("    Removing commited clean pages...\n" );
+				tcout << _T( "    Removing commited clean pages...\n" );
 
 				Page* page = m_CleanFront;
 				while( page != &m_Nil )
@@ -848,7 +887,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 					void* base = OSAllocator::GetAllocationBase( page );					
 					if( base == feed )
 					{
-						tcout << _T("      ") << (unsigned*)page << tendl;
+						tcout << _T( "      " ) << (unsigned*)page << tendl;
 						if( page == m_CleanFront )	m_CleanFront = nextpage;
 						page->Disconnect();
 					}
@@ -857,7 +896,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 
 				if( feed == m_pFeedFront )
 				{
-					tcout << _T("    Invalidating FeedFront...\n" );
+					tcout << _T( "    Invalidating FeedFront...\n" );
 					m_pFeedFront=nullptr;
 				}
 
@@ -1403,7 +1442,7 @@ void* PoolAllocator::Allocate( size_t alignment )
 				result |= bitmask;
 			}
 
-			tcout << _T("IsFull()...") << (result==0) << tendl;
+			tcout << _T( "IsFull()..." ) << (result==0) << tendl;
 
 			return result == 0;
 		}
