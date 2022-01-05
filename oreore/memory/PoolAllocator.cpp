@@ -442,7 +442,7 @@ namespace OreOreLib
 		// DirtyListが空の場合
 		if( IsEmpty( m_DirtyFront ) )
 		{
-			// Extend cleap pages if empty
+			// Extend clean pages if empty
 			if( IsEmpty( m_CleanFront ) )
 			{
 				tcout << _T( "m_CleanFront is empty. Allocating new Clean page....\n" );
@@ -761,6 +761,10 @@ namespace OreOreLib
 
 
 
+	uint8* PoolAllocator::GetPoolBase( const void* ptr ) const
+	{
+		return (uint8*)GetPage( ptr ) + Page::HeaderSize + m_PageTagSize;
+	}
 
 
 
@@ -1110,32 +1114,6 @@ namespace OreOreLib
 	{
 		return (RegionTag*)OSAllocator::GetAllocationBase( ptr );
 	}
-
-
-
-
-	//void ExtractMemoryInfo( const void* ptr, OreOreLib::Page*& page, OreOreLib::PoolAllocator*& alloc )
-	//{
-	//	size_t base = (size_t)OreOreLib::OSAllocator::GetAllocationBase( ptr );
-	//	OreOreLib::RegionTag* pRTag	= (OreOreLib::RegionTag*)base;
-
-	//	// Get Allocator
-	//	alloc = pRTag->pAllocator;
-
-	//	// Get Page
-	//	size_t offset = Round( (size_t)ptr - base, pRTag->PageSize ) + Round( pRTag->RegionTagSize, OreOreLib::OSAllocator::PageSize() );// shift if RegionTag only page exists.
-
-	//	if( offset < pRTag->RegionSize )
-	//	{
-	//		if( offset == 0 )//tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
-	//			offset += pRTag->RegionTagSize;
-	//		page = (OreOreLib::Page*)( base + offset );
-	//	}
-	//	else
-	//	{
-	//		page = nullptr;
-	//	}
-	//}
 
 
 

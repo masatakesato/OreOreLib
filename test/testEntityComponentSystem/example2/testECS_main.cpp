@@ -1,6 +1,8 @@
 ﻿// https://austinmorlan.com/posts/entity_component_system/
 
+#include	<oreore/memory/DebugNew.h>
 #include	<oreore/container/Array.h>
+
 
 #include	"Components.h"
 #include	"Coordinator.h"
@@ -28,6 +30,8 @@ int main()
 	signature.Set( gCoordinator.GetComponentType<Gravity>() );
 	signature.Set( gCoordinator.GetComponentType<RigidBody>() );
 	signature.Set( gCoordinator.GetComponentType<Transform>() );
+
+	tcout << signature << tendl;
 
 	gCoordinator.SetSystemSignature<PhysicsSystem>( signature );
 

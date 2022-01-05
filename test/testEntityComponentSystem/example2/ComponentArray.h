@@ -8,6 +8,8 @@
 
 
 
+// ChacheDataManagerクラスみたいのを実装する必要がある
+
 class IComponentArray
 {
 public:
@@ -86,5 +88,9 @@ private:
 	size_t	mSize;
 };
 
+
+// TODO: mComponentArrayが歯抜けになっても普通に動くようにしたい
+//　現状だと、要素削除時に虫食い穴埋める処理を組み込んでる.
+//
 
 #endif // !COMPONENT_ARRAY_H

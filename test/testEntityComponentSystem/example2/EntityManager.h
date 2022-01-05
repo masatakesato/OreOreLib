@@ -15,6 +15,8 @@ public:
 
 	EntityManager()
 	{
+		mAvailableEntities.Init( MAX_ENTITIES );
+
 		// キューをIDで初期化する
 		for( Entity entity=0; entity<MAX_ENTITIES; ++entity )
 			mAvailableEntities.Enqueue( entity );

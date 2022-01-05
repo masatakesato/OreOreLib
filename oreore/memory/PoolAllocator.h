@@ -22,6 +22,30 @@ namespace OreOreLib
 	class PoolAllocator;
 
 
+	//##########################################################################################//
+	//																							//
+	//								structs for memory management								//
+	//																							//
+	//##########################################################################################//
+
+	// VirtualMemory information. Aligned to DefaultAlignment ( 8 bytes for x64. 4 bytes for x86 ).
+	struct RegionTag
+	{
+		RegionTag* next = nullptr;
+		size_t	RegionTagSize;// size of this struct rounded up to blocksize
+		size_t	RegionSize;// reserved size rounded up to dwAllocationGranularity
+		size_t	PageSize;// reserved size rounded up to dwPageSize
+		PoolAllocator*	pAllocator;
+		//size_t	NumActivePages;// number of available pages
+		//size_t	NumFreeOSPages;// number of free-to-use pages
+
+		void Init( size_t rtagsize, size_t regionsize, size_t pagesize, PoolAllocator* pallocator );
+		void ConnectAfter( RegionTag* ptag );
+		void DisconnectNext();
+	};
+
+
+
 	struct Page
 	{
 		Page* next = nullptr;
@@ -42,7 +66,6 @@ namespace OreOreLib
 
 
 
-
 	// struct for accessing tag area of Page. Must be aligned to DefaultAlignment ( 8 bytes for x64. 4 bytes for x86 ).
 	struct PageTag
 	{
@@ -56,26 +79,12 @@ namespace OreOreLib
 
 
 
-	// VirtualMemory information. Aligned to DefaultAlignment ( 8 bytes for x64. 4 bytes for x86 ).
-	struct RegionTag
-	{
-		RegionTag* next = nullptr;
-		size_t	RegionTagSize;// size of this struct rounded up to blocksize
-		size_t	RegionSize;// reserved size rounded up to dwAllocationGranularity
-		size_t	PageSize;// reserved size rounded up to dwPageSize
-		PoolAllocator*	pAllocator;
-		//size_t	NumActivePages;// number of available pages
-		//size_t	NumFreeOSPages;// number of free-to-use pages
+	//##########################################################################################//
+	//																							//
+	//										Pool Allocator										//
+	//																							//
+	//##########################################################################################//
 
-		void Init( size_t rtagsize, size_t regionsize, size_t pagesize, PoolAllocator* pallocator );
-		void ConnectAfter( RegionTag* ptag );
-		void DisconnectNext();
-	};
-
-
-
-
-	// Pool Allocator
 	class PoolAllocator
 	{
 	public:
@@ -98,6 +107,8 @@ namespace OreOreLib
 		bool Free( void*& ptr, Page* page=nullptr );
 		bool SafeFree( void*& ptr );
 		void Display() const;
+
+		uint8* GetPoolBase( const void* ptr ) const;// ポインタが所属するプール先頭アドレスを取得する
 
 
 
@@ -216,17 +227,49 @@ namespace OreOreLib
 		friend RegionTag* GetRegionTag( const void* ptr );
 		//friend void ExtractMemoryInfo( const void* ptr, OreOreLib::Page*& page, OreOreLib::PoolAllocator*& alloc );
 
-		// Deprecated implementation
-		//Page* AllocatePage( size_t allocSize );// Deprecated. 2021.06.06
-
 
 		friend class MemoryManager;
 
 	};
 
 
+	
+
+
+	//##########################################################################################//
+	//																							//
+	//									Friend functions										//
+	//																							//
+	//##########################################################################################//
+
 	RegionTag* GetRegionTag( const void* ptr );
-	//bool Free__( void*& ptr );
+
+
+
+	//void ExtractMemoryInfo( const void* ptr, OreOreLib::Page*& page, OreOreLib::PoolAllocator*& alloc )
+	//{
+	//	size_t base = (size_t)OreOreLib::OSAllocator::GetAllocationBase( ptr );
+	//	OreOreLib::RegionTag* pRTag	= (OreOreLib::RegionTag*)base;
+
+	//	// Get Allocator
+	//	alloc = pRTag->pAllocator;
+
+	//	// Get Page
+	//	size_t offset = Round( (size_t)ptr - base, pRTag->PageSize ) + Round( pRTag->RegionTagSize, OreOreLib::OSAllocator::PageSize() );// shift if RegionTag only page exists.
+
+	//	if( offset < pRTag->RegionSize )
+	//	{
+	//		if( offset == 0 )//tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
+	//			offset += pRTag->RegionTagSize;
+	//		page = (OreOreLib::Page*)( base + offset );
+	//	}
+	//	else
+	//	{
+	//		page = nullptr;
+	//	}
+	//}
+
+
 
 
 }// end of namesapce
