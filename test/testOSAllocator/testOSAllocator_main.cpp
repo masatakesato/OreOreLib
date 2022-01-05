@@ -1,7 +1,7 @@
 ﻿#include	<crtdbg.h>
 
 #ifdef _WIN64
-#include	<windows.h>
+#include	<Windows.h>
 #endif
 
 
@@ -57,7 +57,6 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	tcout << GetLargePageMinimum() << tendl;
 	// https://stackoverflow.com/questions/3351940/detecting-the-memory-page-size
 
 	tcout << "//=========================== System Info ======================================//\n";
@@ -277,7 +276,7 @@ tcout << "Is Released? " << OSAllocator::IsReleased( buffers[numBuffers-2] ) << 
 	// ページサイズ(16KB,etc...)に区切ってCommitする
 
 
-	// ページ単位でコミット/デコミットは重い. アロケーション単位でコミット/デコミットする
+	// ページ単位でコミット/デコミットは重い. メモリアロケーション単位でコミット/デコミットする(該当ページ数分まとめて処理される)
 
 
 
@@ -292,6 +291,11 @@ tcout << "Is Released? " << OSAllocator::IsReleased( buffers[numBuffers-2] ) << 
 
 
 	// 確保した領域を解放できるかどうかチェックする
+
+
+
+// アクセス権限を変えてみる. 具体的には、、、
+	// 確保した領域の先頭指定領域だけ「書き込み禁止」にしてみる
 
 
 

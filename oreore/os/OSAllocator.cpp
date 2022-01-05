@@ -2,7 +2,7 @@
 
 
 #ifdef _WIN64
-#include	<windows.h>
+#include	<Windows.h>
 #endif
 
 

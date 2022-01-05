@@ -1086,7 +1086,7 @@ namespace OreOreLib
 		{
 			tcout << "m_OSAllocSize is short: ";
 
-			// Isolate RegionTag from Page ...  // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
+			// Isolate RegionTag from Page if RegionTag size exceeds 80% of allocSize. // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
 			if( allocSize / blockAlignedRTagSize < REGION_RTAG_RATIO )
 			{
 				tcout << "Isolating RegionTag from Page ...\n";
