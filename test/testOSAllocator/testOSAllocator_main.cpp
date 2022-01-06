@@ -59,6 +59,8 @@ int main()
 
 	// https://stackoverflow.com/questions/3351940/detecting-the-memory-page-size
 
+	tcout << Round( 63, 64 ) << tendl;
+
 	tcout << "//=========================== System Info ======================================//\n";
 
 	MEMORY_BASIC_INFORMATION meminfo;
@@ -135,7 +137,7 @@ int main()
 		//uint8* page = (uint8*)VirtualAlloc( reserved + addressOffset, m_PageSize, MEM_COMMIT, PAGE_READWRITE );//(uint8*)OSAllocator::Commit( reserved + addressOffset, sizeof( uint8 )*PAGE_SIZE );
 		uint8* page = (uint8*)OSAllocator::CommitAligned( (reserved + 6144*2), m_PageSize/2, m_PageSize );
 
-
+		tcout << (size_t)page % m_PageSize << tendl;
 
 		// 8192 bytes(2 pages) allocated. starts from 6144 assdess offset. 
 		VirtualQuery( page, &meminfo, sizeof( MEMORY_BASIC_INFORMATION ) );

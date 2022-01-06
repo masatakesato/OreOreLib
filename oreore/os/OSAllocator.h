@@ -28,6 +28,7 @@ namespace OreOreLib
 		extern inline void* Commit( void* ptr, size_t size, bool writable=true, bool executable=false );
 		extern inline void* CommitAligned( void* ptr, size_t size, size_t alignment, bool writable=true, bool executable=false );
 		extern inline void* ReserveAndCommit( size_t size, bool writable=true, bool executable=false );
+		extern inline void* ReserveAndCommitAligned( size_t size, size_t alignment, bool writable=true, bool executable=false );
 
 		extern inline bool Decommit( void* ptr, size_t size );
 		extern inline bool DecommitAligned( void* ptr, size_t size, size_t alignment );

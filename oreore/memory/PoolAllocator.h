@@ -36,12 +36,16 @@ namespace OreOreLib
 		size_t	RegionSize;// reserved size rounded up to dwAllocationGranularity
 		size_t	PageSize;// reserved size rounded up to dwPageSize
 		PoolAllocator*	pAllocator;
+		void* AllocationBase;// Allocation base address. Required to Free allocated virtual address space.
 		//size_t	NumActivePages;// number of available pages
 		//size_t	NumFreeOSPages;// number of free-to-use pages
 
 		void Init( size_t rtagsize, size_t regionsize, size_t pagesize, PoolAllocator* pallocator );
 		void ConnectAfter( RegionTag* ptag );
 		void DisconnectNext();
+
+		static const size_t /*REGION_TAG_ALIGNMENT*/Alignment = 4 * 2^20;// 4MiB. RegionTag alignment for address bitmask access.
+		// RegionTagのアラインメント. 任意ポインタの下位22ビットをゼロにすればRegionTagに到達できる
 	};
 
 
@@ -115,18 +119,19 @@ namespace OreOreLib
 	private:
 
 		
-		//////////////////////////////////////////////// Feed structure //////////////////////////////////////////////////
-		//																												//
-		//	|                                |                         |                             |           |   |	//
-		//	|========== RegionTag ===========|=== Page ===|** unused **|===== Page =====|** unused **|==...	...**|---|	//
-		//																												//
-		//   <-- m_RegionTagOffset [bytes]-->																			//
-		//																												//
-		//   <--------------- m_FirstPageSize [bytes] ----------------> <-- m_OSAllocSize [bytes]---> <-- ...			//
-		//																												//
-		//	 <----------------------------------- m_OSAllocationGranularity [bytes] -------------------------------->	//
-		//																												//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////// Feed structure //////////////////////////////////////////////////////////
+		//																																//
+		// ( *for RegionTag access with address masking )																				//
+		//	|				|                                |                         |                             |           |   |	//
+		//	|<- alignment ->|========== RegionTag ===========|=== Page ===|** unused **|===== Page =====|** unused **|==...	...**|---|	//
+		//	|				|																											//
+		//	|				| <-- m_RegionTagOffset [bytes]-->																			//
+		//	|				|																											//
+		//	|				| <--------------- m_FirstPageSize [bytes] ----------------> <-- m_OSAllocSize [bytes]---> <-- ...			//
+		//	|				|																											//
+		//	|				| <----------------------------------- m_OSAllocationGranularity [bytes] -------------------------------->	//
+		//																																//
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		////////////////////////////////// Page structure ////////////////////////////////

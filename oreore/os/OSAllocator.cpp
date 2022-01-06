@@ -91,22 +91,29 @@ namespace OreOreLib
 
 
 		// CommitAligned
+		//void* CommitAligned( void* ptr, size_t size, size_t alignment, bool writable, bool executable )
+		//{
+		//	// Get alligned page size
+		//	size_t alignedPageSize = RoundUp( alignment, OSAllocator::PageSize() );
+
+		//	// Align ptr position using aligned page size.
+		//	uintptr alignedptr = Round( (size_t)ptr, (size_t)alignedPageSize );
+		//	//tcout << (unsigned*)( ((size_t)ptr / (size_t)alignedPageSize) * (size_t)alignedPageSize ) << tendl;
+		//	//tcout << "alignedptr:" << (unsigned*)(alignedptr) << tendl;
+
+		//	// Align size
+		//	size_t alignedSize = RoundUp( size, alignedPageSize );
+
+
+		//	return (void*)VirtualAlloc( (uintptr*)alignedptr, alignedSize, MEM_COMMIT, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
+		//}
+
+
 		void* CommitAligned( void* ptr, size_t size, size_t alignment, bool writable, bool executable )
 		{
-			// Get alligned page size
-			size_t alignedPageSize = RoundUp( alignment, OSAllocator::PageSize() );
-
-			// Align ptr position using aligned page size.
-			uintptr alignedptr = Round( (size_t)ptr, (size_t)alignedPageSize );
-			//tcout << (unsigned*)( ((size_t)ptr / (size_t)alignedPageSize) * (size_t)alignedPageSize ) << tendl;
-			//tcout << "alignedptr:" << (unsigned*)(alignedptr) << tendl;
-
-			// Align size
-			size_t alignedSize = RoundUp( size, alignedPageSize );
-
-
-			return (void*)VirtualAlloc( (uintptr*)alignedptr, alignedSize, MEM_COMMIT, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
-
+			ASSERT( alignment % OSAllocator::PageSize() == 0 && _T("Invalid alignment value. must be multiplier of OSAllocator::PageSize().") );
+			
+			return VirtualAlloc( (PVOID)RoundUp( (size_t)ptr, alignment ), size, MEM_COMMIT, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
 		}
 
 
@@ -116,6 +123,21 @@ namespace OreOreLib
 		{
 			void* mem = (void*)VirtualAlloc( nullptr, size, MEM_RESERVE | MEM_COMMIT, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
 			return mem;
+		}
+
+
+
+		// ReserveAndCommitAligned
+		void* ReserveAndCommitAligned( size_t size, size_t alignment, bool writable, bool executable )
+		{
+			ASSERT( alignment % OSAllocator::PageSize() == 0 && _T("Invalid alignment value. must be multiplier of OSAllocator::PageSize().") );
+
+			// Reserve Virtual Address space
+			auto mem = VirtualAlloc( nullptr, RoundUp( size + alignment, OSAllocator::PageSize() ), MEM_RESERVE, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
+
+			//tcout << "mem: " << mem << ", %alignment: "<< (size_t)mem % alignment << tendl;
+			// Commit memory using aligned start address
+			return VirtualAlloc( (PVOID)RoundUp( (size_t)mem, alignment ), size, MEM_COMMIT, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
 		}
 
 
@@ -145,7 +167,7 @@ namespace OreOreLib
 
 
 
-		// ReleaseDecommited
+		// ReleaseDecommited. ptr adress must be retured value from VirtualAlloc
 		bool Release( void* ptr )
 		{
 			return VirtualFree( ptr, 0, MEM_RELEASE ) ? true : false;
