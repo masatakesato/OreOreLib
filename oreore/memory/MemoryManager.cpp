@@ -230,7 +230,15 @@ namespace OreOreLib
 		else// PoolAllocator is unavailable for large memory allocation 
 		{
 			size_t allocSize = sizeof(RegionTag) + size;
-			RegionTag* mem = (RegionTag*)OSAllocator::ReserveAndCommit( allocSize );
+
+			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+				auto base = OSAllocator::ReserveUncommited( RoundUp( allocSize, RegionTag::Alignment ) );
+				RegionTag* mem = (RegionTag*)OSAllocator::CommitAligned( base, allocSize, RegionTag::Alignment );
+				mem->AllocationBase = base;
+			#else
+				RegionTag* mem = (RegionTag*)OSAllocator::ReserveAndCommit( allocSize );
+			#endif
+
 			mem->Init( sizeof(RegionTag), size, 1, nullptr );// Set RegionTag.pAllocator to nullptr
 			//OSAllocator::DisplayMemoryInfo( mem );
 			//tcout << "  Allocated address: " << (uint8*)mem + sizeof(RegionTag) << tendl;
@@ -300,7 +308,7 @@ namespace OreOreLib
 			size_t base	= size_t(mem) & RegionTag::AlignmentMask;//RoundUp( (size_t)OSAllocator::GetAllocationBase( mem ), RegionTag::Alignment );
 			tcout << base % RegionTag::Alignment << tendl;
 		#else
-			size_t base		= (size_t)OSAllocator::GetAllocationBase( mem );
+			size_t base	= (size_t)OSAllocator::GetAllocationBase( mem );
 		#endif
 
 		RegionTag* pRTag	= (RegionTag*)base;
@@ -310,7 +318,12 @@ namespace OreOreLib
 		if( !pRTag->pAllocator )// Allocated memory without PoolAllocator
 		{
 			mem = nullptr;
-			return OSAllocator::Release( (void*)base );
+			
+			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+				return OSAllocator::Release( pRTag->AllocationBase );
+			#else
+				return OSAllocator::Release( (void*)base );
+			#endif
 		}
 		else if( offset < pRTag->RegionSize )// Allocated memory using PoolAllocator
 		{

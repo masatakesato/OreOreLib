@@ -806,7 +806,7 @@ namespace OreOreLib
 
 			// Setup RegionTag if "reserved" is the start address m_pFeed.
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-			if( reserved==(void*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment ) )
+			if( reserved==(uint8*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment ) )
 			#else
 			if( reserved==m_pFeedFront )
 			#endif

@@ -133,7 +133,7 @@ namespace OreOreLib
 			ASSERT( alignment % OSAllocator::PageSize() == 0 && _T("Invalid alignment value. must be multiplier of OSAllocator::PageSize().") );
 
 			// Reserve Virtual Address space
-			auto mem = VirtualAlloc( nullptr, RoundUp( size + alignment, OSAllocator::PageSize() ), MEM_RESERVE, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
+			auto mem = VirtualAlloc( nullptr, size + alignment, MEM_RESERVE, c_Protect[(DWORD)writable<<1 | (DWORD)executable] );
 
 			//tcout << "mem: " << mem << ", %alignment: "<< (size_t)mem % alignment << tendl;
 			// Commit memory using aligned start address

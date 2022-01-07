@@ -39,10 +39,10 @@ namespace OreOreLib
 
 #ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 
-		void* AllocationBase;// Allocation base address. Required to Free allocated virtual address space.
+		void* AllocationBase = nullptr;// Allocation base address. Required to Free allocated virtual address space.
 		static const size_t /*REGION_TAG_ALIGNMENT*/Alignment = 4194304;// 4MiB. RegionTag alignment for address bitmask access.
 		// RegionTagのアラインメント. 任意ポインタの下位22ビットをゼロにすればRegionTagに到達できる
-		static const size_t AlignmentMask = 0b1111111111111111111111111111111111111111110000000000000000000000;
+		static const size_t AlignmentMask = 0xFFFFFFFFFFC00000;
 
 #endif // ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 

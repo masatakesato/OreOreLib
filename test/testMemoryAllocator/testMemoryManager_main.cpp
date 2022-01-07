@@ -28,7 +28,7 @@ int main()
 		uint8* ptr2 = (uint8*)manager.Allocate( 32769, alignment );
 		ASSERT( (size_t)ptr2 % alignment == 0 );
 		ptr2[3] = 'U';
-		manager.Free( (void*&)ptr2 );
+		tcout << manager.Free( (void*&)ptr2 ) << tendl;
 
 
 		float32* ptr3 = (float32*)manager.Reallocate( (void*&)ptr, 8, 8 );
