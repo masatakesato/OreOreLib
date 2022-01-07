@@ -779,12 +779,22 @@ namespace OreOreLib
 			// Reserve virtual address if empty
 			if( !m_pFeedFront )
 			{
-				m_pFeedFront = OSAllocator::ReserveUncommited( m_OSAllocationGranularity );
+				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+					// Reserve alignable virtual address space
+					m_pFeedFront = OSAllocator::ReserveUncommited( m_OSAllocationGranularity + RegionTag::Alignment );
+				#else
+					m_pFeedFront = OSAllocator::ReserveUncommited( m_OSAllocationGranularity );
+				#endif
 				//tcout << _T( "Reserving new os memory[" ) << m_OSAllocationGranularity << _T( "]...\n" );
 			}
 
 			// Find memory space from reserved region
-			reserved = (uint8*)OSAllocator::FindRegion( m_pFeedFront, OSAllocator::Reserved, m_OSAllocSize, m_OSAllocationGranularity );
+			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+				// アラインメントした先頭アドレスを使って領域を探す
+				reserved = (uint8*)OSAllocator::FindRegion( (void*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment ), OSAllocator::Reserved, m_OSAllocSize, m_OSAllocationGranularity );
+			#else
+				reserved = (uint8*)OSAllocator::FindRegion( m_pFeedFront, OSAllocator::Reserved, m_OSAllocSize, m_OSAllocationGranularity );
+			#endif
 
 			// Abort committing if reserved cannot be found from m_pFeed
 			if( !reserved )
@@ -795,7 +805,11 @@ namespace OreOreLib
 			}
 
 			// Setup RegionTag if "reserved" is the start address m_pFeed.
+			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+			if( reserved==(void*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment ) )
+			#else
 			if( reserved==m_pFeedFront )
+			#endif
 			{
 				OSAllocator::Commit( reserved, m_FirstPageSize/*commitSize*/ );
 
@@ -803,6 +817,10 @@ namespace OreOreLib
 				RegionTag* pRTag = (RegionTag*)reserved;
 				pRTag->Init( m_RegionTagOffset, m_OSAllocationGranularity, m_OSAllocSize, this );//((RegionTag*)reserved)->Init( m_RegionTagOffset, m_OSAllocationGranularity, m_OSAllocSize, this );
 				pRTag->ConnectAfter( &m_FeedNil );
+
+				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+					pRTag->AllocationBase = m_pFeedFront;// 仮想メモリ空間の先頭アドレスを保持する
+				#endif
 
 				newPage = (Page*)( reserved + m_RegionTagOffset );
 
@@ -857,7 +875,12 @@ namespace OreOreLib
 		{
 			RegionTag* next = m_FeedNil.next;
 			m_FeedNil.DisconnectNext();
-			OSAllocator::Release( next );
+			
+			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+				OSAllocator::Release( next->AllocationBase );
+			#else
+				OSAllocator::Release( next );
+			#endif
 		}
 
 		m_FeedNil.next = nullptr;
@@ -1001,7 +1024,14 @@ namespace OreOreLib
 
 	Page* PoolAllocator::GetPage( const void* ptr ) const
 	{
-		size_t base			= (size_t)OSAllocator::GetAllocationBase( ptr );
+		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+			size_t base	= size_t(ptr) & RegionTag::AlignmentMask;//RoundUp( (size_t)OSAllocator::GetAllocationBase( ptr ), RegionTag::Alignment );
+			tcout << base % RegionTag::Alignment << tendl;
+		#else
+			size_t base		= (size_t)OSAllocator::GetAllocationBase( ptr );
+		#endif
+
+
 		RegionTag* pRTag	= (RegionTag*)base;
 		size_t offset		= Round( (size_t)ptr - base, pRTag->PageSize )
 							+ Round( pRTag->RegionTagSize, OSAllocator::PageSize() );// shift if RegionTag only page exists.

@@ -264,7 +264,13 @@ namespace OreOreLib
 		if( mem==nullptr )
 			return Allocate( size, alignment );
 
-		size_t base				= (size_t)OSAllocator::GetAllocationBase( mem );
+		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+			size_t base	= size_t(mem) & RegionTag::AlignmentMask;//RoundUp( (size_t)OSAllocator::GetAllocationBase( mem ), RegionTag::Alignment );
+			tcout << base % RegionTag::Alignment << tendl;
+		#else
+			size_t base		= (size_t)OSAllocator::GetAllocationBase( mem );
+		#endif
+
 		RegionTag* pRTag		= (RegionTag*)base;
 		PoolAllocator* pAlloc	= pRTag->pAllocator; 
 		size_t oldsize			= pAlloc ? pAlloc->m_BlockSize : pRTag->RegionSize;
@@ -290,8 +296,13 @@ namespace OreOreLib
 
 	bool MemoryManager::Free( void*& mem )
 	{
+		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+			size_t base	= size_t(mem) & RegionTag::AlignmentMask;//RoundUp( (size_t)OSAllocator::GetAllocationBase( mem ), RegionTag::Alignment );
+			tcout << base % RegionTag::Alignment << tendl;
+		#else
+			size_t base		= (size_t)OSAllocator::GetAllocationBase( mem );
+		#endif
 
-		size_t base			= (size_t)OSAllocator::GetAllocationBase( mem );
 		RegionTag* pRTag	= (RegionTag*)base;
 		size_t offset		= Round( (size_t)mem - base, pRTag->PageSize )
 							+ Round( pRTag->RegionTagSize, OSAllocator::PageSize() );// shift if RegionTag-only page exists.

@@ -36,7 +36,16 @@ namespace OreOreLib
 		size_t	RegionSize;// reserved size rounded up to dwAllocationGranularity
 		size_t	PageSize;// reserved size rounded up to dwPageSize
 		PoolAllocator*	pAllocator;
+
+#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+
 		void* AllocationBase;// Allocation base address. Required to Free allocated virtual address space.
+		static const size_t /*REGION_TAG_ALIGNMENT*/Alignment = 4194304;// 4MiB. RegionTag alignment for address bitmask access.
+		// RegionTagのアラインメント. 任意ポインタの下位22ビットをゼロにすればRegionTagに到達できる
+		static const size_t AlignmentMask = 0b1111111111111111111111111111111111111111110000000000000000000000;
+
+#endif // ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+
 		//size_t	NumActivePages;// number of available pages
 		//size_t	NumFreeOSPages;// number of free-to-use pages
 
@@ -44,8 +53,6 @@ namespace OreOreLib
 		void ConnectAfter( RegionTag* ptag );
 		void DisconnectNext();
 
-		static const size_t /*REGION_TAG_ALIGNMENT*/Alignment = 4 * 2^20;// 4MiB. RegionTag alignment for address bitmask access.
-		// RegionTagのアラインメント. 任意ポインタの下位22ビットをゼロにすればRegionTagに到達できる
 	};
 
 
