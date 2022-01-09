@@ -126,19 +126,19 @@ namespace OreOreLib
 	private:
 
 		
-		//////////////////////////////////////////////////////// Feed structure //////////////////////////////////////////////////////////
-		//																																//
-		// ( *for RegionTag access with address masking )																				//
-		//	|				|                                |                         |                             |           |   |	//
-		//	|<- alignment ->|========== RegionTag ===========|=== Page ===|** unused **|===== Page =====|** unused **|==...	...**|---|	//
-		//	|				|																											//
-		//	|				| <-- m_RegionTagOffset [bytes]-->																			//
-		//	|				|																											//
-		//	|				| <--------------- m_FirstPageSize [bytes] ----------------> <-- m_OSAllocSize [bytes]---> <-- ...			//
-		//	|				|																											//
-		//	|				| <----------------------------------- m_OSAllocationGranularity [bytes] -------------------------------->	//
-		//																																//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////// Feed structure //////////////////////////////////////////////////////////////////
+		//																																			//
+		// ( *for RegionTag access with address masking )																							//
+		//	|               |                                       |                         |                              |             |   |	//
+		//	|<- alignment ->|=============== RegionTag =============|=== Page ===|** unused **|====== Page =====|** unused **|==...   ...**|---|	//
+		//	|				|                                                                                                                  |	//
+		//	|				| <-- m_AlignedRegionTagSize [bytes] -->                                                                           |	//
+		//	|				|                                                                                                                  |	//
+		//	|				| <--------------- m_AlignedFirstPageSize [bytes] ---------------> <- m_AlignedPageSize [bytes]-> <-- ...          |	//
+		//	|				|                                                                                                                  |	//
+		//	|				| <--------------------------------------- m_AlignedReserveSize [bytes] -----------------------------------------> |	//
+		//																																			//
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		////////////////////////////////// Page structure ////////////////////////////////
@@ -148,7 +148,7 @@ namespace OreOreLib
 		//																				//
 		//	 <--- Page::HeaderSize [bytes] --> <----- m_PageDataSize [bytes] ----->		//
 		//																				//
-		//	 <----------------------- m_AllocSize [bytes] ------------------------>		//
+		//	 <------------------------ m_PageSize [bytes] ------------------------>		//
 		//																				//
 		//////////////////////////////////////////////////////////////////////////////////
 
@@ -161,9 +161,9 @@ namespace OreOreLib
 		//																														//
 		//	 <--- 2 [bytes] ---> <-- m_BitFlagSize [bytes] --> <---------- m_PoolSize [bytes] --------> 						//
 		//																														//
-		//   <-------------- m_TagSize [bytes] -------------->																	//
+		//   <------------ m_PageTagSize [bytes] ------------>																	//
 		//																														//
-		//	 <-------------------------------------------- m_PageSize [bytes] --------------------------------------------->	//
+		//	 <------------------------------------------ m_PageDataSize [bytes] ------------------------------------------->	//
 		//																														//
 		//																														//
 		//	PageTag: Management data area. Can be accessed via GetPageTag() method.												//
@@ -186,21 +186,21 @@ namespace OreOreLib
 		// Page structural paremeters
 		size_t	m_BlockSize;
 		uint32	m_CommitBatchSize;	// number of pages to commit at once
-		size_t	m_AllocSize;
+		size_t	m_PageSize;//m_AllocSize;
 		//size_t	m_PageDataSize;			// = m_AllocSize - Page::HeaderSize;
-		size_t	m_BitFlagSize;		// = DivUp( m_PageSize / m_BlockSize, BitSize::uInt8 );
+		size_t	m_BitFlagSize;		// = DivUp( m_PageDataSize / m_BlockSize, BitSize::uInt8 );
 		size_t	m_PageTagSize;		// = RoundUp( sizeof(PageTag::NumFreeBlocks) + m_BitFlagSize, ByteSize::DefaultAlignment );
-		int32	m_NumActiveBlocks;	// = ( m_PageSize - m_PageTagSize ) / m_BlockSize;
+		int32	m_NumActiveBlocks;	// = ( m_PageDataSize - m_PageTagSize ) / m_BlockSize;
 		size_t	m_PoolSize;			// = m_NumActiveBlocks * m_BlockSize;
 
 		// Feed and relevant parameters.
 		RegionTag	m_FeedNil;		// Nill for Virtual Memory list.
 		void*	m_pFeedFront;		// Current Virtual Memory reserved from OS.
-		size_t	m_OSAllocSize;
-		size_t	m_OSAllocationGranularity;
-		size_t	m_FirstPageSize;
-		uint16	m_FirstPageFreeBlocks;
-		size_t	m_RegionTagOffset;
+		size_t	m_AlignedPageSize;	// m_PageSize aligned by OS page size (4096 bytes etc..)
+		size_t	m_AlignedReserveSize;// Virtual memory reserve size. Alinged by OS allocation granularity (64kb etc...)
+		size_t	m_AlignedFirstPageSize;// Size of FirstPage (containing RegionTag )
+		uint16	m_NumFirstPageActiveBlocks;
+		size_t	m_AlignedRegionTagSize;// sizeof RegionTag alignmed to m_BlockSize (or OS page size if RegionTag only page allocation)
 
 		// Page linked list
 		enum PageStates{ Clean, Dirty, Usedup, NumPageStates };
@@ -232,7 +232,7 @@ namespace OreOreLib
 
 		// Initialization
 		void InitPageBlockParams( size_t allocSize, size_t blockSize );
-		void InitFeedParams( size_t allocSize, size_t blockSize );
+		void InitFeedParams( size_t allocSize, size_t blockSize, size_t commitBatchSize );
 
 	
 		// Friend functions

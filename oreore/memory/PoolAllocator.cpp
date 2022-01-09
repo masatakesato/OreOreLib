@@ -166,18 +166,18 @@ namespace OreOreLib
 		: m_BlockSize( 0 )
 		, m_CommitBatchSize( 0 )
 
-		, m_AllocSize( 0 )
+		, m_PageSize( 0 )
 		//, m_PageDataSize( 0 )
 		, m_BitFlagSize( 0 )
 		, m_PageTagSize( 0 )
 		, m_NumActiveBlocks( 0 )
 		, m_PoolSize( 0 )
 		
-		, m_OSAllocSize( 0 )
-		, m_OSAllocationGranularity( 0 )
-		, m_FirstPageSize( 0 )
-		, m_FirstPageFreeBlocks( 0 )
-		, m_RegionTagOffset( 0 )
+		, m_AlignedPageSize( 0 )
+		, m_AlignedReserveSize( 0 )
+		, m_AlignedFirstPageSize( 0 )
+		, m_NumFirstPageActiveBlocks( 0 )
+		, m_AlignedRegionTagSize( 0 )
 
 		, m_Nil{ &m_Nil, &m_Nil, 0x00 }
 		, m_CleanFront( &m_Nil )
@@ -187,6 +187,7 @@ namespace OreOreLib
 		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pFeedFront( nullptr )
 	{
+
 	}
 
 
@@ -207,7 +208,7 @@ namespace OreOreLib
 		ASSERT( allocSize > blockSize && blockSize > 0 );
 
 		InitPageBlockParams( allocSize, blockSize );
-		InitFeedParams( allocSize, blockSize );
+		InitFeedParams( allocSize, blockSize, commitBatchSize );
 
 		//BatchAllocatePages( m_CommitBatchSize );
 	}
@@ -219,18 +220,18 @@ namespace OreOreLib
 		: m_BlockSize( obj.m_BlockSize )
 		, m_CommitBatchSize( obj.m_CommitBatchSize )
 
-		, m_AllocSize( obj.m_AllocSize )
+		, m_PageSize( obj.m_PageSize )
 		//, m_PageDataSize( obj.m_PageDataSize )
 		, m_BitFlagSize( obj.m_BitFlagSize )
 		, m_PageTagSize( obj.m_PageTagSize )
 		, m_NumActiveBlocks( obj.m_NumActiveBlocks )
 		, m_PoolSize( obj.m_PoolSize )
 
-		, m_OSAllocSize( obj.m_OSAllocSize )
-		, m_OSAllocationGranularity( obj.m_OSAllocationGranularity )
-		, m_FirstPageSize( obj.m_FirstPageSize )
-		, m_FirstPageFreeBlocks( obj.m_FirstPageFreeBlocks )
-		, m_RegionTagOffset( obj.m_RegionTagOffset )
+		, m_AlignedPageSize( obj.m_AlignedPageSize )
+		, m_AlignedReserveSize( obj.m_AlignedReserveSize )
+		, m_AlignedFirstPageSize( obj.m_AlignedFirstPageSize )
+		, m_NumFirstPageActiveBlocks( obj.m_NumFirstPageActiveBlocks )
+		, m_AlignedRegionTagSize( obj.m_AlignedRegionTagSize )
 
 		, m_Nil{ &m_Nil, &m_Nil, 0x00 }
 		, m_CleanFront( &m_Nil )
@@ -253,18 +254,18 @@ namespace OreOreLib
 		: m_BlockSize( obj.m_BlockSize )
 		, m_CommitBatchSize( obj.m_CommitBatchSize )
 
-		, m_AllocSize( obj.m_AllocSize )
+		, m_PageSize( obj.m_PageSize )
 		//, m_PageDataSize( obj.m_PageDataSize )
 		, m_BitFlagSize( obj.m_BitFlagSize )
 		, m_PageTagSize( obj.m_PageTagSize )
 		, m_NumActiveBlocks( obj.m_NumActiveBlocks )
 		, m_PoolSize( obj.m_PoolSize )
 
-		, m_OSAllocSize( obj.m_OSAllocSize )
-		, m_OSAllocationGranularity( obj.m_OSAllocationGranularity )
-		, m_FirstPageSize( obj.m_FirstPageSize )
-		, m_FirstPageFreeBlocks( obj.m_FirstPageFreeBlocks )
-		, m_RegionTagOffset( obj.m_RegionTagOffset )
+		, m_AlignedPageSize( obj.m_AlignedPageSize )
+		, m_AlignedReserveSize( obj.m_AlignedReserveSize )
+		, m_AlignedFirstPageSize( obj.m_AlignedFirstPageSize )
+		, m_NumFirstPageActiveBlocks( obj.m_NumFirstPageActiveBlocks )
+		, m_AlignedRegionTagSize( obj.m_AlignedRegionTagSize )
 
 		, m_Nil{ &m_Nil, &m_Nil, 0x00 }
 		, m_CleanFront( &m_Nil )
@@ -331,17 +332,17 @@ namespace OreOreLib
 			// Copy data to *this
 			m_BlockSize					= obj.m_BlockSize;
 			m_CommitBatchSize			= obj.m_CommitBatchSize;
-			m_AllocSize					= obj.m_AllocSize;
+			m_PageSize					= obj.m_PageSize;
 			//m_PageDataSize					= obj.m_PageDataSize;
 			m_BitFlagSize				= obj.m_BitFlagSize;
 			m_PageTagSize				= obj.m_PageTagSize;
 			m_NumActiveBlocks			= obj.m_NumActiveBlocks;
 			m_PoolSize					= obj.m_PoolSize;
-			m_OSAllocSize				= obj.m_OSAllocSize;
-			m_OSAllocationGranularity	= obj.m_OSAllocationGranularity;
-			m_FirstPageSize				= obj.m_FirstPageSize;
-			m_FirstPageFreeBlocks		= obj.m_FirstPageFreeBlocks;
-			m_RegionTagOffset			= obj.m_RegionTagOffset;
+			m_AlignedPageSize				= obj.m_AlignedPageSize;
+			m_AlignedReserveSize		= obj.m_AlignedReserveSize;
+			m_AlignedFirstPageSize		= obj.m_AlignedFirstPageSize;
+			m_NumFirstPageActiveBlocks	= obj.m_NumFirstPageActiveBlocks;
+			m_AlignedRegionTagSize			= obj.m_AlignedRegionTagSize;
 
 
 			//BatchAllocatePages( m_CommitBatchSize );
@@ -365,17 +366,17 @@ namespace OreOreLib
 			// Copy data to *this
 			m_BlockSize					= obj.m_BlockSize;
 			m_CommitBatchSize			= obj.m_CommitBatchSize;
-			m_AllocSize					= obj.m_AllocSize;
+			m_PageSize					= obj.m_PageSize;
 			//m_PageDataSize					= obj.m_PageDataSize;
 			m_BitFlagSize				= obj.m_BitFlagSize;
 			m_PageTagSize				= obj.m_PageTagSize;
 			m_NumActiveBlocks			= obj.m_NumActiveBlocks;
 			m_PoolSize					= obj.m_PoolSize;
-			m_OSAllocSize				= obj.m_OSAllocSize;
-			m_OSAllocationGranularity	= obj.m_OSAllocationGranularity;
-			m_FirstPageSize				= obj.m_FirstPageSize;
-			m_FirstPageFreeBlocks		= obj.m_FirstPageFreeBlocks;
-			m_RegionTagOffset			= obj.m_RegionTagOffset;
+			m_AlignedPageSize				= obj.m_AlignedPageSize;
+			m_AlignedReserveSize	= obj.m_AlignedReserveSize;
+			m_AlignedFirstPageSize				= obj.m_AlignedFirstPageSize;
+			m_NumFirstPageActiveBlocks		= obj.m_NumFirstPageActiveBlocks;
+			m_AlignedRegionTagSize			= obj.m_AlignedRegionTagSize;
 			m_pFeedFront				= obj.m_pFeedFront;
 
 
@@ -427,7 +428,7 @@ namespace OreOreLib
 		m_CommitBatchSize	= commitBatchSize;
 		
 		InitPageBlockParams( allocSize, blockSize );
-		InitFeedParams( allocSize, blockSize );
+		InitFeedParams( allocSize, blockSize, commitBatchSize );
 
 		//BatchAllocatePages( m_CommitBatchSize );
 	}
@@ -436,7 +437,7 @@ namespace OreOreLib
 
 	void* PoolAllocator::Allocate( size_t alignment )
 	{
-		ASSERT( m_AllocSize > 0 && m_BlockSize > 0 && alignment < m_BlockSize );
+		ASSERT( m_PageSize > 0 && m_BlockSize > 0 && alignment < m_BlockSize );
 
 		//==================== メモリブロック取得前の準備 ====================//
 		// DirtyListが空の場合
@@ -484,7 +485,7 @@ namespace OreOreLib
 
 	//void* PoolAllocator::Allocate()
 	//{
-	//	ASSERT( m_AllocSize > 0 && m_BlockSize > 0 );
+	//	ASSERT( m_PageSize > 0 && m_BlockSize > 0 );
 
 	//	//==================== メモリブロック取得前の準備 ====================//
 	//	// DirtyListが空の場合
@@ -534,7 +535,7 @@ namespace OreOreLib
 
 	bool PoolAllocator::Free( void*& ptr, Page* page )
 	{
-		ASSERT( m_AllocSize > 0 && m_BlockSize > 0 );
+		ASSERT( m_PageSize > 0 && m_BlockSize > 0 );
 
 		if( !ptr )	return false;
 
@@ -625,7 +626,7 @@ namespace OreOreLib
 
 	bool PoolAllocator::SafeFree( void*& ptr )
 	{
-		ASSERT( m_AllocSize > 0 && m_BlockSize > 0 );
+		ASSERT( m_PageSize > 0 && m_BlockSize > 0 );
 		
 		tcout << _T( "PoolAllocator::SafeFree()..." ) << ptr << tendl;
 
@@ -717,15 +718,15 @@ namespace OreOreLib
 	{
 		tcout << _T( "//========== " ) << typeid( *this ).name() << _T( " ==========//\n" );
 
-		tcout << _T( " Allocated Size: " ) << m_AllocSize << _T( "[bytes] ( linkedlist pointer: " << Page::HeaderSize << "[bytes], data: " << m_AllocSize - Page::HeaderSize/*m_PageDataSize*/ << "[bytes] )\n" );
+		tcout << _T( " Allocated Size: " ) << m_PageSize << _T( "[bytes] ( linkedlist pointer: " << Page::HeaderSize << "[bytes], data: " << m_PageSize - Page::HeaderSize/*m_PageDataSize*/ << "[bytes] )\n" );
 		tcout << _T( " Active size:    " ) << ( m_PoolSize + m_PageTagSize ) << _T( "[bytes] ( pool: " ) << m_PoolSize << _T( "[bytes], tag: " ) << m_PageTagSize << _T( "[bytes] )\n" );
-		tcout << _T( " Usage:          " ) << float32( m_PoolSize + m_PageTagSize ) / (float32)m_AllocSize * 100 << _T( "[%] ( " ) << m_AllocSize-m_PoolSize-m_PageTagSize << _T( " [bytes] wasted. ) \n" );
+		tcout << _T( " Usage:          " ) << float32( m_PoolSize + m_PageTagSize ) / (float32)m_PageSize * 100 << _T( "[%] ( " ) << m_PageSize-m_PoolSize-m_PageTagSize << _T( " [bytes] wasted. ) \n" );
 
 		tcout << _T( " Block Size:     " ) << m_BlockSize << _T( "[bytes]\n" );
 		tcout << _T( " Active Blocks:  " ) << m_NumActiveBlocks << tendl;
 
-		tcout << _T( " OSAllocSize:     " ) << m_OSAllocSize << _T( "[bytes]\n" );
-		tcout << _T( " OSAllocationGranularity:  " ) << m_OSAllocationGranularity << _T( "[bytes]\n" );
+		tcout << _T( " Aligned Page Size:     " ) << m_AlignedPageSize << _T( "[bytes]\n" );
+		tcout << _T( " Aligned Reserve Size:  " ) << m_AlignedReserveSize << _T( "[bytes]\n" );
 		tcout << _T( " Commit Batch Size:  " ) << m_CommitBatchSize << tendl;
 
 		tcout << tendl;
@@ -781,19 +782,20 @@ namespace OreOreLib
 			{
 				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 					// Reserve alignable virtual address space
-					m_pFeedFront = OSAllocator::ReserveUncommited( m_OSAllocationGranularity + RegionTag::Alignment );
+					m_pFeedFront = OSAllocator::ReserveUncommited( m_AlignedReserveSize + RegionTag::Alignment );
 				#else
-					m_pFeedFront = OSAllocator::ReserveUncommited( m_OSAllocationGranularity );
+					m_pFeedFront = OSAllocator::ReserveUncommited( m_AlignedReserveSize );
 				#endif
-				//tcout << _T( "Reserving new os memory[" ) << m_OSAllocationGranularity << _T( "]...\n" );
+				//tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
 			}
 
 			// Find memory space from reserved region
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 				// アラインメントした先頭アドレスを使って領域を探す
-				reserved = (uint8*)OSAllocator::FindRegion( (void*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment ), OSAllocator::Reserved, m_OSAllocSize, m_OSAllocationGranularity );
+				uint8* mem = (uint8*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment );
+				reserved = (uint8*)OSAllocator::FindRegion( mem, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize );
 			#else
-				reserved = (uint8*)OSAllocator::FindRegion( m_pFeedFront, OSAllocator::Reserved, m_OSAllocSize, m_OSAllocationGranularity );
+				reserved = (uint8*)OSAllocator::FindRegion( m_pFeedFront, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize );
 			#endif
 
 			// Abort committing if reserved cannot be found from m_pFeed
@@ -806,31 +808,31 @@ namespace OreOreLib
 
 			// Setup RegionTag if "reserved" is the start address m_pFeed.
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-			if( reserved==(uint8*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment ) )
+			if( reserved==mem )
 			#else
 			if( reserved==m_pFeedFront )
 			#endif
 			{
-				OSAllocator::Commit( reserved, m_FirstPageSize/*commitSize*/ );
+				OSAllocator::Commit( reserved, m_AlignedFirstPageSize/*commitSize*/ );
 
 				// Initialize RegionTag
 				RegionTag* pRTag = (RegionTag*)reserved;
-				pRTag->Init( m_RegionTagOffset, m_OSAllocationGranularity, m_OSAllocSize, this );//((RegionTag*)reserved)->Init( m_RegionTagOffset, m_OSAllocationGranularity, m_OSAllocSize, this );
+				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );//((RegionTag*)reserved)->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );
 				pRTag->ConnectAfter( &m_FeedNil );
 
 				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 					pRTag->AllocationBase = m_pFeedFront;// 仮想メモリ空間の先頭アドレスを保持する
 				#endif
 
-				newPage = (Page*)( reserved + m_RegionTagOffset );
+				newPage = (Page*)( reserved + m_AlignedRegionTagSize );
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
-				pPTag->Init( /*m_PageTagSize,*/ m_FirstPageFreeBlocks, m_BitFlagSize );
+				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
 			}
 			else
 			{
-				newPage = (Page*)OSAllocator::Commit( reserved, m_OSAllocSize );
+				newPage = (Page*)OSAllocator::Commit( reserved, m_AlignedPageSize );
 				//tcout << "  Page: "<< (unsigned *)reserved << tendl;
 
 				// Initialize PageTag
@@ -845,8 +847,15 @@ namespace OreOreLib
 
 
 			// Detach m_pFeed if usedup
-			if( (size_t)reserved + m_OSAllocSize >= (size_t)m_pFeedFront + m_OSAllocationGranularity )
+			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+			if( (size_t)reserved + m_AlignedPageSize >= (size_t)mem + m_AlignedReserveSize )
+			#else
+			if( (size_t)reserved + m_AlignedPageSize >= (size_t)m_pFeedFront + m_AlignedReserveSize )
+			#endif
+			{
+				tcout << _T("Used up reserved virtual memory: ") << m_pFeedFront << tendl;
 				m_pFeedFront	= nullptr;
+			}
 
 		}// end of i loop
 
@@ -860,7 +869,7 @@ namespace OreOreLib
 			return false;
 
 		page->Disconnect();
-		OSAllocator::Decommit( page, m_OSAllocSize );
+		OSAllocator::Decommit( page, m_AlignedPageSize );
 
 		return true;
 	}
@@ -1091,42 +1100,41 @@ namespace OreOreLib
 		size_t activeSize = m_PoolSize + m_PageTagSize;
 		size_t wastedSize = allocSize - activeSize;
 
-		//tcout << "wastedSize = m_AllocSize - m_NumActiveBlocks * m_BlockSize - m_PageTagSize = " << wastedSize << tendl;
+		//tcout << "wastedSize = m_PageSize - m_NumActiveBlocks * m_BlockSize - m_PageTagSize = " << wastedSize << tendl;
 
-		m_AllocSize = wastedSize > OSAllocator::PageSize() ?  RoundUp( (size_t)activeSize, OSAllocator::PageSize() ) : allocSize;
-		//m_PageDataSize =  m_AllocSize - Page::HeaderSize;
+		m_PageSize = wastedSize > OSAllocator::PageSize() ? RoundUp( (size_t)activeSize, OSAllocator::PageSize() ) : allocSize;
+		//m_PageDataSize =  m_PageSize - Page::HeaderSize;
 
 		ASSERT( m_NumActiveBlocks > 0 );
 	}
 
 
 
-	void PoolAllocator::InitFeedParams( size_t allocSize, size_t blockSize )
+	void PoolAllocator::InitFeedParams( size_t allocSize, size_t blockSize, size_t commitBatchSize )
 	{
-		m_OSAllocSize			= RoundUp( (size_t)allocSize, OSAllocator::PageSize() );// 4KBページサイズでAllocSizeを切り上げる
-		m_FirstPageFreeBlocks	= m_NumActiveBlocks;
+		m_AlignedPageSize			= RoundUp( /*(size_t)allocSize*/m_PageSize, OSAllocator::PageSize() );// 4KBページサイズでAllocSizeを切り上げる
+		m_NumFirstPageActiveBlocks	= m_NumActiveBlocks;
 
 		uint16 numRTagBlocks		= (uint16)DivUp( sizeof(RegionTag), (size_t)blockSize );// Number of blocks required to store RegionTag
-		size_t blockAlignedRTagSize	= (size_t)numRTagBlocks * (size_t)blockSize;// blocksize aligned RegionTag size
 
-		m_FirstPageSize		= m_OSAllocSize;
-		m_RegionTagOffset	= blockAlignedRTagSize;
+		m_AlignedFirstPageSize	= m_AlignedPageSize;
+		m_AlignedRegionTagSize	= (size_t)numRTagBlocks * (size_t)blockSize;// blocksize aligned RegionTag size//blockAlignedRTagSize;
 
-		if( allocSize + blockAlignedRTagSize > m_OSAllocSize )// if m_OSAllocSize is short
+		if( allocSize + m_AlignedRegionTagSize > m_AlignedPageSize )// if m_AlignedPageSize is too small for storing page and region tag...
 		{
-			tcout << "m_OSAllocSize is short: ";
+			tcout << "m_AlignedPageSize is too small: ";
 
 			// Isolate RegionTag from Page if RegionTag size exceeds 80% of allocSize. // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
-			if( allocSize / blockAlignedRTagSize < REGION_RTAG_RATIO )
+			if( allocSize / m_AlignedRegionTagSize < REGION_RTAG_RATIO )
 			{
 				tcout << "Isolating RegionTag from Page ...\n";
-				m_FirstPageSize		+= OSAllocator::PageSize();
-				m_RegionTagOffset	= OSAllocator::PageSize();
+				m_AlignedFirstPageSize += OSAllocator::PageSize();
+				m_AlignedRegionTagSize = OSAllocator::PageSize();
 			}
 			else// Embed RegionTag space inside Page ... // ex. AllocSize=4096, BlockSize=16
 			{
 				tcout << "Embedding RegionTag in Page ...\n";
-				m_FirstPageFreeBlocks -= numRTagBlocks;
+				m_NumFirstPageActiveBlocks -= numRTagBlocks;
 			}
 		}
 		//else
@@ -1135,7 +1143,23 @@ namespace OreOreLib
 		//	// ex. AllocSize=4100, BlockSize=4080
 		//}
 
-		m_OSAllocationGranularity = RoundUp( m_FirstPageSize, OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_OSAllocSizeを切り上げる
+		//
+
+
+		m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 ),// 一括確保したいページ数分だけリザーブ領域を設定する
+										OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
+
+		//m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize, OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
+
+		tcout << "ほしい領域: " << m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 );
+		tcout << "(" << m_AlignedFirstPageSize << " + " << m_AlignedPageSize << " * " << ( commitBatchSize - 1 ) << ")\n";
+
+		tcout << "確保する領域: " << m_AlignedReserveSize << tendl;
+		tcout << "確保予定のページ数: " << ( m_AlignedReserveSize - m_AlignedFirstPageSize ) / m_AlignedPageSize + 1 << tendl;
+
+		//tcout << "何ページ分?: " << ( m_AlignedReserveSize - m_AlignedFirstPageSize ) / m_AlignedPageSize << tendl;
+
+TODO: 64KBのアドレス空間切り上げの都合上、commitBatchSizeより多くのPage領域が確保されることがある
 	}
 
 
@@ -1182,13 +1206,13 @@ namespace OreOreLib
 //				p2->prev->Disconnect();
 //				//Page* prev = p2->prev;
 //				//prev->Disconnect();
-//				//OSAllocator::Decommit( prev, m_OSAllocSize );
+//				//OSAllocator::Decommit( prev, m_AlignedPageSize );
 //			}
 //		}
 //
 //		p1 = p1->next;
 //			
-//		//tcout << OSAllocator::Decommit( p1->prev, m_OSAllocSize ) << tendl;
+//		//tcout << OSAllocator::Decommit( p1->prev, m_AlignedPageSize ) << tendl;
 //
 //		//tcout << "Releasing OSMemory...\n";
 //		//OSAllocator::DisplayMemoryInfo( m_pFeed );
@@ -1228,7 +1252,7 @@ namespace OreOreLib
 //	for( int32 i=0; i<batchsize; ++i )
 //	{
 //		//============= Allocate new Page ===============//
-//		uint8* mem = new uint8[ m_AllocSize ];//(uint8*) malloc( m_AllocSize );
+//		uint8* mem = new uint8[ m_PageSize ];//(uint8*) malloc( m_PageSize );
 //		Page* newPage = /*(Page*)mem;*/new (mem) Page;
 
 
