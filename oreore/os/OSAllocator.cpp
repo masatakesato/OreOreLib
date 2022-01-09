@@ -198,13 +198,16 @@ namespace OreOreLib
 			if( !ptr )	return nullptr;
 
 			uint8* mem = (uint8*)ptr;
-			uint8* end = mem + searchRange;
+			uint8* end = mem + searchRange - regionSize;
+
+			ASSERT( (size_t)mem + searchRange >= regionSize );
 
 			MEMORY_BASIC_INFORMATION meminfo;
 			VirtualQuery( mem, &meminfo, sizeof(MEMORY_BASIC_INFORMATION) );
 
 			while( mem < end )
 			{
+				//ASSERT( end >= regionSize + mem );
 				if( meminfo.State == c_Status[status] && meminfo.RegionSize >= regionSize )
 					return mem;
 

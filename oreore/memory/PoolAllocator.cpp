@@ -774,9 +774,13 @@ namespace OreOreLib
 	{
 		uint8* reserved = nullptr;
 		Page* newPage = nullptr;
+		size_t pageSize = m_AlignedFirstPageSize;
+static int pageCount = 0;
+static size_t sizeAccum = 0;
 
 		for( uint32 i=0; i<batchsize; ++i )
 		{
+			tcout << "------------------------------" << i << tendl;
 			// Reserve virtual address if empty
 			if( !m_pFeedFront )
 			{
@@ -786,16 +790,20 @@ namespace OreOreLib
 				#else
 					m_pFeedFront = OSAllocator::ReserveUncommited( m_AlignedReserveSize );
 				#endif
-				//tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
+				pageSize = m_AlignedFirstPageSize;
+pageCount = 0;
+sizeAccum = 0;
+				tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
 			}
+
 
 			// Find memory space from reserved region
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 				// アラインメントした先頭アドレスを使って領域を探す
 				uint8* mem = (uint8*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment );
-				reserved = (uint8*)OSAllocator::FindRegion( mem, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize );
+				reserved = (uint8*)OSAllocator::FindRegion( mem, OSAllocator::Reserved, /*m_AlignedPageSize*/pageSize, m_AlignedReserveSize );
 			#else
-				reserved = (uint8*)OSAllocator::FindRegion( m_pFeedFront, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize );
+				reserved = (uint8*)OSAllocator::FindRegion( m_pFeedFront, OSAllocator::Reserved, /*m_AlignedPageSize*/pageSize, m_AlignedReserveSize );
 			#endif
 
 			// Abort committing if reserved cannot be found from m_pFeed
@@ -813,7 +821,7 @@ namespace OreOreLib
 			if( reserved==m_pFeedFront )
 			#endif
 			{
-				OSAllocator::Commit( reserved, m_AlignedFirstPageSize/*commitSize*/ );
+				OSAllocator::Commit( reserved, m_AlignedFirstPageSize/*pageSize*/ );
 
 				// Initialize RegionTag
 				RegionTag* pRTag = (RegionTag*)reserved;
@@ -829,15 +837,20 @@ namespace OreOreLib
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
+pageSize = m_AlignedPageSize;
+pageCount++;
+sizeAccum += m_AlignedFirstPageSize;
 			}
 			else
 			{
-				newPage = (Page*)OSAllocator::Commit( reserved, m_AlignedPageSize );
+				newPage = (Page*)OSAllocator::Commit( reserved, m_AlignedPageSize/*pageSize*/ );
 				//tcout << "  Page: "<< (unsigned *)reserved << tendl;
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
+pageCount++;
+sizeAccum += m_AlignedPageSize;
 			}
 
 
@@ -845,15 +858,18 @@ namespace OreOreLib
 			newPage->ConnectBefore( m_CleanFront );
 			m_CleanFront = newPage;
 
+tcout << "--------- sizeAccum: " << sizeAccum << "   " << m_AlignedReserveSize << tendl;
 
-			// Detach m_pFeed if usedup
+
+// Detach m_pFeed if usedup
+reservedは確保した領域の先頭アドレス. reservedの末尾アドレスがm_AlignedReserveSizeにおさまっていたとしても、底から先更にpageSize分のアドレス空間空きがあるかどうかは分からない!!!
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-			if( (size_t)reserved + m_AlignedPageSize >= (size_t)mem + m_AlignedReserveSize )
+			if( (size_t)reserved + /*m_AlignedPageSize*/pageSize >= (size_t)mem + m_AlignedReserveSize )
 			#else
-			if( (size_t)reserved + m_AlignedPageSize >= (size_t)m_pFeedFront + m_AlignedReserveSize )
+			if( (size_t)reserved + /*m_AlignedPageSize*/pageSize >= (size_t)m_pFeedFront + m_AlignedReserveSize )
 			#endif
 			{
-				tcout << _T("Used up reserved virtual memory: ") << m_pFeedFront << tendl;
+				tcout << pageCount << _T("   Used up reserved virtual memory: ") << m_pFeedFront << tendl;
 				m_pFeedFront	= nullptr;
 			}
 
@@ -1102,7 +1118,9 @@ namespace OreOreLib
 
 		//tcout << "wastedSize = m_PageSize - m_NumActiveBlocks * m_BlockSize - m_PageTagSize = " << wastedSize << tendl;
 
-		m_PageSize = wastedSize > OSAllocator::PageSize() ? RoundUp( (size_t)activeSize, OSAllocator::PageSize() ) : allocSize;
+		m_PageSize = wastedSize > OSAllocator::PageSize()
+			? RoundUp( (size_t)activeSize, OSAllocator::PageSize() )// clip wasted space larger than OS page size
+			: allocSize;
 		//m_PageDataSize =  m_PageSize - Page::HeaderSize;
 
 		ASSERT( m_NumActiveBlocks > 0 );
@@ -1120,12 +1138,12 @@ namespace OreOreLib
 		m_AlignedFirstPageSize	= m_AlignedPageSize;
 		m_AlignedRegionTagSize	= (size_t)numRTagBlocks * (size_t)blockSize;// blocksize aligned RegionTag size//blockAlignedRTagSize;
 
-		if( allocSize + m_AlignedRegionTagSize > m_AlignedPageSize )// if m_AlignedPageSize is too small for storing page and region tag...
+		if( /*allocSize*/m_PageSize + m_AlignedRegionTagSize > m_AlignedFirstPageSize )// if m_AlignedFirstPageSize is too small for storing page and region tag...
 		{
 			tcout << "m_AlignedPageSize is too small: ";
 
-			// Isolate RegionTag from Page if RegionTag size exceeds 80% of allocSize. // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
-			if( allocSize / m_AlignedRegionTagSize < REGION_RTAG_RATIO )
+			// Isolate RegionTag from Page if RegionTag consumes more than 80% of first page size. // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
+			if( /*allocSize*/m_AlignedFirstPageSize / m_AlignedRegionTagSize < REGION_RTAG_RATIO )
 			{
 				tcout << "Isolating RegionTag from Page ...\n";
 				m_AlignedFirstPageSize += OSAllocator::PageSize();
@@ -1157,9 +1175,8 @@ namespace OreOreLib
 		tcout << "確保する領域: " << m_AlignedReserveSize << tendl;
 		tcout << "確保予定のページ数: " << ( m_AlignedReserveSize - m_AlignedFirstPageSize ) / m_AlignedPageSize + 1 << tendl;
 
-		//tcout << "何ページ分?: " << ( m_AlignedReserveSize - m_AlignedFirstPageSize ) / m_AlignedPageSize << tendl;
 
-TODO: 64KBのアドレス空間切り上げの都合上、commitBatchSizeより多くのPage領域が確保されることがある
+//TODO: 64KBのアドレス空間切り上げの都合上、commitBatchSizeより多くのPage領域が確保されることがある
 	}
 
 

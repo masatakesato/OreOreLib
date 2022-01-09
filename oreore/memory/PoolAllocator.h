@@ -200,7 +200,7 @@ namespace OreOreLib
 		size_t	m_AlignedReserveSize;// Virtual memory reserve size. Alinged by OS allocation granularity (64kb etc...)
 		size_t	m_AlignedFirstPageSize;// Size of FirstPage (containing RegionTag )
 		uint16	m_NumFirstPageActiveBlocks;
-		size_t	m_AlignedRegionTagSize;// sizeof RegionTag alignmed to m_BlockSize (or OS page size if RegionTag only page allocation)
+		size_t	m_AlignedRegionTagSize;// sizeof RegionTag alignmed to m_BlockSize (or alignmed to OS page size if RegionTag only page allocation)
 
 		// Page linked list
 		enum PageStates{ Clean, Dirty, Usedup, NumPageStates };
