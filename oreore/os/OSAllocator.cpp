@@ -280,13 +280,19 @@ namespace OreOreLib
 			tcout << _T("  AllocationBase: ") << meminfo.AllocationBase << tendl;
 			tcout << _T("  BaseAddress:    ") << meminfo.BaseAddress << tendl;
 			tcout << _T("  RegionSize: ") << meminfo.RegionSize << tendl;
-			tcout << _T("  State: ") << std::hex << meminfo.State << std::dec << tendl;
+			tcout << _T("  State: ");
+			
+			if( meminfo.State==0x10000 )		tcout <<  _T("MEM_FREE\n");
+			else if( meminfo.State==0x1000 )	tcout <<  _T("MEM_COMMIT\n");
+			else if( meminfo.State==0x2000 )	tcout <<  _T("MEM_RESERVE\n");
+
+//			<< std::hex << meminfo.State==10000 ? _T("MEM_FREE") :  << std::dec << tendl;
 			tcout << tendl;
 
 			// State:
-			//	10000:	MEM_FREE
-			//	1000:	MEM_COMMIT
-			//	2000:	MEM_RESERVE
+			//	0x10000:	MEM_FREE
+			//	0x1000:	MEM_COMMIT
+			//	0x2000:	MEM_RESERVE
 		}
 
 

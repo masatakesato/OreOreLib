@@ -10,6 +10,16 @@
 
 
 
+inline static void Delete( void*& p )
+{
+	if( p )
+	{
+		tcout << p << tendl;
+		delete p;
+		p = nullptr;//NULL;
+	}
+}
+
 
 
 int main()
@@ -38,40 +48,55 @@ int main()
 
 		tcout << "//==== pIntArray = memblock.Allocate()... ====//\n";
 		int* pIntArray = static_cast<int*>( memblock.Allocate() );
-		memblock.Display();
 		tcout << (unsigned*)pIntArray << tendl;
+		memblock.Display();
+		tcout << tendl;
 
 
 		tcout << "//==== pIntArray2 = memblock.Allocate()... ====//\n";
 		int* pIntArray2 = static_cast<int*>( memblock.Allocate() );
 		memblock.Display();
 		tcout << (unsigned*)pIntArray2 << tendl;
+		tcout << tendl;
 
 
-		//tcout << "//==== pIntArray3 = memblock.Allocate()... ====//\n";
-		//int* pIntArray3 = static_cast<int*>( memblock.Allocate() );
-		//tcout << (unsigned*)pIntArray3 << tendl;
+		tcout << "//==== pIntArray3 = memblock.Allocate()... ====//\n";
+		int* pIntArray3 = static_cast<int*>( memblock.Allocate() );
+		memblock.Display();
+		tcout << (unsigned*)pIntArray3 << tendl;
+		tcout << tendl;
+
 
 		tcout << "//==== pIntArray4 = memblock.Allocate()... ====//\n";
 		int* pIntArray4 = static_cast<int*>( memblock.Allocate() );
 		memblock.Display();
 		tcout << (unsigned*)pIntArray4 << tendl;
+		tcout << tendl;
 
 
-		tcout << "//==== memblock.Free( (void*&)pIntArray4 )... ====//\n";
-		memblock.Free( (void*&)pIntArray4[1] );
-		
+		//tcout << "//==== memblock.Free( (void*&)pIntArray4 )... ====//\n";
+		//memblock.Free( (void*&)pIntArray4 );
+		//memblock.Display();
+		//tcout << tendl;
 
+
+		//tcout << "//==== memblock.Free( (void*&)pIntArray )... ====//\n";
+		//memblock.Free( (void*&)pIntArray );
+		//memblock.Display();
+		//tcout << tendl;
+
+
+		tcout << "//==== memblock.Free( pIntArray2 )... ====//\n";
+		memblock.Free( (void*&)pIntArray2 );
+		memblock.Display();
+		tcout << tendl;
+
+
+		tcout << "//==== memblock.Cleanup()... ====//\n";
 		memblock.Cleanup();
 		memblock.Display();
+		tcout << tendl;
 
-		tcout << "//==== Free_( pIntArray2 )... ====//\n";
-		memblock.Free( (void*&)pIntArray2[1] );
-		memblock.Display();
-
-		
-
-		memblock.Display();
 
 		tcout << tendl << tendl;
 	}

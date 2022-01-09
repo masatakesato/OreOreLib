@@ -50,7 +50,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>../../../</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_VIRTUAL_ADDRESS_ALIGNMENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_VIRTUAL_ADDRESS_ALIGNMENT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

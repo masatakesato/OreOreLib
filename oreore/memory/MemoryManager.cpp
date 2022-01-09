@@ -305,8 +305,7 @@ namespace OreOreLib
 	bool MemoryManager::Free( void*& mem )
 	{
 		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-			size_t base	= size_t(mem) & RegionTag::AlignmentMask;//RoundUp( (size_t)OSAllocator::GetAllocationBase( mem ), RegionTag::Alignment );
-			tcout << base % RegionTag::Alignment << tendl;
+			size_t base	= size_t(mem) & RegionTag::AlignmentMask;//tcout << base % RegionTag::Alignment << tendl;
 		#else
 			size_t base	= (size_t)OSAllocator::GetAllocationBase( mem );
 		#endif
