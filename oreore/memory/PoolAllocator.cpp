@@ -1221,19 +1221,21 @@ namespace OreOreLib
 
 	void PoolAllocator::InitFeedParams( size_t blockSize, size_t commitBatchSize )
 	{
+		// Calcurate page size
 		m_AlignedPageSize			= RoundUp( m_PageSize, OSAllocator::PageSize() );// Align m_PageSize by OS page size( 4KB etc... )
-		m_NumFirstPageActiveBlocks	= m_NumActiveBlocks;
 
+		// Calculate first page size
 		uint16 numRTagBlocks		= (uint16)DivUp( sizeof(RegionTag), (size_t)blockSize );// Number of blocks required to store RegionTag
 
-		m_AlignedFirstPageSize	= m_AlignedPageSize;
-		m_AlignedRegionTagSize	= (size_t)numRTagBlocks * (size_t)blockSize;// blocksize aligned RegionTag size//blockAlignedRTagSize;
+		m_NumFirstPageActiveBlocks	= m_NumActiveBlocks;
+		m_AlignedFirstPageSize		= m_AlignedPageSize;
+		m_AlignedRegionTagSize		= (size_t)numRTagBlocks * (size_t)blockSize;// blocksize aligned RegionTag size//blockAlignedRTagSize;
 
 		if( m_PageSize + m_AlignedRegionTagSize > m_AlignedFirstPageSize )// if m_AlignedFirstPageSize is too small for storing page and region tag...
 		{
 			tcout << "m_AlignedPageSize is too small: ";
 
-			// Isolate RegionTag from Page if RegionTag consumes more than 80% of first page size. // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
+			// Isolate RegionTag to OS page sized area if RegionTag consumes more than 80% of first page size. // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
 			if( m_AlignedFirstPageSize / m_AlignedRegionTagSize < REGION_RTAG_RATIO )
 			{
 				tcout << "Isolating RegionTag from Page ...\n";
@@ -1252,6 +1254,43 @@ namespace OreOreLib
 		//	// ex. AllocSize=4100, BlockSize=4080
 		//}
 
+#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+// Page内最終Poolまでのオフセットは？
+//		auto pageStartToLastPool = Page::HeaderSize + m_PageTagSize + m_PoolSize - m_BlockSize;
+
+// (0) RegionTag::Alignment空間での最終Poolへのオフセットは？
+//		auot pageOffsetLimit = m_AlignedFirstPageSize + Round( RegionTag::Alignment - m_AlignedFirstPageSize, m_AlignedPageSize );
+//		auto poolOffsetLimit = pageOffsetLimit + pageStartToLastPool;
+//
+//
+// ================================== FirstPage容量が大きすぎてプールがベースアドレス見失うケースを防止する ========================
+//
+// (1) FirstPageの最終ブロックへのオフセットは?   --------------------------------------> ASSERT( firstPageStartToLastPool <= poolOffsetLimit );
+//		auto firstPageStartToLastPool =
+//				m_AlignedFirstPageSize - m_AlignedRegionTagSize +	// Page先頭へのオフセット
+//				Page::HeaderSize + m_PageTagSize +					// Page内プール先頭へのオフセット
+//				m_BlockSize * (m_NumFirstPageActiveBlocks - 1) 		// プール分のオフセット
+//
+//
+// ================================== Page容量(FirstPage以外)が大きすぎてプールがベースアドレス見失うケースを防止する ========================
+//
+// (2) FirstじゃないPageの先頭から最終Poolまでのオフセットは？   -------------------> ASSERT( pageStartToLastPool <= poolOffsetLimit );
+//		auto pageStartToLastPool = Page::HeaderSize + m_PageTagSize + m_PoolSize - m_BlockSize;
+//
+//
+// ================================== RegionTag::Alignmentに納まるようにcommitBatchSizeをクランプする ========================
+//
+// (3) バーチャルメモリーは何ページ分一括確保できるの？
+//		pageExtensionCount = 0;
+//		auto offset = m_AlignedFirstPageSize + pageStartToLastPool;
+//		while( offset <= poolOffsetLimit && pageExtensionCount<=commitBatchSize )
+//		{
+//			++pageExtensionCount;
+//			offset += pageStartToLastPool;
+//		}
+TODO: commitBatchSize以下の値でRegionTag::Alignment用件満たすバッチ数を探す
+//
+#endif
 
 		m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 ),// 一括確保したいページ数分だけリザーブ領域を設定する
 										OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
