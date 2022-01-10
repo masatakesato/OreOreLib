@@ -184,8 +184,10 @@ namespace OreOreLib
 		, m_DirtyFront( &m_Nil )
 		, m_UsedupFront( &m_Nil )
 
-		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
-		, m_pFeedFront( nullptr )
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_pVirtualMemory( nullptr )
+		, m_pAlignedRegionBase( nullptr )
+		, m_CommitedRegionSize( 0 )
 	{
 
 	}
@@ -202,13 +204,15 @@ namespace OreOreLib
 		, m_DirtyFront( &m_Nil )
 		, m_UsedupFront( &m_Nil )
 
-		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
-		, m_pFeedFront( nullptr )
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_pVirtualMemory( nullptr )
+		, m_pAlignedRegionBase( nullptr )
+		, m_CommitedRegionSize( 0 )
 	{
 		ASSERT( allocSize > blockSize && blockSize > 0 );
 
 		InitPageBlockParams( allocSize, blockSize );
-		InitFeedParams( allocSize, blockSize, commitBatchSize );
+		InitFeedParams( blockSize, commitBatchSize );
 
 		//BatchAllocatePages( m_CommitBatchSize );
 	}
@@ -238,8 +242,10 @@ namespace OreOreLib
 		, m_DirtyFront( &m_Nil )
 		, m_UsedupFront( &m_Nil )
 
-		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
-		, m_pFeedFront( nullptr )
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_pVirtualMemory( nullptr )
+		, m_pAlignedRegionBase( nullptr )
+		, m_CommitedRegionSize( 0 )
 	{
 		tcout << _T( "Copy constructor...\n" );
 
@@ -272,8 +278,10 @@ namespace OreOreLib
 		, m_DirtyFront( &m_Nil )
 		, m_UsedupFront( &m_Nil )
 
-		, m_FeedNil{ nullptr, 0, 0, 0, nullptr }
-		, m_pFeedFront( obj.m_pFeedFront )
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_pVirtualMemory( obj.m_pVirtualMemory )
+		, m_pAlignedRegionBase( obj.m_pAlignedRegionBase )
+		, m_CommitedRegionSize( obj.m_CommitedRegionSize )
 	{
 		tcout << _T( "Move constructor...\n" );
 
@@ -301,12 +309,13 @@ namespace OreOreLib
 
 
 		// Move Feeds from obj to *this
-		if( obj.m_FeedNil.next != &obj.m_FeedNil )
-			m_FeedNil.next = obj.m_FeedNil.next;
+		if( obj.m_VirtualMemoryNil.next != &obj.m_VirtualMemoryNil )
+			m_VirtualMemoryNil.next = obj.m_VirtualMemoryNil.next;
 
 		// Detach Feed references from obj
-		obj.m_FeedNil.next = nullptr;
-		obj.m_pFeedFront = nullptr;
+		obj.m_VirtualMemoryNil.next	= nullptr;
+		obj.m_pVirtualMemory	= nullptr;
+		obj.m_pAlignedRegionBase		= nullptr;
 	}
 
 
@@ -377,7 +386,7 @@ namespace OreOreLib
 			m_AlignedFirstPageSize				= obj.m_AlignedFirstPageSize;
 			m_NumFirstPageActiveBlocks		= obj.m_NumFirstPageActiveBlocks;
 			m_AlignedRegionTagSize			= obj.m_AlignedRegionTagSize;
-			m_pFeedFront				= obj.m_pFeedFront;
+			m_pVirtualMemory				= obj.m_pVirtualMemory;
 
 
 			// Move Pages from obj to *this
@@ -404,12 +413,12 @@ namespace OreOreLib
 
 
 			// Move Feeds from obj to *this
-			if( obj.m_FeedNil.next != &obj.m_FeedNil )
-				m_FeedNil.next = obj.m_FeedNil.next;
+			if( obj.m_VirtualMemoryNil.next != &obj.m_VirtualMemoryNil )
+				m_VirtualMemoryNil.next = obj.m_VirtualMemoryNil.next;
 
 			// Detach Feed references from obj
-			obj.m_FeedNil.next = nullptr;
-			obj.m_pFeedFront = nullptr;
+			obj.m_VirtualMemoryNil.next = nullptr;
+			obj.m_pVirtualMemory = nullptr;
 		}
 
 		return *this;
@@ -428,7 +437,7 @@ namespace OreOreLib
 		m_CommitBatchSize	= commitBatchSize;
 		
 		InitPageBlockParams( allocSize, blockSize );
-		InitFeedParams( allocSize, blockSize, commitBatchSize );
+		InitFeedParams( blockSize, commitBatchSize );
 
 		//BatchAllocatePages( m_CommitBatchSize );
 	}
@@ -733,7 +742,7 @@ namespace OreOreLib
 		tcout << tendl;
 
 		tcout << _T( " Feeds:\n" );
-		for( RegionTag* rtag=m_FeedNil.next; rtag!=nullptr; rtag=rtag->next )
+		for( RegionTag* rtag=m_VirtualMemoryNil.next; rtag!=nullptr; rtag=rtag->next )
 		{
 			OSAllocator::DisplayMemoryInfo( rtag );
 		}
@@ -778,35 +787,28 @@ namespace OreOreLib
 		uint8* reserved = nullptr;
 		Page* newPage = nullptr;
 
-TODO: メンバ変数にする
-static uint8* alignedBase = nullptr;
-static size_t commitedSize = 0;
-
-
 		for( uint32 i=0; i<batchsize; ++i )
 		{
 			// Reserve virtual address if empty
-			if( m_pFeedFront )// Find memory space from reserved region
+			if( m_pVirtualMemory )// Find memory space from reserved region
 			{
-				reserved = alignedBase + commitedSize;
-				//auto check = (uint8*)OSAllocator::FindRegion( alignedBase, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize );
-				//ASSERT( reserved == check );
+				reserved = m_pAlignedRegionBase + m_CommitedRegionSize;
+				//ASSERT( reserved == (uint8*)OSAllocator::FindRegion( m_pAlignedRegionBase, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize ) );
 			}
 			else
 			{
-				ASSERT( alignedBase==0 );
+				ASSERT( m_pAlignedRegionBase==0 );
 				// Reserve alignable virtual address space
-				m_pFeedFront = OSAllocator::ReserveUncommited( m_AlignedReserveSize + RegionTag::Alignment );
+				m_pVirtualMemory = OSAllocator::ReserveUncommited( m_AlignedReserveSize + RegionTag::Alignment );
 				tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
 
 				// Find memory space from reserved region
-				alignedBase = (uint8*)RoundUp( (size_t)m_pFeedFront, RegionTag::Alignment );// set aligned addres start
-				reserved = alignedBase;
-				//auto check = (uint8*)OSAllocator::FindRegion( alignedBase, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize );
-				//ASSERT( reserved == check );
+				m_pAlignedRegionBase = (uint8*)RoundUp( (size_t)m_pVirtualMemory, RegionTag::Alignment );// set aligned addres start
+				reserved = m_pAlignedRegionBase;
+				//ASSERT( reserved == (uint8*)OSAllocator::FindRegion( m_pAlignedRegionBase, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
 
-				commitedSize = 0;
-				ASSERT( commitedSize==0 );
+				m_CommitedRegionSize = 0;
+				ASSERT( m_CommitedRegionSize==0 );
 			}
 
 
@@ -814,28 +816,28 @@ static size_t commitedSize = 0;
 			if( !reserved )
 			{
 				//tcerr << _T( "Failed to find region...\n" );
-				m_pFeedFront	= nullptr;
-				alignedBase		= nullptr;
+				m_pVirtualMemory	= nullptr;
+				m_pAlignedRegionBase		= nullptr;
 				break;
 			}
 
 			// Setup RegionTag if "reserved" is the start address m_pFeed.
-			if( reserved == alignedBase )
+			if( reserved == m_pAlignedRegionBase )
 			{
 				OSAllocator::Commit( reserved, m_AlignedFirstPageSize );
 
 				// Initialize RegionTag
 				RegionTag* pRTag = (RegionTag*)reserved;
 				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );
-				pRTag->ConnectAfter( &m_FeedNil );
-				pRTag->AllocationBase = m_pFeedFront;// 仮想メモリ空間の先頭アドレスを保持する
+				pRTag->ConnectAfter( &m_VirtualMemoryNil );
+				pRTag->AllocationBase = m_pVirtualMemory;// 仮想メモリ空間の先頭アドレスを保持する
 
 				// Initialize PageTag
 				newPage = (Page*)( reserved + m_AlignedRegionTagSize );
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
 
-				commitedSize += m_AlignedFirstPageSize;
+				m_CommitedRegionSize += m_AlignedFirstPageSize;
 			}
 			else
 			{
@@ -846,7 +848,7 @@ static size_t commitedSize = 0;
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
 
-				commitedSize += m_AlignedPageSize;
+				m_CommitedRegionSize += m_AlignedPageSize;
 			}
 
 			// Deploy as "Clean" page.
@@ -854,11 +856,11 @@ static size_t commitedSize = 0;
 			m_CleanFront = newPage;
 
 			// Detach m_pFeed if remaining reserved space cannot commit "Entire Next Page size"
-			if( commitedSize + m_AlignedPageSize >= m_AlignedReserveSize )
+			if( m_CommitedRegionSize + m_AlignedPageSize >= m_AlignedReserveSize )
 			{
-				//tcout << _T("   Used up reserved virtual memory: ") << m_pFeedFront << tendl;
-				m_pFeedFront	= nullptr;
-				alignedBase		= nullptr;
+				//tcout << _T("   Used up reserved virtual memory: ") << m_pVirtualMemory << tendl;
+				m_pVirtualMemory	= nullptr;
+				m_pAlignedRegionBase		= nullptr;
 			}
 
 		}// end of i loop
@@ -873,42 +875,44 @@ static size_t commitedSize = 0;
 		uint8* reserved = nullptr;
 		Page* newPage = nullptr;
 
-		static size_t commitedSize = 0;
-
-
 		for( uint32 i=0; i<batchsize; ++i )
 		{
 			// Reserve virtual address if empty
-			if( m_pFeedFront )// Find memory space from reserved region
+			if( m_pVirtualMemory )// Find memory space from reserved region
 			{
-				reserved = (uint8*)m_pFeedFront + commitedSize;
+				reserved = (uint8*)m_pVirtualMemory + m_CommitedRegionSize;
+				//auto check = (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize );
+				//ASSERT( reserved == check );
 			}
 			else
 			{
-				m_pFeedFront = OSAllocator::ReserveUncommited( m_AlignedReserveSize );
+				m_pVirtualMemory = OSAllocator::ReserveUncommited( m_AlignedReserveSize );
 				tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
 
-				commitedSize	= 0;
+				reserved = (uint8* )m_pVirtualMemory;
+				//ASSERT( reserved == (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
+
+				m_CommitedRegionSize	= 0;
 			}
 
 			// Abort committing if reserved cannot be found from m_pFeed
 			if( !reserved )
 			{
 				//tcerr << _T( "Failed to find region...\n" );
-				m_pFeedFront	= nullptr;
-				//commitedSize	= 0;
+				m_pVirtualMemory	= nullptr;
+				//m_CommitedRegionSize	= 0;
 				break;
 			}
 
 			// Setup RegionTag if "reserved" is the start address m_pFeed.
-			if( reserved == m_pFeedFront )
+			if( reserved == m_pVirtualMemory )
 			{
 				OSAllocator::Commit( reserved, m_AlignedFirstPageSize );
 
 				// Initialize RegionTag
 				RegionTag* pRTag = (RegionTag*)reserved;
 				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );
-				pRTag->ConnectAfter( &m_FeedNil );
+				pRTag->ConnectAfter( &m_VirtualMemoryNil );
 
 				newPage = (Page*)( reserved + m_AlignedRegionTagSize );
 
@@ -916,7 +920,7 @@ static size_t commitedSize = 0;
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
 
-				commitedSize += m_AlignedFirstPageSize;
+				m_CommitedRegionSize += m_AlignedFirstPageSize;
 			}
 			else
 			{
@@ -927,7 +931,7 @@ static size_t commitedSize = 0;
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
 
-				commitedSize += m_AlignedPageSize;
+				m_CommitedRegionSize += m_AlignedPageSize;
 			}
 
 			// Deploy as "Clean" page.
@@ -935,11 +939,11 @@ static size_t commitedSize = 0;
 			m_CleanFront = newPage;
 
 			// Detach m_pFeed if remaining reserved space cannot commit "Entire Next Page size"
-			if( commitedSize + m_AlignedPageSize >= m_AlignedReserveSize )
+			if( m_CommitedRegionSize + m_AlignedPageSize >= m_AlignedReserveSize )
 			{
-				//tcout << _T("   Used up reserved virtual memory: ") << m_pFeedFront << tendl;
-				m_pFeedFront	= nullptr;
-				//commitedSize	= 0;
+				//tcout << _T("   Used up reserved virtual memory: ") << m_pVirtualMemory << tendl;
+				m_pVirtualMemory	= nullptr;
+				//m_CommitedRegionSize	= 0;
 			}
 
 		}// end of i loop
@@ -969,10 +973,10 @@ static size_t commitedSize = 0;
 	{
 		m_Nil.next = m_Nil.prev = m_CleanFront = m_DirtyFront = m_UsedupFront = &m_Nil;
 
-		while( m_FeedNil.next )
+		while( m_VirtualMemoryNil.next )
 		{
-			RegionTag* next = m_FeedNil.next;
-			m_FeedNil.DisconnectNext();
+			RegionTag* next = m_VirtualMemoryNil.next;
+			m_VirtualMemoryNil.DisconnectNext();
 			
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 				OSAllocator::Release( next->AllocationBase );
@@ -981,8 +985,10 @@ static size_t commitedSize = 0;
 			#endif
 		}
 
-		m_FeedNil.next = nullptr;
-		m_pFeedFront = nullptr;
+		m_VirtualMemoryNil.next	= nullptr;
+		m_pVirtualMemory	= nullptr;
+		m_pAlignedRegionBase		= nullptr;
+		m_CommitedRegionSize	= 0;
 	}
 
 
@@ -991,8 +997,8 @@ static size_t commitedSize = 0;
 	{
 		tcout << _T( "PoolAllocator::Cleanup()...\n" );
 
-		RegionTag* feed = m_FeedNil.next;
-		RegionTag* prev = &m_FeedNil;
+		RegionTag* feed = m_VirtualMemoryNil.next;
+		RegionTag* prev = &m_VirtualMemoryNil;
 
 		while( feed )
 		{
@@ -1019,10 +1025,12 @@ static size_t commitedSize = 0;
 					page = nextpage;
 				}
 
-				if( feed == m_pFeedFront )
+				if( feed == m_pVirtualMemory )
 				{
 					tcout << _T( "    Invalidating FeedFront...\n" );
-					m_pFeedFront=nullptr;
+					m_pVirtualMemory	= nullptr;
+					m_pAlignedRegionBase		= nullptr;
+					m_CommitedRegionSize	= 0;
 				}
 
 				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
@@ -1211,9 +1219,9 @@ static size_t commitedSize = 0;
 
 
 
-	void PoolAllocator::InitFeedParams( size_t allocSize, size_t blockSize, size_t commitBatchSize )
+	void PoolAllocator::InitFeedParams( size_t blockSize, size_t commitBatchSize )
 	{
-		m_AlignedPageSize			= RoundUp( /*(size_t)allocSize*/m_PageSize, OSAllocator::PageSize() );// 4KBページサイズでAllocSizeを切り上げる
+		m_AlignedPageSize			= RoundUp( m_PageSize, OSAllocator::PageSize() );// Align m_PageSize by OS page size( 4KB etc... )
 		m_NumFirstPageActiveBlocks	= m_NumActiveBlocks;
 
 		uint16 numRTagBlocks		= (uint16)DivUp( sizeof(RegionTag), (size_t)blockSize );// Number of blocks required to store RegionTag
@@ -1221,12 +1229,12 @@ static size_t commitedSize = 0;
 		m_AlignedFirstPageSize	= m_AlignedPageSize;
 		m_AlignedRegionTagSize	= (size_t)numRTagBlocks * (size_t)blockSize;// blocksize aligned RegionTag size//blockAlignedRTagSize;
 
-		if( /*allocSize*/m_PageSize + m_AlignedRegionTagSize > m_AlignedFirstPageSize )// if m_AlignedFirstPageSize is too small for storing page and region tag...
+		if( m_PageSize + m_AlignedRegionTagSize > m_AlignedFirstPageSize )// if m_AlignedFirstPageSize is too small for storing page and region tag...
 		{
 			tcout << "m_AlignedPageSize is too small: ";
 
 			// Isolate RegionTag from Page if RegionTag consumes more than 80% of first page size. // ex1. AllocSize=4096, BlockSize=4076	// ex2. AllocSize=8192, BlockSize=8150
-			if( /*allocSize*/m_AlignedFirstPageSize / m_AlignedRegionTagSize < REGION_RTAG_RATIO )
+			if( m_AlignedFirstPageSize / m_AlignedRegionTagSize < REGION_RTAG_RATIO )
 			{
 				tcout << "Isolating RegionTag from Page ...\n";
 				m_AlignedFirstPageSize += OSAllocator::PageSize();
@@ -1244,22 +1252,26 @@ static size_t commitedSize = 0;
 		//	// ex. AllocSize=4100, BlockSize=4080
 		//}
 
-		//
-
 
 		m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 ),// 一括確保したいページ数分だけリザーブ領域を設定する
 										OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
 
 		//m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize, OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
 
-		tcout << "ほしい領域: " << m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 );
-		tcout << "(" << m_AlignedFirstPageSize << " + " << m_AlignedPageSize << " * " << ( commitBatchSize - 1 ) << ")\n";
-
-		tcout << "確保する領域: " << m_AlignedReserveSize << tendl;
-		tcout << "確保予定のページ数: " << ( m_AlignedReserveSize - m_AlignedFirstPageSize ) / m_AlignedPageSize + 1 << tendl;
 
 
-//TODO: 64KBのアドレス空間切り上げの都合上、commitBatchSizeより多くのPage領域が確保されることがある
+		// m_AlignedReserveSizeで確保可能なページ数の確認コード. 64KBのアドレス空間切り上げの都合上、commitBatchSizeより多くのPage領域が確保されることがある. 
+		//tcout << "ほしい領域: " << m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 );
+		//tcout << "(" << m_AlignedFirstPageSize << " + " << m_AlignedPageSize << " * " << ( commitBatchSize - 1 ) << ")\n";
+
+		//tcout << "確保する領域: " << m_AlignedReserveSize << tendl;
+		//tcout << "確保予定のページ数: " << ( m_AlignedReserveSize - m_AlignedFirstPageSize ) / m_AlignedPageSize + 1 << tendl;
+
+
+		TODO: m_AlignedReserveSizeが 4MiB境界越えた場合の処置
+			-> commitBatchSize減らして対策可能なら減らす
+			-> m_AlignedFirstPageSize
+	　　
 	}
 
 
@@ -1329,8 +1341,8 @@ static size_t commitedSize = 0;
 //	//OSAllocator::DisplayMemoryInfo( m_pFeed );
 //	m_Nil.next = m_Nil.prev = m_CleanFront = m_DirtyFront = m_UsedupFront = &m_Nil;
 //
-//	m_FeedNil.next = nullptr;
-//	m_pFeedFront = nullptr;
+//	m_VirtualMemoryNil.next = nullptr;
+//	m_pVirtualMemory = nullptr;
 //
 //}
 

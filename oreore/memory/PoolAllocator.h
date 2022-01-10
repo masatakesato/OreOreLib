@@ -112,7 +112,7 @@ namespace OreOreLib
 		PoolAllocator& operator=( PoolAllocator&& obj );// Move assignment operator
 
 		void Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize=4 );
-		void Cleanup();
+		void Cleanup();// Release unused memory
 
 		void* Allocate( size_t alignment=0 );//void* Allocate();
 		bool Free( void*& ptr, Page* page=nullptr );
@@ -128,7 +128,8 @@ namespace OreOreLib
 		
 		//////////////////////////////////////////////////////////// Feed structure //////////////////////////////////////////////////////////////////
 		//																																			//
-		// ( *for RegionTag access with address masking )																							//
+		// m_pVirtualMemory  m_pAlignedRegionBase                                                                                                   //
+		//  v               v                                                                                                                       //
 		//	|               |                                       |                         |                              |             |   |	//
 		//	|<- alignment ->|=============== RegionTag =============|=== Page ===|** unused **|====== Page =====|** unused **|==...   ...**|---|	//
 		//	|				|                                                                                                                  |	//
@@ -194,8 +195,6 @@ namespace OreOreLib
 		size_t	m_PoolSize;			// = m_NumActiveBlocks * m_BlockSize;
 
 		// Feed and relevant parameters.
-		RegionTag	m_FeedNil;		// Nill for Virtual Memory list.
-		void*	m_pFeedFront;		// Current Virtual Memory reserved from OS.
 		size_t	m_AlignedPageSize;	// m_PageSize aligned by OS page size (4096 bytes etc..)
 		size_t	m_AlignedReserveSize;// Virtual memory reserve size. Alinged by OS allocation granularity (64kb etc...)
 		size_t	m_AlignedFirstPageSize;// Size of FirstPage (containing RegionTag )
@@ -209,6 +208,13 @@ namespace OreOreLib
 		Page*	m_DirtyFront;
 		Page*	m_UsedupFront;
 
+		// Virtual memory
+		RegionTag	m_VirtualMemoryNil;		// Nill for Virtual Memory list.
+		void*		m_pVirtualMemory;		// Current Virtual Memory reserved from OS.
+#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+		uint8*		m_pAlignedRegionBase;	// Base address of m_pVirtualMemory aligned by RegionTag::Alignment.
+#endif
+		size_t		m_CommitedRegionSize;	// Temporary valiable to store commited size of m_pVirtualMemory
 
 		// Page Opearations
 		void BatchAllocatePages( uint32 batchsize );
@@ -232,7 +238,7 @@ namespace OreOreLib
 
 		// Initialization
 		void InitPageBlockParams( size_t allocSize, size_t blockSize );
-		void InitFeedParams( size_t allocSize, size_t blockSize, size_t commitBatchSize );
+		void InitFeedParams( size_t blockSize, size_t commitBatchSize );
 
 	
 		// Friend functions
