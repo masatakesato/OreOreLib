@@ -35,7 +35,7 @@ int main()
 		//OreOreLib::PoolAllocator	memblock;
 		//OreOreLib::PoolAllocator	memblock( 4100, 4080 );//memblock( 99, 33 );//memblock( 8192, 8150 );//memblock( 4096, 32 );//memblock( 4098, 16 );//memblock( 4096, 4076 );// memblock( 100, 33 );//
 		
-		memblock.Init( 65536, 32768, 2 );
+		memblock.Init( 65536, 32768, 2, 4 );
 		memblock.Display();
 		
 		//tcout << "//================ memblock = OreOreLib::PoolAllocator( 99, 33 )... ================//\n";
@@ -72,6 +72,14 @@ int main()
 		memblock.Display();
 		tcout << (unsigned*)pIntArray4 << tendl;
 		tcout << tendl;
+
+
+		tcout << "//==== pIntArray5 = memblock.Allocate()... ====//\n";
+		int* pIntArray5 = static_cast<int*>( memblock.Allocate() );
+		memblock.Display();
+		tcout << (unsigned*)pIntArray5 << tendl;
+		tcout << tendl;
+
 
 
 		//tcout << "//==== memblock.Free( (void*&)pIntArray4 )... ====//\n";

@@ -103,7 +103,7 @@ namespace OreOreLib
 		static const uint32 COMMIT_BATCH_SIZE = 4;
 
 		PoolAllocator();// Default constructor
-		PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize=COMMIT_BATCH_SIZE );// Constructor
+		PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize=COMMIT_BATCH_SIZE, uint32 pageCapacity=COMMIT_BATCH_SIZE );// Constructor
 		PoolAllocator( const PoolAllocator& obj );// Copy constructor
 		PoolAllocator( PoolAllocator&& obj );// Move constructor
 		~PoolAllocator();// Destructor
@@ -111,7 +111,7 @@ namespace OreOreLib
 		PoolAllocator& operator=( const PoolAllocator& obj );// Copy assignment operator
 		PoolAllocator& operator=( PoolAllocator&& obj );// Move assignment operator
 
-		void Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize=4 );
+		void Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize=COMMIT_BATCH_SIZE, uint32 pageCapacity=COMMIT_BATCH_SIZE );
 		void Cleanup();// Release unused memory
 
 		void* Allocate( size_t alignment=0 );//void* Allocate();
@@ -128,7 +128,7 @@ namespace OreOreLib
 		
 		//////////////////////////////////////////////////////////// Feed structure //////////////////////////////////////////////////////////////////
 		//																																			//
-		// m_pVirtualMemory  m_pAlignedRegionBase                                                                                                   //
+		// m_pVirtualMemory  m_pRegionBase                                                                                                   //
 		//  v               v                                                                                                                       //
 		//	|               |                                       |                         |                              |             |   |	//
 		//	|<- alignment ->|=============== RegionTag =============|=== Page ===|** unused **|====== Page =====|** unused **|==...   ...**|---|	//
@@ -211,13 +211,12 @@ namespace OreOreLib
 		// Virtual memory
 		RegionTag	m_VirtualMemoryNil;		// Nill for Virtual Memory list.
 		void*		m_pVirtualMemory;		// Current Virtual Memory reserved from OS.
-#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-		uint8*		m_pAlignedRegionBase;	// Base address of m_pVirtualMemory aligned by RegionTag::Alignment.
-#endif
-		size_t		m_CommitedRegionSize;	// Temporary valiable to store commited size of m_pVirtualMemory
+		size_t		m_PageCapacity;		// Maximum number of pages m_pVirtualMemory can hold.
+		uint8*		m_pRegionBase;	// Base address of m_pVirtualMemory aligned by RegionTag::Alignment.
+		size_t		m_CommitedPageCount;
 
 		// Page Opearations
-		void BatchAllocatePages( uint32 batchsize );
+		void AllocatePages( uint32 numPages );
 		bool FreePage2( Page*& page );
 		void ClearPages();
 
@@ -238,7 +237,7 @@ namespace OreOreLib
 
 		// Initialization
 		void InitPageBlockParams( size_t allocSize, size_t blockSize );
-		void InitFeedParams( size_t blockSize, size_t commitBatchSize );
+		void InitFeedParams( size_t blockSize, size_t pageCapacity );
 
 	
 		// Friend functions

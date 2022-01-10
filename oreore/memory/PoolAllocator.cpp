@@ -186,16 +186,21 @@ namespace OreOreLib
 
 		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( nullptr )
-		, m_pAlignedRegionBase( nullptr )
-		, m_CommitedRegionSize( 0 )
+		, m_PageCapacity( 0 )
+		, m_pRegionBase( nullptr )
+		, m_CommitedPageCount( 0 )
 	{
 
 	}
 
 
 
-	// Constructor
-	PoolAllocator::PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize )
+	// Constructor.
+	//   allocSize: Size of single page
+	//   blockSize: Data size
+	//   commitBatchSize: Number of pages to commit at once
+	//   pageCapacity: Virtual memory's page capacity
+	PoolAllocator::PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize, uint32 pageCapacity )
 		: m_BlockSize( blockSize )
 		, m_CommitBatchSize( commitBatchSize )
 
@@ -206,15 +211,16 @@ namespace OreOreLib
 
 		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( nullptr )
-		, m_pAlignedRegionBase( nullptr )
-		, m_CommitedRegionSize( 0 )
+		, m_PageCapacity( pageCapacity )
+		, m_pRegionBase( nullptr )
+		, m_CommitedPageCount( 0 )
 	{
 		ASSERT( allocSize > blockSize && blockSize > 0 );
 
 		InitPageBlockParams( allocSize, blockSize );
-		InitFeedParams( blockSize, commitBatchSize );
+		InitFeedParams( blockSize, pageCapacity );
 
-		//BatchAllocatePages( m_CommitBatchSize );
+		//AllocatePages( m_CommitBatchSize );
 	}
 
 
@@ -244,13 +250,13 @@ namespace OreOreLib
 
 		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( nullptr )
-		, m_pAlignedRegionBase( nullptr )
-		, m_CommitedRegionSize( 0 )
+		, m_PageCapacity( obj.m_PageCapacity )
+		, m_pRegionBase( nullptr )
+		, m_CommitedPageCount( 0 )
 	{
 		tcout << _T( "Copy constructor...\n" );
 
-
-		//BatchAllocatePages( m_CommitBatchSize );
+		//AllocatePages( m_CommitBatchSize );
 	}
 
 
@@ -280,8 +286,9 @@ namespace OreOreLib
 
 		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( obj.m_pVirtualMemory )
-		, m_pAlignedRegionBase( obj.m_pAlignedRegionBase )
-		, m_CommitedRegionSize( obj.m_CommitedRegionSize )
+		, m_PageCapacity( obj.m_PageCapacity )
+		, m_pRegionBase( obj.m_pRegionBase )
+		, m_CommitedPageCount( obj.m_CommitedPageCount )
 	{
 		tcout << _T( "Move constructor...\n" );
 
@@ -315,7 +322,7 @@ namespace OreOreLib
 		// Detach Feed references from obj
 		obj.m_VirtualMemoryNil.next	= nullptr;
 		obj.m_pVirtualMemory	= nullptr;
-		obj.m_pAlignedRegionBase		= nullptr;
+		obj.m_pRegionBase		= nullptr;
 	}
 
 
@@ -342,19 +349,19 @@ namespace OreOreLib
 			m_BlockSize					= obj.m_BlockSize;
 			m_CommitBatchSize			= obj.m_CommitBatchSize;
 			m_PageSize					= obj.m_PageSize;
-			//m_PageDataSize					= obj.m_PageDataSize;
+			//m_PageDataSize			= obj.m_PageDataSize;
 			m_BitFlagSize				= obj.m_BitFlagSize;
 			m_PageTagSize				= obj.m_PageTagSize;
 			m_NumActiveBlocks			= obj.m_NumActiveBlocks;
 			m_PoolSize					= obj.m_PoolSize;
-			m_AlignedPageSize				= obj.m_AlignedPageSize;
+			m_AlignedPageSize			= obj.m_AlignedPageSize;
 			m_AlignedReserveSize		= obj.m_AlignedReserveSize;
 			m_AlignedFirstPageSize		= obj.m_AlignedFirstPageSize;
 			m_NumFirstPageActiveBlocks	= obj.m_NumFirstPageActiveBlocks;
-			m_AlignedRegionTagSize			= obj.m_AlignedRegionTagSize;
+			m_AlignedRegionTagSize		= obj.m_AlignedRegionTagSize;
+			m_PageCapacity				= obj.m_PageCapacity;
 
-
-			//BatchAllocatePages( m_CommitBatchSize );
+			//AllocatePages( m_CommitBatchSize );
 		}
 
 		return *this;
@@ -381,13 +388,15 @@ namespace OreOreLib
 			m_PageTagSize				= obj.m_PageTagSize;
 			m_NumActiveBlocks			= obj.m_NumActiveBlocks;
 			m_PoolSize					= obj.m_PoolSize;
-			m_AlignedPageSize				= obj.m_AlignedPageSize;
-			m_AlignedReserveSize	= obj.m_AlignedReserveSize;
-			m_AlignedFirstPageSize				= obj.m_AlignedFirstPageSize;
-			m_NumFirstPageActiveBlocks		= obj.m_NumFirstPageActiveBlocks;
-			m_AlignedRegionTagSize			= obj.m_AlignedRegionTagSize;
-			m_pVirtualMemory				= obj.m_pVirtualMemory;
-
+			m_AlignedPageSize			= obj.m_AlignedPageSize;
+			m_AlignedReserveSize		= obj.m_AlignedReserveSize;
+			m_AlignedFirstPageSize		= obj.m_AlignedFirstPageSize;
+			m_NumFirstPageActiveBlocks	= obj.m_NumFirstPageActiveBlocks;
+			m_AlignedRegionTagSize		= obj.m_AlignedRegionTagSize;
+			m_pVirtualMemory			= obj.m_pVirtualMemory;
+			m_PageCapacity				= obj.m_PageCapacity;
+			m_pRegionBase				= obj.m_pRegionBase;
+			m_CommitedPageCount			= obj.m_CommitedPageCount;
 
 			// Move Pages from obj to *this
 			if( obj.m_Nil.next != &obj.m_Nil )
@@ -426,7 +435,11 @@ namespace OreOreLib
 
 
 
-	void PoolAllocator::Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize )
+	// allocSize: Size of single page
+	// blockSize: Data size
+	// commitBatchSize: Number of pages to commit at once
+	// pageCapacity: Virtual memory's page capacity
+	void PoolAllocator::Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize, uint32 pageCapacity )
 	{
 		ASSERT( allocSize > blockSize && blockSize > 0 );
 
@@ -437,9 +450,9 @@ namespace OreOreLib
 		m_CommitBatchSize	= commitBatchSize;
 		
 		InitPageBlockParams( allocSize, blockSize );
-		InitFeedParams( blockSize, commitBatchSize );
+		InitFeedParams( blockSize, pageCapacity );
 
-		//BatchAllocatePages( m_CommitBatchSize );
+		//AllocatePages( m_CommitBatchSize );
 	}
 
 
@@ -456,7 +469,7 @@ namespace OreOreLib
 			if( IsEmpty( m_CleanFront ) )
 			{
 				tcout << _T( "m_CleanFront is empty. Allocating new Clean page....\n" );
-				BatchAllocatePages( m_CommitBatchSize );
+				AllocatePages( m_CommitBatchSize );
 
 				//ASSERT( IsEmpty( m_CleanFront )==false );
 				if( IsEmpty( m_CleanFront ) )
@@ -504,7 +517,7 @@ namespace OreOreLib
 	//		if( IsEmpty( m_CleanFront ) )
 	//		{
 	//			tcout << _T( "m_CleanFront is empty. Allocating new Clean page....\n" );
-	//			BatchAllocatePages( m_CommitBatchSize );
+	//			AllocatePages( m_CommitBatchSize );
 
 	//			//ASSERT( IsEmpty( m_CleanFront )==false );
 	//			if( IsEmpty( m_CleanFront ) )
@@ -782,86 +795,72 @@ namespace OreOreLib
 
 #ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 
-	void PoolAllocator::BatchAllocatePages( uint32 batchsize )
+	void PoolAllocator::AllocatePages( uint32 numPages )
 	{
-		uint8* reserved = nullptr;
 		Page* newPage = nullptr;
 
-		for( uint32 i=0; i<batchsize; ++i )
+		for( uint32 i=0; i<numPages; ++i, ++m_CommitedPageCount )
 		{
-			// Reserve virtual address if empty
-			if( m_pVirtualMemory )// Find memory space from reserved region
+			// Detach m_pVirtualMemory if page capacity is over
+			if( m_CommitedPageCount >= m_PageCapacity )
 			{
-				reserved = m_pAlignedRegionBase + m_CommitedRegionSize;
-				//ASSERT( reserved == (uint8*)OSAllocator::FindRegion( m_pAlignedRegionBase, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize ) );
+				tcout << _T("   Used up reserved virtual memory: ") << m_pVirtualMemory << _T(".....") << m_CommitedPageCount << tendl;
+				m_pVirtualMemory	= nullptr;
+				m_pRegionBase		= nullptr;
 			}
-			else
+
+
+			// Reserve virtual address if empty
+			if( !m_pVirtualMemory )// Find memory space from reserved region
 			{
-				ASSERT( m_pAlignedRegionBase==0 );
 				// Reserve alignable virtual address space
 				m_pVirtualMemory = OSAllocator::ReserveUncommited( m_AlignedReserveSize + RegionTag::Alignment );
 				tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
 
+				ASSERT( m_pVirtualMemory && _T("Could not allocate virtual memory.") );
+
 				// Find memory space from reserved region
-				m_pAlignedRegionBase = (uint8*)RoundUp( (size_t)m_pVirtualMemory, RegionTag::Alignment );// set aligned addres start
-				reserved = m_pAlignedRegionBase;
-				//ASSERT( reserved == (uint8*)OSAllocator::FindRegion( m_pAlignedRegionBase, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
-
-				m_CommitedRegionSize = 0;
-				ASSERT( m_CommitedRegionSize==0 );
+				m_pRegionBase = (uint8*)RoundUp( (size_t)m_pVirtualMemory, RegionTag::Alignment );// set aligned addres start
+				//ASSERT( m_pRegionBase == (uint8*)OSAllocator::FindRegion( m_pRegionBase, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
+				
+				m_CommitedPageCount = 0;
 			}
 
-
-			// Abort committing if reserved cannot be found from m_pFeed
-			if( !reserved )
-			{
-				//tcerr << _T( "Failed to find region...\n" );
-				m_pVirtualMemory	= nullptr;
-				m_pAlignedRegionBase		= nullptr;
-				break;
-			}
 
 			// Setup RegionTag if "reserved" is the start address m_pFeed.
-			if( reserved == m_pAlignedRegionBase )
+			if( m_CommitedPageCount == 0 )
 			{
-				OSAllocator::Commit( reserved, m_AlignedFirstPageSize );
+				OSAllocator::Commit( m_pRegionBase, m_AlignedFirstPageSize );
 
 				// Initialize RegionTag
-				RegionTag* pRTag = (RegionTag*)reserved;
+				RegionTag* pRTag = (RegionTag*)m_pRegionBase;
 				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );
 				pRTag->ConnectAfter( &m_VirtualMemoryNil );
 				pRTag->AllocationBase = m_pVirtualMemory;// 仮想メモリ空間の先頭アドレスを保持する
 
 				// Initialize PageTag
-				newPage = (Page*)( reserved + m_AlignedRegionTagSize );
+				newPage = (Page*)( m_pRegionBase + m_AlignedRegionTagSize );
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
 
-				m_CommitedRegionSize += m_AlignedFirstPageSize;
+				m_pRegionBase += m_AlignedFirstPageSize;
 			}
 			else
 			{
-				newPage = (Page*)OSAllocator::Commit( reserved, m_AlignedPageSize );
+				newPage = (Page*)OSAllocator::Commit( m_pRegionBase, m_AlignedPageSize );
 				//tcout << "  Page: "<< (unsigned *)reserved << tendl;
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
 
-				m_CommitedRegionSize += m_AlignedPageSize;
+				m_pRegionBase += m_AlignedPageSize;
 			}
+
 
 			// Deploy as "Clean" page.
 			newPage->ConnectBefore( m_CleanFront );
 			m_CleanFront = newPage;
-
-			// Detach m_pFeed if remaining reserved space cannot commit "Entire Next Page size"
-			if( m_CommitedRegionSize + m_AlignedPageSize >= m_AlignedReserveSize )
-			{
-				//tcout << _T("   Used up reserved virtual memory: ") << m_pVirtualMemory << tendl;
-				m_pVirtualMemory	= nullptr;
-				m_pAlignedRegionBase		= nullptr;
-			}
 
 		}// end of i loop
 
@@ -870,81 +869,71 @@ namespace OreOreLib
 
 #else
 
-	void PoolAllocator::BatchAllocatePages( uint32 batchsize )
+	void PoolAllocator::AllocatePages( uint32 numPages )
 	{
-		uint8* reserved = nullptr;
+//		uint8* reserved = nullptr;
 		Page* newPage = nullptr;
 
-		for( uint32 i=0; i<batchsize; ++i )
+		for( uint32 i=0; i<numPages; ++i, ++m_CommitedPageCount )
 		{
-			// Reserve virtual address if empty
-			if( m_pVirtualMemory )// Find memory space from reserved region
+			// Detach m_pFeed if remaining reserved space cannot commit "Entire Next Page size"
+			if( m_CommitedPageCount >= m_PageCapacity )
 			{
-				reserved = (uint8*)m_pVirtualMemory + m_CommitedRegionSize;
-				//auto check = (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedPageSize, m_AlignedReserveSize );
-				//ASSERT( reserved == check );
+				tcout << _T("PoolAllocator::AllocatePages(): Used up reserved virtual memory ") << m_pVirtualMemory << tendl;
+				m_pVirtualMemory	= nullptr;
+				m_pRegionBase		= nullptr;
 			}
-			else
+
+
+			// Reserve virtual address if empty
+			if( !m_pVirtualMemory )// Find memory space from reserved region
 			{
 				m_pVirtualMemory = OSAllocator::ReserveUncommited( m_AlignedReserveSize );
-				tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
+				tcout << _T( "PoolAllocator::AllocatePages(): Reserving new os memory " ) << m_AlignedReserveSize << _T( " [bytes]\n" );
+				
+				ASSERT( m_pVirtualMemory && _T("Could not allocate virtual memory.") );
 
-				reserved = (uint8* )m_pVirtualMemory;
+				m_pRegionBase = (uint8* )m_pVirtualMemory;
 				//ASSERT( reserved == (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
 
-				m_CommitedRegionSize	= 0;
+				m_CommitedPageCount = 0;
 			}
 
-			// Abort committing if reserved cannot be found from m_pFeed
-			if( !reserved )
-			{
-				//tcerr << _T( "Failed to find region...\n" );
-				m_pVirtualMemory	= nullptr;
-				//m_CommitedRegionSize	= 0;
-				break;
-			}
 
 			// Setup RegionTag if "reserved" is the start address m_pFeed.
-			if( reserved == m_pVirtualMemory )
+			if( m_CommitedPageCount == 0 )
 			{
-				OSAllocator::Commit( reserved, m_AlignedFirstPageSize );
+				OSAllocator::Commit( m_pRegionBase, m_AlignedFirstPageSize );
 
 				// Initialize RegionTag
-				RegionTag* pRTag = (RegionTag*)reserved;
+				RegionTag* pRTag = (RegionTag*)m_pRegionBase;
 				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );
 				pRTag->ConnectAfter( &m_VirtualMemoryNil );
 
-				newPage = (Page*)( reserved + m_AlignedRegionTagSize );
+				newPage = (Page*)( m_pRegionBase + m_AlignedRegionTagSize );
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
 
-				m_CommitedRegionSize += m_AlignedFirstPageSize;
+				m_pRegionBase += m_AlignedFirstPageSize;
 			}
 			else
 			{
-				newPage = (Page*)OSAllocator::Commit( reserved, m_AlignedPageSize );
+				newPage = (Page*)OSAllocator::Commit( m_pRegionBase, m_AlignedPageSize );
 				//tcout << "  Page: "<< (unsigned *)reserved << tendl;
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
 
-				m_CommitedRegionSize += m_AlignedPageSize;
+				m_pRegionBase += m_AlignedPageSize;
 			}
 
+			
 			// Deploy as "Clean" page.
 			newPage->ConnectBefore( m_CleanFront );
 			m_CleanFront = newPage;
-
-			// Detach m_pFeed if remaining reserved space cannot commit "Entire Next Page size"
-			if( m_CommitedRegionSize + m_AlignedPageSize >= m_AlignedReserveSize )
-			{
-				//tcout << _T("   Used up reserved virtual memory: ") << m_pVirtualMemory << tendl;
-				m_pVirtualMemory	= nullptr;
-				//m_CommitedRegionSize	= 0;
-			}
 
 		}// end of i loop
 
@@ -986,9 +975,9 @@ namespace OreOreLib
 		}
 
 		m_VirtualMemoryNil.next	= nullptr;
-		m_pVirtualMemory	= nullptr;
-		m_pAlignedRegionBase		= nullptr;
-		m_CommitedRegionSize	= 0;
+		m_pVirtualMemory		= nullptr;
+		m_pRegionBase			= nullptr;
+		m_CommitedPageCount		= 0;
 	}
 
 
@@ -1029,8 +1018,8 @@ namespace OreOreLib
 				{
 					tcout << _T( "    Invalidating FeedFront...\n" );
 					m_pVirtualMemory	= nullptr;
-					m_pAlignedRegionBase		= nullptr;
-					m_CommitedRegionSize	= 0;
+					m_pRegionBase		= nullptr;
+					m_CommitedPageCount	= 0;
 				}
 
 				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
@@ -1219,7 +1208,7 @@ namespace OreOreLib
 
 
 
-	void PoolAllocator::InitFeedParams( size_t blockSize, size_t commitBatchSize )
+	void PoolAllocator::InitFeedParams( size_t blockSize, size_t pageCapacity )
 	{
 		// Calcurate page size
 		m_AlignedPageSize			= RoundUp( m_PageSize, OSAllocator::PageSize() );// Align m_PageSize by OS page size( 4KB etc... )
@@ -1266,51 +1255,44 @@ namespace OreOreLib
 // ================================== FirstPage容量が大きすぎてプールがベースアドレス見失うケースを防止する ========================
 //
 // (1) FirstPageの最終ブロックへのオフセットは?   --------------------------------------> ASSERT( firstPageStartToLastPool <= poolOffsetLimit );
-//		auto firstPageStartToLastPool =
-//				m_AlignedFirstPageSize - m_AlignedRegionTagSize +	// Page先頭へのオフセット
-//				Page::HeaderSize + m_PageTagSize +					// Page内プール先頭へのオフセット
-//				m_BlockSize * (m_NumFirstPageActiveBlocks - 1) 		// プール分のオフセット
-//
-//
+		auto firstPageStartToLastPool =
+				m_AlignedFirstPageSize - m_AlignedRegionTagSize +	// Page先頭へのオフセット
+				Page::HeaderSize + m_PageTagSize +					// Page内プール先頭へのオフセット
+				m_BlockSize * (m_NumFirstPageActiveBlocks - 1); 	// プール分のオフセット
+		ASSERT( ( firstPageStartToLastPool & RegionTag::AlignmentMask ) == 0 );
+
+
 // ================================== Page容量(FirstPage以外)が大きすぎてプールがベースアドレス見失うケースを防止する ========================
 //
 // (2) FirstじゃないPageの先頭から最終Poolまでのオフセットは？   -------------------> ASSERT( pageStartToLastPool <= poolOffsetLimit );
-//		auto pageStartToLastPool = Page::HeaderSize + m_PageTagSize + m_PoolSize - m_BlockSize;
-//
-//
+		size_t pageStartToLastPool = Page::HeaderSize + m_PageTagSize + m_PoolSize - m_BlockSize;
+		ASSERT( ( pageStartToLastPool & RegionTag::AlignmentMask ) == 0 );
+
+
 // ================================== RegionTag::Alignmentに納まるようにcommitBatchSizeをクランプする ========================
 //
 // (3) バーチャルメモリーは何ページ分一括確保できるの？
-//		pageExtensionCount = 0;
-//		auto offset = m_AlignedFirstPageSize + pageStartToLastPool;
-//		while( offset <= poolOffsetLimit && pageExtensionCount<=commitBatchSize )
-//		{
-//			++pageExtensionCount;
-//			offset += pageStartToLastPool;
-//		}
-TODO: commitBatchSize以下の値でRegionTag::Alignment用件満たすバッチ数を探す
-//
+		m_PageCapacity	= size_t( (firstPageStartToLastPool & RegionTag::AlignmentMask)==0 );
+		size_t pageBase = m_AlignedFirstPageSize;// + pageStartToLastPool;
+
+		while( m_PageCapacity < pageCapacity )
+		{
+			if( ( (pageBase + pageStartToLastPool) & RegionTag::AlignmentMask ) != 0 )
+				break;
+
+			++m_PageCapacity;
+			pageBase += m_AlignedPageSize;
+		}
+
+		ASSERT( m_PageCapacity > 0 );
+
 #endif
 
-		m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 ),// 一括確保したいページ数分だけリザーブ領域を設定する
+		m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize + m_AlignedPageSize * ( m_PageCapacity - 1 ),// 一括確保したいページ数分だけリザーブ領域を設定する
 										OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
 
 		//m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize, OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
 
-
-
-		// m_AlignedReserveSizeで確保可能なページ数の確認コード. 64KBのアドレス空間切り上げの都合上、commitBatchSizeより多くのPage領域が確保されることがある. 
-		//tcout << "ほしい領域: " << m_AlignedFirstPageSize + m_AlignedPageSize * ( commitBatchSize - 1 );
-		//tcout << "(" << m_AlignedFirstPageSize << " + " << m_AlignedPageSize << " * " << ( commitBatchSize - 1 ) << ")\n";
-
-		//tcout << "確保する領域: " << m_AlignedReserveSize << tendl;
-		//tcout << "確保予定のページ数: " << ( m_AlignedReserveSize - m_AlignedFirstPageSize ) / m_AlignedPageSize + 1 << tendl;
-
-
-		TODO: m_AlignedReserveSizeが 4MiB境界越えた場合の処置
-			-> commitBatchSize減らして対策可能なら減らす
-			-> m_AlignedFirstPageSize
-	　　
 	}
 
 
