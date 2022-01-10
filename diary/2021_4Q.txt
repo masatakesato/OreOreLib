@@ -1,0 +1,74 @@
+
+
+[ プールアロケータ ]
+http://ce.eng.usc.ac.ir/files/1511334027376.pdf
+243ページから。フリーリスト実装方法も書いてある
+ -> ECSのPageで実装する
+ -> LinkBufferと同じ仕組みを配列インデックスに置き換える
+
+・ptrから所属Pageのプール開始位置を取得する方法
+　→RegionTag→アロケータ→所属ページの順で分かる
+
+・ptrからRegionTagを辿る方法の実装検証、、、、、作業中
+　(1) OSAllocator::GetAllocationBase使う方法、、、、、実装済み
+　　VirtualQuery使う
+　(2) RegionTagリストを探索する方法、、、、、、、、、、見送り
+     for( auto rtag : RegionTags )
+　   if ( rtag < ptr  && ptr < rtag + m_OSAllocationGranularity )
+         // found
+　(3) VirtualQuery相当の機能を実装してRegionTagを取得する方法、、、ボツ
+　　→RegionTagの先頭にIdentifierを入れておく & Identiferが見つかるまでアドレスを遡る
+　　　-> 危険。RegionTag到達前に、Identifierと同じビット配列にぶつかる可能性ある
+　(4) VirtualAllocする時のリージョンにアラインメントをかける、、、、、、、済
+　　→mimallocだと4MiB設定してる
+　　　→VirtualAlloc2でアラインメント設定できるようになってる？調査中
+　　　　https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc2
+
+
+[ mimallocでのカスタムアラインメント実装方法 ]
+https://blog.weghos.com/mimalloc/mimalloc/src/os.c.html
+
+#if defined(MEM_EXTENDED_PARAMETER_TYPE_BITS)  
+  // on modern Windows try use VirtualAlloc2 for aligned allocation
+  if (try_alignment > 0 && (try_alignment % _mi_os_page_size()) == 0 && pVirtualAlloc2 != NULL) {
+    MEM_ADDRESS_REQUIREMENTS reqs = { 0 };
+    reqs.Alignment = try_alignment;
+    MEM_EXTENDED_PARAMETER param = { 0 };
+    param.Type = MemExtendedParameterAddressRequirements;
+    param.Pointer = &reqs;
+    return (*pVirtualAlloc2)(GetCurrentProcess(), addr, size, flags, PAGE_READWRITE, &param, 1);
+  }
+#endif
+
+
+[ カスタムアラインメント実装方法 ]
+・1回目のVirtualAllocで一旦リザーブして、2回目のVirtualAllocで開始アドレスずらしてコミットする、、、済
+　→https://stackoverflow.com/questions/29711446/aligning-memory-in-virtualalloc
+　→ただし、VirtualFreeでMEM_RELEASEする際は、リザーブしたアドレスの先頭が必要
+　　→RegionTagに先頭アドレス(AllocationBase)メンバ追加して格納しておく
+
+・アドレス遠すぎてRegionTagまで遡れない問題どうやって解決する？、、、、、、、、、済
+　→方法1：仮想アドレス空間上最後尾ブロックがアラインメント越えるならASSERT、、、採用
+　→方法2：アラインメント範囲内だけでPage作る？、、、、、没。処理複雑化
+　　　→もしくはOSAllocationGranularityをクランプ？
+　　　→1ページしかなくて納まりきらないケースはどうする？
+　　　
+　→方法１の実装方針
+　　→先頭アドレスから最後尾ブロックまでの距離を求める方法
+　　　→Page最後尾ブロックまでの距離
+　　　　Page::HeaderSize + m_PageTagSize + m_PoolSize - m_BlockSize
+
+　　→ブロックから4MibアラインメントでPageTagに戻れないケースでASSERT出したい
+　　　→何ページ目までなら安全に戻れる？
+　　　　Page::HeaderSize + m_PageTagSize + m_PoolSize - m_BlockSize
+
+　　(1)4MiBのメモリ空間の最終ページアドレスは？
+　　　m_AlignedFirstPageSize + Round( 4MiB - m_AlignedFirstPageSize, m_AlignedPageSize ) 
+　　(2)m_OSAllocationGranularityメモリ空間内の最終ページアドレスは？
+　　　→m_AlignedFirstPageSize + 
+　　   Round( m_AlignedReserveSize - m_AlignedFirstPageSize, m_AlignedPageSize )
+　　(2) <= (1): 問題なし
+　　(2) > (1): 一括確保するメモリ空間が大きすぎる. ASSERT
+　　　→RoundUp( (1), OSAllocator::AllocationGranularity() )？
+　　　　→この場合m_AllocSizeも変更して再計算必要。めんどくさいのでボツ
+　　　→警告も出しておく
