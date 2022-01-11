@@ -13,6 +13,74 @@
 namespace OreOreLib
 {
 
+	//######################################################################################//
+	//																						//
+	//							PoolAllocator memory data structure							//
+	//																						//
+	//######################################################################################//
+
+
+
+		/////////////////////////////////////////////////////////// m_pVirtualMemory /////////////////////////////////////////////////////////////////
+		//																																			//
+		// m_pVirtualMemory  m_pRegionBase                                                                                                          //
+		//  v               v                                                                                                                       //
+		//	|               |                                       |                         |                              |             |   |	//
+		//	|<- alignment ->|=============== RegionTag =============|=== Page ===|** unused **|====== Page =====|** unused **|==...   ...**|---|	//
+		//	|				|                                                                                                                  |	//
+		//	|				| <-- m_AlignedRegionTagSize [bytes] -->                                                                           |	//
+		//	|				|                                                                                                                  |	//
+		//	|				| <--------------- m_AlignedFirstPageSize [bytes] ---------------> <- m_AlignedPageSize [bytes]-> <-- ...          |	//
+		//	|				|                                                                                                                  |	//
+		//	|				| <--------------------------------------- m_AlignedReserveSize [bytes] -----------------------------------------> |	//
+		//																																			//
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		///////////////////////////////////// Page ///////////////////////////////////////
+		//																				//
+		//																				//
+		//	|== Page::next ==|== Page::prev ==|============ Page::data ============|	//
+		//																				//
+		//	 <--- Page::HeaderSize [bytes] --> <----- m_PageDataSize [bytes] ----->		//
+		//																				//
+		//	 <------------------------ m_PageSize [bytes] ------------------------>		//
+		//																				//
+		//////////////////////////////////////////////////////////////////////////////////
+
+
+		///////////////////////////////////////////////////// Page::data /////////////////////////////////////////////////////////////
+		//																															//
+		//	|                   PageTag                                |                  Pool                  |                 |	//
+		//																															//
+		//	|== PageTag::NumFreeBlocks ==|===== PageTag::FreeBits =====|========================================|** unused area **|	//
+		//																															//
+		//	 <-------- 2 [bytes] -------> <-- m_BitFlagSize [bytes] --> <---------- m_PoolSize [bytes] -------->					//
+		//																															//
+		//   <----------------- m_PageTagSize [bytes] ---------------->                                                             //
+		//																															//
+		//	 <--------------------------------------------- m_PageDataSize [bytes] ---------------------------------------------->	//
+		//																															//
+		//																															//
+		//	PageTag: Management data area. Can be accessed via GetPageTag() method.													//
+		//	Pool: Acttive memory area. Can be accessed via GetPool() method.														//
+		//																															//
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		///////////////////////////////////////////// Pool ///////////////////////////////////////////////////
+		//																									//
+		//	|===========================|===========================| ... |===========================|		//
+		//																									//
+		//	 <-- m_BlockSize [bytes] --> <-- m_BlockSize [bytes] -->  ...  <-- m_BlockSize [bytes] -->		//
+		//																									//
+		//	 <-------------- m_PoolSize = m_NumActiveBlocks * m_BlockSize [bytes] ------------------->		//
+		//																									//
+		//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 	//######################################################################################//
 	//																						//
@@ -801,23 +869,23 @@ namespace OreOreLib
 
 		for( uint32 i=0; i<numPages; ++i, ++m_CommitedPageCount )
 		{
-			// Detach m_pVirtualMemory if page capacity is over
+			//============= Detach if m_pVirtualMemory is over capacity =============//
 			if( m_CommitedPageCount >= m_PageCapacity )
 			{
-				tcout << _T("   Used up reserved virtual memory: ") << m_pVirtualMemory << _T(".....") << m_CommitedPageCount << tendl;
+				tcout << _T("PoolAllocator::AllocatePages(): Virtual memory capacity over: ") << m_pVirtualMemory << _T(".....") << m_CommitedPageCount << tendl;
 				m_pVirtualMemory	= nullptr;
 				m_pRegionBase		= nullptr;
 			}
 
 
-			// Reserve virtual address if empty
-			if( !m_pVirtualMemory )// Find memory space from reserved region
+			//==================== Reserve virtual memory if empty ==================//
+			if( !m_pVirtualMemory )
 			{
 				// Reserve alignable virtual address space
 				m_pVirtualMemory = OSAllocator::ReserveUncommited( m_AlignedReserveSize + RegionTag::Alignment );
-				tcout << _T( "Reserving new os memory[" ) << m_AlignedReserveSize << _T( "]...\n" );
+				tcout << _T( "PoolAllocator::AllocatePages(): Reserving new Virtual memory " ) << m_AlignedReserveSize << _T( " [bytes]\n" );
 
-				ASSERT( m_pVirtualMemory && _T("Could not allocate virtual memory.") );
+				ASSERT( m_pVirtualMemory && _T("Failed virtual memory allocation.") );
 
 				// Find memory space from reserved region
 				m_pRegionBase = (uint8*)RoundUp( (size_t)m_pVirtualMemory, RegionTag::Alignment );// set aligned addres start
@@ -827,8 +895,8 @@ namespace OreOreLib
 			}
 
 
-			// Setup RegionTag if "reserved" is the start address m_pFeed.
-			if( m_CommitedPageCount == 0 )
+			//===================== Initialize memory management tag(s)  ===============//
+			if( m_CommitedPageCount == 0 )// First page initialization( RegionTag and PageTag )
 			{
 				OSAllocator::Commit( m_pRegionBase, m_AlignedFirstPageSize );
 
@@ -845,10 +913,9 @@ namespace OreOreLib
 
 				m_pRegionBase += m_AlignedFirstPageSize;
 			}
-			else
+			else// After the second pages( PageTag only )
 			{
 				newPage = (Page*)OSAllocator::Commit( m_pRegionBase, m_AlignedPageSize );
-				//tcout << "  Page: "<< (unsigned *)reserved << tendl;
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
@@ -858,7 +925,7 @@ namespace OreOreLib
 			}
 
 
-			// Deploy as "Clean" page.
+			//========================= Page deployment ==========================//
 			newPage->ConnectBefore( m_CleanFront );
 			m_CleanFront = newPage;
 
@@ -871,37 +938,36 @@ namespace OreOreLib
 
 	void PoolAllocator::AllocatePages( uint32 numPages )
 	{
-//		uint8* reserved = nullptr;
 		Page* newPage = nullptr;
 
 		for( uint32 i=0; i<numPages; ++i, ++m_CommitedPageCount )
 		{
-			// Detach m_pFeed if remaining reserved space cannot commit "Entire Next Page size"
+			//============= Detach if m_pVirtualMemory is over capacity =============//
 			if( m_CommitedPageCount >= m_PageCapacity )
 			{
-				tcout << _T("PoolAllocator::AllocatePages(): Used up reserved virtual memory ") << m_pVirtualMemory << tendl;
+				tcout << _T("PoolAllocator::AllocatePages(): Virtual memory capacity over: ") << m_pVirtualMemory << tendl;
 				m_pVirtualMemory	= nullptr;
 				m_pRegionBase		= nullptr;
 			}
 
 
-			// Reserve virtual address if empty
-			if( !m_pVirtualMemory )// Find memory space from reserved region
+			//==================== Reserve virtual memory if empty ==================//
+			if( !m_pVirtualMemory )
 			{
 				m_pVirtualMemory = OSAllocator::ReserveUncommited( m_AlignedReserveSize );
-				tcout << _T( "PoolAllocator::AllocatePages(): Reserving new os memory " ) << m_AlignedReserveSize << _T( " [bytes]\n" );
+				tcout << _T( "PoolAllocator::AllocatePages(): Reserving new virtual memory " ) << m_AlignedReserveSize << _T( " [bytes]\n" );
 				
-				ASSERT( m_pVirtualMemory && _T("Could not allocate virtual memory.") );
+				ASSERT( m_pVirtualMemory && _T("Failed virtual memory allocation.") );
 
 				m_pRegionBase = (uint8* )m_pVirtualMemory;
-				//ASSERT( reserved == (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
+				//ASSERT( m_pRegionBase == (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
 
 				m_CommitedPageCount = 0;
 			}
 
 
-			// Setup RegionTag if "reserved" is the start address m_pFeed.
-			if( m_CommitedPageCount == 0 )
+			//===================== Initialize memory management tag(s)  ===============//
+			if( m_CommitedPageCount == 0 )// First page initialization( RegionTag and PageTag )
 			{
 				OSAllocator::Commit( m_pRegionBase, m_AlignedFirstPageSize );
 
@@ -918,7 +984,7 @@ namespace OreOreLib
 
 				m_pRegionBase += m_AlignedFirstPageSize;
 			}
-			else
+			else// After the second pages( PageTag only )
 			{
 				newPage = (Page*)OSAllocator::Commit( m_pRegionBase, m_AlignedPageSize );
 				//tcout << "  Page: "<< (unsigned *)reserved << tendl;
@@ -931,7 +997,7 @@ namespace OreOreLib
 			}
 
 			
-			// Deploy as "Clean" page.
+			//========================= Page deployment ==========================//
 			newPage->ConnectBefore( m_CleanFront );
 			m_CleanFront = newPage;
 
@@ -945,10 +1011,9 @@ namespace OreOreLib
 
 
 
-	bool PoolAllocator::FreePage2( Page*& page )
+	bool PoolAllocator::FreePage( Page*& page )
 	{
-		if( !page )
-			return false;
+		ASSERT( page != nullptr );
 
 		page->Disconnect();
 		OSAllocator::Decommit( page, m_AlignedPageSize );
@@ -1131,7 +1196,7 @@ namespace OreOreLib
 	{
 		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 			size_t base	= size_t(ptr) & RegionTag::AlignmentMask;//RoundUp( (size_t)OSAllocator::GetAllocationBase( ptr ), RegionTag::Alignment );
-			tcout << base % RegionTag::Alignment << tendl;
+			ASSERT( base % RegionTag::Alignment == 0 && _T("PoolAllocator::GetPage(): Cound not find base address from ptr") );
 		#else
 			size_t base		= (size_t)OSAllocator::GetAllocationBase( ptr );
 		#endif
@@ -1146,7 +1211,7 @@ namespace OreOreLib
 			
 		if( offset == 0 )
 		{
-			tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
+			//tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
 			offset += pRTag->RegionTagSize;
 		}
 
@@ -1317,128 +1382,9 @@ namespace OreOreLib
 
 //######################################################################################//
 //																						//
-//								Deprecated implementation								//
+//								Prototype implementation								//
 //																						//
 //######################################################################################//
-
-	
-
-// Deprecated. 2021.06.12
-//void PoolAllocator::ClearPages()
-//{
-//	Page* p1, *p2;
-//
-//	p1 = m_Nil.next;
-//
-//	while( p1 != &m_Nil )
-//	{
-//		auto base_p1 = OSAllocator::GetAllocationBase( p1 );
-//
-//		p2 = p1->next;
-//		while( p2 != &m_Nil )
-//		{
-//			auto base_p2 = OSAllocator::GetAllocationBase( p2 );
-//			p2 = p2->next;
-//			if( base_p1 == base_p2 )
-//			{
-//				p2->prev->Disconnect();
-//				//Page* prev = p2->prev;
-//				//prev->Disconnect();
-//				//OSAllocator::Decommit( prev, m_AlignedPageSize );
-//			}
-//		}
-//
-//		p1 = p1->next;
-//			
-//		//tcout << OSAllocator::Decommit( p1->prev, m_AlignedPageSize ) << tendl;
-//
-//		//tcout << "Releasing OSMemory...\n";
-//		//OSAllocator::DisplayMemoryInfo( m_pFeed );
-//
-//		OSAllocator::Release( base_p1 );
-//	}
-//
-//	//tcout << "m_pFeed at the end of ClearPages2...\n";
-//	//OSAllocator::DisplayMemoryInfo( m_pFeed );
-//	m_Nil.next = m_Nil.prev = m_CleanFront = m_DirtyFront = m_UsedupFront = &m_Nil;
-//
-//	m_VirtualMemoryNil.next = nullptr;
-//	m_pVirtualMemory = nullptr;
-//
-//}
-
-
-
-// Deprecated. 2021.06.06
-//Page* PoolAllocator::AllocatePage( size_t allocSize )
-//{
-//	// Allocate new Page
-//	uint8* mem = new uint8[ allocSize ];//(uint8*) malloc( allocSize );
-//	Page* newPage = /*(Page*)mem;*/new (mem) Page;
-//	
-//	// Initialize PageTag
-//	PageTag* pPTag = GetPageTag( newPage );
-//	pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
-
-//	return newPage;
-//}
-
-
-// Deprecated. 2021.06.06
-//void PoolAllocator::BatchAllocatePages( int32 batchsize )
-//{
-//	for( int32 i=0; i<batchsize; ++i )
-//	{
-//		//============= Allocate new Page ===============//
-//		uint8* mem = new uint8[ m_PageSize ];//(uint8*) malloc( m_PageSize );
-//		Page* newPage = /*(Page*)mem;*/new (mem) Page;
-
-
-//		//============= Initialize PageTag ==============//
-//		PageTag* pPTag = GetPageTag( newPage );
-//		pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
-
-
-//		//=========== Deploy as "Clean" page ===========//
-//		newPage->ConnectBefore( m_CleanFront );
-//		m_CleanFront = newPage;
-
-//	}// end of i loop
-
-//}
-
-
-
-// Deprecated. 2021.06.06
-//bool PoolAllocator::FreePage( Page*& page )
-//{
-//	if( !page )
-//		return false;
-
-//	page->Disconnect();
-//	SafeDeleteArray( (uint8*&)page );//delete [] (uint8*&)page;
-
-//	return true;
-//}
-
-
-
-// Deprecated. 2021.06.06
-//void PoolAllocator::ClearPages()
-//{
-//	Page* page = m_Nil.next;
-//	while( page != &m_Nil )
-//	{
-//		Page* next = page->next;
-//		SafeDeleteArray( (uint8*&)page );
-//		page = next;
-//	}
-
-//	m_Nil.next = m_Nil.prev = m_CleanFront = m_DirtyFront = m_UsedupFront = &m_Nil;
-//}
-
-
-
 
 
 /*

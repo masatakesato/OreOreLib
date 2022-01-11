@@ -22,13 +22,12 @@ namespace OreOreLib
 	class PoolAllocator;
 
 
-	//##########################################################################################//
-	//																							//
-	//								structs for memory management								//
-	//																							//
-	//##########################################################################################//
-
-	// VirtualMemory information. Aligned to DefaultAlignment ( 8 bytes for x64. 4 bytes for x86 ).
+	//######################################################################################//
+	//																						//
+	//					RegionTag (struct for virtual memory mamagement )					//
+	//																						//
+	//######################################################################################//
+	
 	struct RegionTag
 	{
 		RegionTag* next = nullptr;
@@ -57,6 +56,13 @@ namespace OreOreLib
 
 
 
+
+	//######################################################################################//
+	//																						//
+	//											Page 										//
+	//																						//
+	//######################################################################################//
+
 	struct Page
 	{
 		Page* next = nullptr;
@@ -77,12 +83,19 @@ namespace OreOreLib
 
 
 
-	// struct for accessing tag area of Page. Must be aligned to DefaultAlignment ( 8 bytes for x64. 4 bytes for x86 ).
+
+	//######################################################################################//
+	//																						//
+	//										PageTag											//
+	//																						//
+	//######################################################################################//
+
+	// struct for accessing tag area of Page.
 	struct PageTag
 	{
 		//uint16	PageTagSize;
 		uint16	NumFreeBlocks;
-		uint8	FreeBits[1];// Dynamic bitarray. Bit flags of block status. 1: free, 0: used.
+		uint8	FreeBits[1];// Dynamic bitarray. Bit flags of block states. 1: free, 0: used.
 
 		void Init( /*uint16 ptagsize,*/ uint16 numfreeblocks, size_t bitflagsize );
 	};
@@ -98,6 +111,9 @@ namespace OreOreLib
 
 	class PoolAllocator
 	{
+		static const uint32 DefaultCommitBatchSize = 4;
+		static const uint32 DefaultPageCApacity = 4;
+
 	public:
 
 		static const uint32 COMMIT_BATCH_SIZE = 4;
@@ -122,77 +138,19 @@ namespace OreOreLib
 		uint8* GetPoolBase( const void* ptr ) const;// ポインタが所属するプール先頭アドレスを取得する
 
 
-
 	private:
 
-		
-		//////////////////////////////////////////////////////////// Feed structure //////////////////////////////////////////////////////////////////
-		//																																			//
-		// m_pVirtualMemory  m_pRegionBase                                                                                                   //
-		//  v               v                                                                                                                       //
-		//	|               |                                       |                         |                              |             |   |	//
-		//	|<- alignment ->|=============== RegionTag =============|=== Page ===|** unused **|====== Page =====|** unused **|==...   ...**|---|	//
-		//	|				|                                                                                                                  |	//
-		//	|				| <-- m_AlignedRegionTagSize [bytes] -->                                                                           |	//
-		//	|				|                                                                                                                  |	//
-		//	|				| <--------------- m_AlignedFirstPageSize [bytes] ---------------> <- m_AlignedPageSize [bytes]-> <-- ...          |	//
-		//	|				|                                                                                                                  |	//
-		//	|				| <--------------------------------------- m_AlignedReserveSize [bytes] -----------------------------------------> |	//
-		//																																			//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		////////////////////////////////// Page structure ////////////////////////////////
-		//																				//
-		//																				//
-		//	|===== next =====|===== prev =====|=============== data ===============|	//
-		//																				//
-		//	 <--- Page::HeaderSize [bytes] --> <----- m_PageDataSize [bytes] ----->		//
-		//																				//
-		//	 <------------------------ m_PageSize [bytes] ------------------------>		//
-		//																				//
-		//////////////////////////////////////////////////////////////////////////////////
-
-
-		///////////////////////////////////////////////// Page::data structure ///////////////////////////////////////////////////
-		//																														//
-		//	|                   PageTag                       |                  Pool                  |						//
-		//																														//
-		//	|== NumFreeBlocks ==|========= FreeBits ==========|========================================|*** unused area ****|	//
-		//																														//
-		//	 <--- 2 [bytes] ---> <-- m_BitFlagSize [bytes] --> <---------- m_PoolSize [bytes] --------> 						//
-		//																														//
-		//   <------------ m_PageTagSize [bytes] ------------>																	//
-		//																														//
-		//	 <------------------------------------------ m_PageDataSize [bytes] ------------------------------------------->	//
-		//																														//
-		//																														//
-		//	PageTag: Management data area. Can be accessed via GetPageTag() method.												//
-		//	Pool: Acttive memory area. Can be accessed via GetPool() method.													//
-		//																														//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		///////////////////////////////////////// Pool structure /////////////////////////////////////////////
-		//																									//
-		//	|===========================|===========================| ... |===========================|		//
-		//																									//
-		//	 <-- m_BlockSize [bytes] --> <-- m_BlockSize [bytes] -->  ...  <-- m_BlockSize [bytes] -->		//
-		//																									//
-		//	 <-------------- m_PoolSize = m_NumActiveBlocks * m_BlockSize [bytes] ------------------->		//
-		//																									//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////
-
+		//============== Private variables =================//
 
 		// Page structural paremeters
-		size_t	m_BlockSize;
+		size_t	m_BlockSize;		// size of single data
 		uint32	m_CommitBatchSize;	// number of pages to commit at once
-		size_t	m_PageSize;//m_AllocSize;
+		size_t	m_PageSize;			// page size
 		//size_t	m_PageDataSize;			// = m_AllocSize - Page::HeaderSize;
-		size_t	m_BitFlagSize;		// = DivUp( m_PageDataSize / m_BlockSize, BitSize::uInt8 );
-		size_t	m_PageTagSize;		// = RoundUp( sizeof(PageTag::NumFreeBlocks) + m_BitFlagSize, ByteSize::DefaultAlignment );
-		int32	m_NumActiveBlocks;	// = ( m_PageDataSize - m_PageTagSize ) / m_BlockSize;
-		size_t	m_PoolSize;			// = m_NumActiveBlocks * m_BlockSize;
+		size_t	m_BitFlagSize;
+		size_t	m_PageTagSize;
+		int32	m_NumActiveBlocks;
+		size_t	m_PoolSize;
 
 		// Feed and relevant parameters.
 		size_t	m_AlignedPageSize;	// m_PageSize aligned by OS page size (4096 bytes etc..)
@@ -211,13 +169,16 @@ namespace OreOreLib
 		// Virtual memory
 		RegionTag	m_VirtualMemoryNil;		// Nill for Virtual Memory list.
 		void*		m_pVirtualMemory;		// Current Virtual Memory reserved from OS.
-		size_t		m_PageCapacity;		// Maximum number of pages m_pVirtualMemory can hold.
+		uint32		m_PageCapacity;		// Maximum number of pages m_pVirtualMemory can hold.
 		uint8*		m_pRegionBase;	// Base address of m_pVirtualMemory aligned by RegionTag::Alignment.
-		size_t		m_CommitedPageCount;
+		uint32		m_CommitedPageCount;
+
+
+		//============== Private methods =================//
 
 		// Page Opearations
 		void AllocatePages( uint32 numPages );
-		bool FreePage2( Page*& page );
+		bool FreePage( Page*& page );
 		void ClearPages();
 
 		// Page State Check
@@ -240,7 +201,8 @@ namespace OreOreLib
 		void InitFeedParams( size_t blockSize, size_t pageCapacity );
 
 	
-		// Friend functions
+		//============== Friend functions ==============//
+
 		friend RegionTag* GetRegionTag( const void* ptr );
 		//friend void ExtractMemoryInfo( const void* ptr, OreOreLib::Page*& page, OreOreLib::PoolAllocator*& alloc );
 
