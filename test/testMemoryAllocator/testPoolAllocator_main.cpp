@@ -1,24 +1,11 @@
 ﻿#include	<crtdbg.h>
 
-
 #include	<oreore/common/TString.h>
 #include	<oreore/mathlib/MathLib.h>
 #include	<oreore/memory/PoolAllocator.h>
 
 #include	<oreore/os/OSAllocator.h>
 
-
-
-
-inline static void Delete( void*& p )
-{
-	if( p )
-	{
-		tcout << p << tendl;
-		delete p;
-		p = nullptr;//NULL;
-	}
-}
 
 
 
@@ -118,7 +105,6 @@ inline static void Delete( void*& p )
 int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-
 
 	while( 1 )
 	{

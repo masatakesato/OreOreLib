@@ -318,4 +318,21 @@ inline static OUT_TYPE ArraySize( const T (&)[SIZE] )
 
 
 
+// Alignment finder
+//		reference: https://stackoverflow.com/questions/364483/determining-the-alignment-of-c-c-structures-in-relation-to-its-members
+
+template < typename T >
+struct AlignmentOf
+{
+private:
+
+	struct AlignmentFinder { char a; T b; };
+
+public:
+
+	static constexpr sizeType value = static_cast<sizeType>( sizeof( AlignmentFinder ) - sizeof(T) );
+};
+
+
+
 #endif	// UTILITY_H //
