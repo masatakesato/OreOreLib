@@ -1,5 +1,5 @@
-﻿#ifndef	CACHE_DATA_MANAGER_H
-#define	CACHE_DATA_MANAGER_H
+﻿#ifndef	OBJECT_POOL_H
+#define	OBJECT_POOL_H
 
 #include	<windows.h>
 #include	<process.h>
@@ -15,21 +15,23 @@ namespace OreOreLib
 
 	//##################################################################################//
 	//																					//
-	//									PoolManager										//
+	//									ObjectPool										//
 	//																					//
 	//##################################################################################//
 
-	class PoolManager
+	class ObjectPool
 	{
 	public:
 
-		PoolManager();
-		PoolManager( int max_slots );
-		~PoolManager();
-		PoolManager( const PoolManager& ) = delete;
+		static const uint16 N = 4096;
 
-		void Init( int max_slots );
-		void Resize( int max_slots );
+		ObjectPool();
+		ObjectPool( uint32 capacity );
+		~ObjectPool();
+		ObjectPool( const ObjectPool& ) = delete;
+
+		void Init( uint32 capacity );
+		void Resize( uint32 capacity );
 		void Release();
 
 		int Capacity() const				{ return m_Capacity; }			// キャッシュが保持するスロット数を返す
@@ -37,9 +39,9 @@ namespace OreOreLib
 
 		bool IsFull() const					{ return m_FreeSlots.IsEmpty(); }	// スロットが満杯かどうかチェックする(m_FreeSlotsが空なら満杯)
 		bool IsEmpty() const				{ return m_FreeSlots.IsFull(); }	// 全スロットが未使用かどうかチェックする(m_FreeSlotsが満杯ならtrue)
-		bool IsRererved( int slot_id) const	{ return (m_CacheStatus + slot_id)->reserved; }
-		bool IsDirty( int slot_id ) const	{ return (m_CacheStatus + slot_id)->reserved && (m_CacheStatus + slot_id)->dirty; }	// 最近データへのアクセスがあったかどうか調べる
-		bool IsClean( int slot_id ) const	{ return (m_CacheStatus + slot_id)->reserved && !(m_CacheStatus + slot_id)->dirty; }// アクセスなしの放置状態になっているかどうか調べる
+		bool IsRererved( int slot_id) const	{ return (m_BlockStatus + slot_id)->reserved; }
+		bool IsDirty( int slot_id ) const	{ return (m_BlockStatus + slot_id)->reserved && (m_BlockStatus + slot_id)->dirty; }	// 最近データへのアクセスがあったかどうか調べる
+		bool IsClean( int slot_id ) const	{ return (m_BlockStatus + slot_id)->reserved && !(m_BlockStatus + slot_id)->dirty; }// アクセスなしの放置状態になっているかどうか調べる
 		
 		int ReserveSlot();						// Reserve available slot
 		bool ReserveSlots( Memory<int>& slots );// Reserve multiple slots
@@ -55,7 +57,7 @@ namespace OreOreLib
 
 	private:
 
-		struct SlotStatus
+		struct BlockStatus
 		{
 			bool dirty;		// true: recently accessed to slot, false: no recent access
 			bool reserved;	// true: slot is reserved, false: slot is free to use
@@ -63,30 +65,33 @@ namespace OreOreLib
 
 		int				m_Capacity;			// データスロット最大数
 		int				m_numReservedSlots;	// 予約可能なデータスロットの数
-		SlotStatus		*m_CacheStatus;		// タイルキャッシュの使用状況
+		BlockStatus		m_BlockStatus[ N ];		// タイルキャッシュの使用状況
 		RingQueue<int>	m_FreeSlots;		// 空きスロットの番号リスト
+
+		uint16			m_Front;
+		uint16			m_FreeList[ N ];
 
 	};
 
 
 
 	// 指定スロットのデータを「しばらくアクセスがない=汚れていない」状態にする -> 複数指定したいなら Variadic argments か initializer_listにする
-	inline bool PoolManager::SetClean( int slot )
+	inline bool ObjectPool::SetClean( int slot )
 	{
 		ASSERT( slot < m_Capacity );
 
-		m_CacheStatus[ slot ].dirty	= false;
+		m_BlockStatus[ slot ].dirty	= false;
 		return true;
 	}
 
 
 
 	// 指定スロットのデータを「最近アクセスした=触って垢がついた」状態にする. -> 複数指定したいなら Variadic argments か initializer_listにする
-	inline bool PoolManager::SetDirty( int slot )
+	inline bool ObjectPool::SetDirty( int slot )
 	{
 		ASSERT( slot < m_Capacity );
 
-		SlotStatus& status = m_CacheStatus[ slot ];
+		BlockStatus& status = m_BlockStatus[ slot ];
 
 		if( status.reserved == false )
 			return false;
@@ -98,7 +103,7 @@ namespace OreOreLib
 
 
 	// キャッシュの未使用領域を探して予約する
-	inline int PoolManager::ReserveSlot()
+	inline int ObjectPool::ReserveSlot()
 	{	
 		if( m_FreeSlots.IsEmpty() )	return -1;	// フリースロットが空の場合は処理中止
 
@@ -106,8 +111,8 @@ namespace OreOreLib
 		int freeSlot	= m_FreeSlots.Dequeue();
 
 		//=========== 空きスロットを使用状態にする ===========//
-		m_CacheStatus[ freeSlot ].reserved	= true;
-		m_CacheStatus[ freeSlot ].dirty		= true;
+		m_BlockStatus[ freeSlot ].reserved	= true;
+		m_BlockStatus[ freeSlot ].dirty		= true;
 
 		//======= 使用中スロット数をインクリメントする =======//
 		++m_numReservedSlots;
@@ -118,7 +123,7 @@ namespace OreOreLib
 
 
 	// キャッシュの未使用領域を指定数探して予約する。戻り値は先頭スロット(予約失敗した場合は-1を返す)
-	inline bool PoolManager::ReserveSlots( Memory<int>& slots )
+	inline bool ObjectPool::ReserveSlots( Memory<int>& slots )
 	{	
 		auto numslots = slots.Length();
 
@@ -135,14 +140,14 @@ namespace OreOreLib
 
 
 	// 指定スロットを解放し、未使用状態にする
-	inline bool PoolManager::FreeSlot( int tile_id )
+	inline bool ObjectPool::FreeSlot( int tile_id )
 	{
 		if( tile_id >= m_Capacity )
 			return false;
 
 		//========== 指定スロットを空き状態にする ============//
-		m_CacheStatus[ tile_id ].reserved	= false; // タイル領域を予約する
-		m_CacheStatus[ tile_id ].dirty		= false;// アップロード直後はアクセス痕跡を残す
+		m_BlockStatus[ tile_id ].reserved	= false; // タイル領域を予約する
+		m_BlockStatus[ tile_id ].dirty		= false;// アップロード直後はアクセス痕跡を残す
 
 		//========== 空きスロットリストに登録する ============//
 		m_FreeSlots.Enqueue( tile_id );
@@ -156,7 +161,7 @@ namespace OreOreLib
 
 
 	// 連続確保したスロット群を解放し、未使用状態にする
-	inline bool PoolManager::FreeSlots( Memory<int>& slots )
+	inline bool ObjectPool::FreeSlots( Memory<int>& slots )
 	{
 		auto result = true;
 
@@ -172,19 +177,27 @@ namespace OreOreLib
 
 
 	// 全スロットを未使用状態にする
-	inline void PoolManager::Clear()
+	inline void ObjectPool::Clear()
 	{
 		m_FreeSlots.Clear();
 
 		for( int i=0; i<m_Capacity; ++i )
 		{
-			m_CacheStatus[i].reserved	= false;
-			m_CacheStatus[i].dirty		= false;
+			m_BlockStatus[i].reserved	= false;
+			m_BlockStatus[i].dirty		= false;
 
 			m_FreeSlots.Enqueue(i);
 		}
 
 		m_numReservedSlots	= 0;
+
+
+		m_Front = 0;
+		for( uint32 i=0; i<N; ++i )
+		{
+			m_FreeList[i] = i+1;
+		}
+
 	}
 
 
@@ -192,4 +205,4 @@ namespace OreOreLib
 
 
 
-#endif	// CACHE_DATA_MANAGER_H //
+#endif	// OBJECT_POOL_H //

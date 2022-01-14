@@ -1,4 +1,4 @@
-﻿#include	"PoolManager.h"
+﻿#include	"ObjectPool.h"
 
 
 #include	<oreore/common/TString.h>
@@ -9,24 +9,24 @@ namespace OreOreLib
 {
 
 
-	PoolManager::PoolManager()
+	ObjectPool::ObjectPool()
 	{
 		m_Capacity		= 0;
 		m_numReservedSlots	= 0;
-		m_CacheStatus		= NULL;
+		//m_BlockStatus		= NULL;
 	}
 
 
 
-	PoolManager::PoolManager( int max_slots )
+	ObjectPool::ObjectPool( uint32 capacity )
 	{
 		//tcout << _T("TileCacheTexture::TileCacheTexture()...") << tendl;
-		Init( max_slots );
+		Init( capacity );
 	}
 
 
 
-	PoolManager::~PoolManager()
+	ObjectPool::~ObjectPool()
 	{
 		//tcout << _T("TileCacheTexture::~TileCacheTexture()...") << tendl;
 		Release();
@@ -34,16 +34,16 @@ namespace OreOreLib
 
 
 
-	void PoolManager::Init( int max_slots )
+	void ObjectPool::Init( uint32 capacity )
 	{
 		//================= パラメータ初期化 =================//	
-		m_Capacity		= max_slots;// TileCacheに格納できるタイル数
+		m_Capacity		= capacity;// TileCacheに格納できるタイル数
 		m_numReservedSlots	= 0;
 
 		//=========== ステータス管理バッファの確保 ===========//
-		SafeDeleteArray( m_CacheStatus );
-		m_CacheStatus		= new SlotStatus[ m_Capacity ];
-		m_FreeSlots.Init( max_slots );
+		//SafeDeleteArray( m_BlockStatus );
+		//m_BlockStatus		= new SlotStatus[ m_Capacity ];
+		m_FreeSlots.Init( capacity );
 
 		//================ バッファの初期化 ==================//
 		Clear();
@@ -51,18 +51,18 @@ namespace OreOreLib
 
 
 
-	void PoolManager::Resize( int max_slots )
+	void ObjectPool::Resize( uint32 capacity )
 	{
 
 	}
 
 
 
-	void PoolManager::Release()
+	void ObjectPool::Release()
 	{
 		m_Capacity		= 0;
 		m_numReservedSlots	= 0;
-		SafeDeleteArray( m_CacheStatus );
+		//SafeDeleteArray( m_BlockStatus );
 		m_FreeSlots.Release();
 	}
 
