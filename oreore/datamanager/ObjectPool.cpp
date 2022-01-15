@@ -43,7 +43,7 @@ namespace OreOreLib
 		//=========== ステータス管理バッファの確保 ===========//
 		//SafeDeleteArray( m_BlockStatus );
 		//m_BlockStatus		= new SlotStatus[ m_Capacity ];
-		m_FreeSlots.Init( capacity );
+		//m_FreeSlots.Init( capacity );
 
 		//================ バッファの初期化 ==================//
 		Clear();
@@ -63,7 +63,7 @@ namespace OreOreLib
 		m_Capacity		= 0;
 		m_numReservedSlots	= 0;
 		//SafeDeleteArray( m_BlockStatus );
-		m_FreeSlots.Release();
+		//m_FreeSlots.Release();
 	}
 
 
