@@ -31,7 +31,9 @@ namespace OreOreLib
 		// Default constructor
 		ObjectPool()
 			: m_Front( 0 )
-			//, m_numReservedSlots( 0 )
+			#ifdef _DEBUG
+			, m_NumReservedSlots( 0 )
+			#endif
 		{
 			for( SizeType i=0; i<CAPACITY; ++i )
 			{
@@ -61,7 +63,9 @@ namespace OreOreLib
 				m_FreeList[i] = i+1;
 			m_Front = 0;
 
-			//m_numReservedSlots = 0;
+			#ifdef _DEBUG
+			m_NumReservedSlots = 0;
+			#endif
 		}
 
 
@@ -71,27 +75,23 @@ namespace OreOreLib
 		}
 
 
-		//SizeType NumReservedSlots() const
-		//{
-		//	return m_numReservedSlots;
-		//}
-
-
-		bool IsFull() const
+		#ifdef _DEBUG
+		SizeType NumReservedSlots() const
 		{
-			return m_Front == CAPACITY;//m_numReservedSlots >= CAPACITY;
+			return m_NumReservedSlots;
 		}
+		#endif
 
 
-		//bool IsEmpty() const
-		//{
-		//	return m_numReservedSlots == 0;
-		//}
+		bool IsUsedup() const
+		{
+			return m_Front == CAPACITY;//m_NumReservedSlots >= CAPACITY;
+		}
 
 
 		T* const Reserve()
 		{	
-			if( IsFull() ) //if( m_FreeSlots.IsEmpty() )
+			if( IsUsedup() )
 				return nullptr;	// フリースロットが空の場合は処理中止
 
 			//=========== 空きスロットのIDを取得する ==============//
@@ -101,7 +101,9 @@ namespace OreOreLib
 			m_FreeList[ freeSlot ] = INVALID;
 
 			//======= 使用中スロット数をインクリメントする =======//
-			//++m_numReservedSlots;
+			#ifdef _DEBUG
+			++m_NumReservedSlots;
+			#endif
 
 			return &m_Pool[ freeSlot ];
 		}
@@ -118,7 +120,9 @@ namespace OreOreLib
 			m_Front = slot_id;// overwrite m_Front with slot_id
 
 			//========= 使用中スロット数をデクリメントする =======//
-			//--m_numReservedSlots;
+			#ifdef _DEBUG
+			--m_NumReservedSlots;
+			#endif
 
 
 			return true;
@@ -132,7 +136,10 @@ namespace OreOreLib
 
 		SizeType	m_FreeList[ CAPACITY ];// [0, 65534]. 65535は無効インデックス値
 		SizeType	m_Front;
-	//	SizeType	m_numReservedSlots;	// 使用中スロットの数
+
+		#ifdef _DEBUG
+		SizeType	m_NumReservedSlots;	// 使用中スロットの数
+		#endif
 
 	};
 
