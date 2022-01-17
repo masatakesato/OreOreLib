@@ -13,74 +13,6 @@
 namespace OreOreLib
 {
 
-	//######################################################################################//
-	//																						//
-	//							PoolAllocator memory data structure							//
-	//																						//
-	//######################################################################################//
-
-
-
-		/////////////////////////////////////////////////////////// m_pVirtualMemory /////////////////////////////////////////////////////////////////
-		//																																			//
-		// m_pVirtualMemory  m_pRegionBase                                                                                                          //
-		//  v               v                                                                                                                       //
-		//	|               |                                       |                         |                              |             |   |	//
-		//	|<- alignment ->|=============== RegionTag =============|=== Page ===|** unused **|====== Page =====|** unused **|==...   ...**|---|	//
-		//	|				|                                                                                                                  |	//
-		//	|				| <-- m_AlignedRegionTagSize [bytes] -->                                                                           |	//
-		//	|				|                                                                                                                  |	//
-		//	|				| <--------------- m_AlignedFirstPageSize [bytes] ---------------> <- m_AlignedPageSize [bytes]-> <-- ...          |	//
-		//	|				|                                                                                                                  |	//
-		//	|				| <--------------------------------------- m_AlignedReserveSize [bytes] -----------------------------------------> |	//
-		//																																			//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		///////////////////////////////////// Page ///////////////////////////////////////
-		//																				//
-		//																				//
-		//	|== Page::next ==|== Page::prev ==|============ Page::data ============|	//
-		//																				//
-		//	 <--- Page::HeaderSize [bytes] --> <----- m_PageDataSize [bytes] ----->		//
-		//																				//
-		//	 <------------------------ m_PageSize [bytes] ------------------------>		//
-		//																				//
-		//////////////////////////////////////////////////////////////////////////////////
-
-
-		///////////////////////////////////////////////////// Page::data /////////////////////////////////////////////////////////////
-		//																															//
-		//	|                   PageTag                                |                  Pool                  |                 |	//
-		//																															//
-		//	|== PageTag::NumFreeBlocks ==|===== PageTag::FreeBits =====|========================================|** unused area **|	//
-		//																															//
-		//	 <-------- 2 [bytes] -------> <-- m_BitFlagSize [bytes] --> <---------- m_PoolSize [bytes] -------->					//
-		//																															//
-		//   <----------------- m_PageTagSize [bytes] ---------------->                                                             //
-		//																															//
-		//	 <--------------------------------------------- m_PageDataSize [bytes] ---------------------------------------------->	//
-		//																															//
-		//																															//
-		//	PageTag: Management data area. Can be accessed via GetPageTag() method.													//
-		//	Pool: Acttive memory area. Can be accessed via GetPool() method.														//
-		//																															//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		///////////////////////////////////////////// Pool ///////////////////////////////////////////////////
-		//																									//
-		//	|===========================|===========================| ... |===========================|		//
-		//																									//
-		//	 <-- m_BlockSize [bytes] --> <-- m_BlockSize [bytes] -->  ...  <-- m_BlockSize [bytes] -->		//
-		//																									//
-		//	 <-------------- m_PoolSize = m_NumActiveBlocks * m_BlockSize [bytes] ------------------->		//
-		//																									//
-		//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 	//######################################################################################//
 	//																						//
@@ -860,6 +792,13 @@ namespace OreOreLib
 
 
 
+	uint8* PoolAllocator::GetBlockBase( const void* ptr ) const
+	{
+		auto poolbase = (size_t)GetPage( ptr ) + Page::HeaderSize + m_PageTagSize;
+		return (uint8*)poolbase + Round( size_t(ptr) - poolbase, m_BlockSize );
+	}
+
+
 
 #ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 
@@ -1195,28 +1134,46 @@ namespace OreOreLib
 	Page* PoolAllocator::GetPage( const void* ptr ) const
 	{
 		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-			size_t base	= size_t(ptr) & RegionTag::AlignmentMask;//RoundUp( (size_t)OSAllocator::GetAllocationBase( ptr ), RegionTag::Alignment );
+			size_t base	= size_t(ptr) & RegionTag::AlignmentMask;
 			ASSERT( base % RegionTag::Alignment == 0 && _T("PoolAllocator::GetPage(): Cound not find base address from ptr") );
 		#else
 			size_t base		= (size_t)OSAllocator::GetAllocationBase( ptr );
 		#endif
 
+		size_t offset = (size_t)ptr - base;
+		ASSERT( offset >= m_AlignedRegionTagSize );
 
-		RegionTag* pRTag	= (RegionTag*)base;
-		size_t offset		= Round( (size_t)ptr - base, pRTag->PageSize )
-							+ Round( pRTag->RegionTagSize, OSAllocator::PageSize() );// shift if RegionTag only page exists.
-
-		if( offset >= pRTag->RegionSize )
-			return nullptr;
-			
-		if( offset == 0 )
-		{
-			//tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
-			offset += pRTag->RegionTagSize;
-		}
-
-		return (Page*)( base + offset );
+		return offset < m_AlignedFirstPageSize ?
+				(Page*)( base + m_AlignedRegionTagSize ) :
+				(Page*)( base + m_AlignedFirstPageSize + Round( offset - m_AlignedFirstPageSize, m_AlignedPageSize ) );
 	}
+
+	// Old implementetaion.
+	//Page* PoolAllocator::GetPage( const void* ptr ) const
+	//{
+	//	#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+	//		size_t base	= size_t(ptr) & RegionTag::AlignmentMask;
+	//		ASSERT( base % RegionTag::Alignment == 0 && _T("PoolAllocator::GetPage(): Cound not find base address from ptr") );
+	//	#else
+	//		size_t base		= (size_t)OSAllocator::GetAllocationBase( ptr );
+	//	#endif
+
+
+	//	RegionTag* pRTag	= (RegionTag*)base;
+	//	size_t offset		= Round( (size_t)ptr - base, pRTag->PageSize )
+	//						+ Round( pRTag->RegionTagSize, OSAllocator::PageSize() );// shift if RegionTag only page exists.
+
+	//	if( offset >= pRTag->RegionSize )
+	//		return nullptr;
+	//		
+	//	if( offset == 0 )
+	//	{
+	//		//tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
+	//		offset += pRTag->RegionTagSize;
+	//	}
+
+	//	return (Page*)( base + offset );
+	//}
 
 
 
