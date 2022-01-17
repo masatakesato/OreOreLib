@@ -13,7 +13,7 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	OreOreLib::PoolAllocator	memblock( 65536, 32768 );//memblock( 4100, 4080 );//
+	OreOreLib::PoolAllocator	memblock;//( 65536, 32768 );//memblock( 4100, 4080 );//
 	memblock.Display();
 
 	while( 1 )

@@ -196,10 +196,8 @@ namespace OreOreLib
 
 	public:
 
-		static const uint32 COMMIT_BATCH_SIZE = 4;
-
 		PoolAllocator();// Default constructor
-		PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize=COMMIT_BATCH_SIZE, uint32 pageCapacity=COMMIT_BATCH_SIZE );// Constructor
+		PoolAllocator( uint32 allocSize, uint32 blockSize, uint32 commitBatchSize=DefaultCommitBatchSize, uint32 pageCapacity=DefaultPageCApacity );// Constructor
 		PoolAllocator( const PoolAllocator& obj );// Copy constructor
 		PoolAllocator( PoolAllocator&& obj );// Move constructor
 		~PoolAllocator();// Destructor
@@ -207,7 +205,7 @@ namespace OreOreLib
 		PoolAllocator& operator=( const PoolAllocator& obj );// Copy assignment operator
 		PoolAllocator& operator=( PoolAllocator&& obj );// Move assignment operator
 
-		void Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize=COMMIT_BATCH_SIZE, uint32 pageCapacity=COMMIT_BATCH_SIZE );
+		void Init( size_t allocSize, size_t blockSize, uint32 commitBatchSize=DefaultCommitBatchSize, uint32 pageCapacity=DefaultPageCApacity );
 		void Cleanup();// Release unused memory
 
 		void* Allocate( size_t alignment=0 );//void* Allocate();

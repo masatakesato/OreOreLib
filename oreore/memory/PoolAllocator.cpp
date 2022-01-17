@@ -211,7 +211,7 @@ namespace OreOreLib
 
 		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( nullptr )
-		, m_PageCapacity( pageCapacity )
+		, m_PageCapacity( 0 )
 		, m_pRegionBase( nullptr )
 		, m_CommitedPageCount( 0 )
 	{
@@ -1294,7 +1294,7 @@ namespace OreOreLib
 // ================================== RegionTag::Alignmentに納まるようにcommitBatchSizeをクランプする ========================
 //
 // (3) バーチャルメモリーは何ページ分一括確保できるの？
-		m_PageCapacity	= size_t( (firstPageStartToLastPool & RegionTag::AlignmentMask)==0 );
+		m_PageCapacity	= uint32( (firstPageStartToLastPool & RegionTag::AlignmentMask)==0 );
 		size_t pageBase = m_AlignedFirstPageSize;// + pageStartToLastPool;
 
 		while( m_PageCapacity < pageCapacity )
@@ -1306,9 +1306,12 @@ namespace OreOreLib
 			pageBase += m_AlignedPageSize;
 		}
 
-		ASSERT( m_PageCapacity > 0 );
+#else
+		m_PageCapacity = uint32( pageCapacity );
 
 #endif
+
+		ASSERT( m_PageCapacity > 0 );
 
 		m_AlignedReserveSize = RoundUp( m_AlignedFirstPageSize + m_AlignedPageSize * ( m_PageCapacity - 1 ),// 一括確保したいページ数分だけリザーブ領域を設定する
 										OSAllocator::AllocationGranularity() );// 64KBアドレス空間でm_AlignedPageSizeを切り上げる
