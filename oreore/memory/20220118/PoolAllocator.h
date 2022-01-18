@@ -151,7 +151,7 @@ namespace OreOreLib
 
 
 		void ConnectAfter( Page* pnode );
-		void ConnectBefore( Page* pnode );
+		//void ConnectBefore( Page* pnode );
 		void Disconnect();
 		void DisconnectPrev();
 		void DisconnectNext();

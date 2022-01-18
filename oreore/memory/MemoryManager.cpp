@@ -214,18 +214,7 @@ namespace OreOreLib
 
 		if( size < c_NumSizes )// PoolAllocator can handle "size" allocation
 		{
-			PoolAllocator* pAllocator = m_pSizeToPoolTable[ size ];
-/*
-			//pAllocator->Display();
-			void* mem = pAllocator->Allocate();
-			//pAllocator->Display();
-			//tcout << "  Allocated address: " << (uint8*) mem << tendl;
-
-			return alignment==0
-				? mem
-				: (void*)RoundUp( size_t(mem), alignment );
-*/
-			return pAllocator->Allocate( alignment );
+			return m_pSizeToPoolTable[ size ]->Allocate( alignment );
 		}
 		else// PoolAllocator is unavailable for large memory allocation 
 		{

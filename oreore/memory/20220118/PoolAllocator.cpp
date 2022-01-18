@@ -38,20 +38,20 @@ namespace OreOreLib
 	}
 
 
-	void Page::ConnectBefore( Page* pnode )
-	{
-		if( !IsAlone() )	return;
-			
-		// update connection of this node
-		prev = pnode->prev;
-		next = pnode;
+	//void Page::ConnectBefore( Page* pnode )
+	//{
+	//	if( !IsAlone() )	return;
+	//		
+	//	// update connection of this node
+	//	prev = pnode->prev;
+	//	next = pnode;
 
-		// update connection of pnode
-		pnode->prev = this;
+	//	// update connection of pnode
+	//	pnode->prev = this;
 
-		// update connection of next node
-		if( prev )	prev->next = this;
-	}
+	//	// update connection of next node
+	//	if( prev )	prev->next = this;
+	//}
 
 
 	void Page::Disconnect()
@@ -941,18 +941,18 @@ namespace OreOreLib
 	{
 		tcout << _T( "PoolAllocator::Cleanup()...\n" );
 
-		RegionTag* currRTag = m_VirtualMemoryNil.next;
-		RegionTag* prevRTag = &m_VirtualMemoryNil;
+		RegionTag* feed = m_VirtualMemoryNil.next;
+		RegionTag* prev = &m_VirtualMemoryNil;
 
-		while( currRTag )
+		while( feed )
 		{
-			if( IsInUse( currRTag ) == false )
+			if( IsInUse( feed ) == false )
 			{
-				tcout << _T( "  Unused Region found: " ) << (unsigned *)currRTag << tendl;
+				tcout << _T( "  Unused Feed found: " ) << (unsigned *)feed << tendl;
 
-				prevRTag->DisconnectNext();
+				prev->DisconnectNext();
 				
-				// Removing commited clean pages inside currRTag
+				// Remove clean pages commited from feed
 				tcout << _T( "    Removing commited clean pages...\n" );
 
 				Page* page = m_CleanFront;
@@ -960,13 +960,9 @@ namespace OreOreLib
 				{
 					Page* nextpage = page->next;
 
-				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-					void* base = (void*)( (size_t)page & RegionTag::AlignmentMask );
-				#else
-					void* base = OSAllocator::GetAllocationBase( page );
-				#endif
-
-					if( base == currRTag )
+// TODO: ENABLE_VIRTUAL_ADDRESS_ALIGNMENT. 2022.01.18
+void* base = OSAllocator::GetAllocationBase( page );					
+					if( base == feed )
 					{
 						tcout << _T( "      " ) << (unsigned*)page << tendl;
 						if( page == m_CleanFront )	m_CleanFront = nextpage;
@@ -975,11 +971,7 @@ namespace OreOreLib
 					page = nextpage;
 				}
 
-				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-				if( currRTag->AllocationBase == m_pVirtualMemory )
-				#else
-				if( currRTag == m_pVirtualMemory )
-				#endif
+				if( feed == m_pVirtualMemory )
 				{
 					tcout << _T( "    Invalidating FeedFront...\n" );
 					m_pVirtualMemory	= nullptr;
@@ -988,32 +980,23 @@ namespace OreOreLib
 				}
 
 				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-					auto result = OSAllocator::Release( currRTag->AllocationBase );
+					auto result = OSAllocator::Release( feed->AllocationBase );
 				#else
-					auto result = OSAllocator::Release( currRTag );
+					auto result = OSAllocator::Release( feed );
 				#endif
 				
-				ASSERT( result );
 				tcout << _T( "    Released FeedFront: " ) << result << tendl;
 				
-				currRTag = prevRTag->next;
+				feed = prev->next;
 			}
 			else
 			{
-				prevRTag = currRTag;
-				currRTag = currRTag->next;
+				prev = feed;
+				feed = feed->next;
 			}
 		}
 		
 	}
-
-
-
-
-
-
-
-
 
 
 
@@ -1220,7 +1203,6 @@ namespace OreOreLib
 		m_PageSize = wastedSize > OSAllocator::PageSize()
 			? RoundUp( (size_t)activeSize, OSAllocator::PageSize() )// clip wasted space larger than OS page size
 			: allocSize;
-
 		//m_PageDataSize =  m_PageSize - Page::HeaderSize;
 
 		ASSERT( m_NumActiveBlocks > 0 );
