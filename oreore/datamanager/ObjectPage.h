@@ -137,10 +137,6 @@ namespace OreOreLib
 			// Clean: 00
 			// Dirty: 01
 			// Usedup:10
-		
-			//uint16 blocks = GetPageTag(p)->NumFreeBlocks;
-			//return PageStates( ( blocks<m_NumActiveBlocks) << uint8(blocks==0) );
-			// 0: Clean, 1: Dirty, 2: Usedup
 		}
 
 
