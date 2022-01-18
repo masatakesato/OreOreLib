@@ -228,7 +228,7 @@ namespace OreOreLib
 				RegionTag* mem = (RegionTag*)OSAllocator::ReserveAndCommit( allocSize );
 			#endif
 
-			mem->Init( sizeof(RegionTag), size, 1, nullptr );// Set RegionTag.pAllocator to nullptr
+			mem->Init( sizeof(RegionTag), size, 1, 1, nullptr );// Set RegionTag.pAllocator to nullptr
 			//OSAllocator::DisplayMemoryInfo( mem );
 			//tcout << "  Allocated address: " << (uint8*)mem + sizeof(RegionTag) << tendl;
 
@@ -294,16 +294,16 @@ namespace OreOreLib
 	bool MemoryManager::Free( void*& mem )
 	{
 		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
-			size_t base	= size_t(mem) & RegionTag::AlignmentMask;//tcout << base % RegionTag::Alignment << tendl;
+			size_t base	= size_t(mem) & RegionTag::AlignmentMask;
 		#else
-			size_t base	= (size_t)OSAllocator::GetAllocationBase( mem );
+			size_t base		= (size_t)OSAllocator::GetAllocationBase( ptr );
 		#endif
 
 		RegionTag* pRTag	= (RegionTag*)base;
-		size_t offset		= Round( (size_t)mem - base, pRTag->PageSize )
-							+ Round( pRTag->RegionTagSize, OSAllocator::PageSize() );// shift if RegionTag-only page exists.
+		size_t offset		= (size_t)mem - base;
+		ASSERT( offset >= pRTag->RegionTagSize );
 		
-		if( !pRTag->pAllocator )// Allocated memory without PoolAllocator
+		if( !pRTag->pAllocator )// Free memory without PoolAllocator
 		{
 			mem = nullptr;
 			
@@ -313,16 +313,18 @@ namespace OreOreLib
 				return OSAllocator::Release( (void*)base );
 			#endif
 		}
-		else if( offset < pRTag->RegionSize )// Allocated memory using PoolAllocator
+		else if( offset < pRTag->RegionSize )// Free memory using PoolAllocator
 		{
-			if( offset == 0 )//tcout << "GetPage from FIRST PAGE. Shifting offset by " << pRTag->RegionTagSize << "\n";
-				offset += pRTag->RegionTagSize;
+			offset = offset < pRTag->FirstPageSize
+				? pRTag->RegionTagSize	// Set offset for First page 
+				: pRTag->FirstPageSize + Round( offset - pRTag->FirstPageSize, pRTag->PageSize );// Set offset for Second and the following pages 
 
-			bool result = pRTag->pAllocator->Free( (void*&)mem, (Page*)( base + offset ) );
-
-			pRTag->pAllocator->Display();
-
-			return result;//pRTag->pAllocator->Free( (void*&)mem, (Page*)( base + offset ) );
+			//bool result = pRTag->pAllocator->Free( (void*&)mem, (Page*)( base + offset ) );
+			//pRTag->pAllocator->Display();
+			//ASSERT( result );
+			//return result;
+			
+			return pRTag->pAllocator->Free( (void*&)mem, (Page*)( base + offset ) );
 		}
 		else// MemoryManager cannot trace Allocation
 		{

@@ -34,7 +34,7 @@ int main()
 		float32* ptr3 = (float32*)manager.Reallocate( (void*&)ptr, 8, 8 );
 		manager.Display();
 
-		//manager.Free( (void*&)ptr3 );
+		manager.Free( (void*&)ptr3 );
 		//return 0;
 	}
 

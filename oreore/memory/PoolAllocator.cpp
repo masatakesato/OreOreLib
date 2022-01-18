@@ -116,16 +116,28 @@ namespace OreOreLib
 	//######################################################################################//
 
 
-	void RegionTag::Init( size_t rtagsize, size_t regionsize, size_t pagesize, PoolAllocator* pallocator )
+	//void RegionTag::Init( size_t rtagsize, size_t regionsize, size_t pagesize, PoolAllocator* pallocator )
+	//{
+	//	next			= nullptr;
+	//	RegionTagSize	= rtagsize;
+	//	RegionSize		= regionsize;
+	//	PageSize		= pagesize;
+	//	pAllocator		= pallocator;
+
+	//	//NumActivePages	= ( regionsize - rtagsize ) / pagesize;
+	//	//NumFreeOSPages	= pRTag->NumActivePages;
+	//}
+
+
+
+	void RegionTag::Init( size_t regionTagSize, size_t regionSize, size_t firstPageSize, size_t pageSize, PoolAllocator* allocator )
 	{
 		next			= nullptr;
-		RegionTagSize	= rtagsize;
-		RegionSize		= regionsize;
-		PageSize		= pagesize;
-		pAllocator		= pallocator;
-
-		//NumActivePages	= ( regionsize - rtagsize ) / pagesize;
-		//NumFreeOSPages	= pRTag->NumActivePages;
+		RegionTagSize	= regionTagSize;
+		RegionSize		= regionSize;
+		FirstPageSize	= firstPageSize;
+		PageSize		= pageSize;
+		pAllocator		= allocator;
 	}
 
 
@@ -184,7 +196,7 @@ namespace OreOreLib
 		, m_DirtyFront( nullptr )
 		, m_UsedupFront( nullptr )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( nullptr )
 		, m_PageCapacity( 0 )
 		, m_pRegionBase( nullptr )
@@ -208,7 +220,7 @@ namespace OreOreLib
 		, m_DirtyFront( nullptr )
 		, m_UsedupFront( nullptr )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( nullptr )
 		, m_PageCapacity( 0 )
 		, m_pRegionBase( nullptr )
@@ -246,7 +258,7 @@ namespace OreOreLib
 		, m_DirtyFront( nullptr )
 		, m_UsedupFront( nullptr )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( nullptr )
 		, m_PageCapacity( obj.m_PageCapacity )
 		, m_pRegionBase( nullptr )
@@ -281,7 +293,7 @@ namespace OreOreLib
 		, m_DirtyFront( obj.m_DirtyFront )
 		, m_UsedupFront( obj.m_UsedupFront )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, nullptr }
+		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
 		, m_pVirtualMemory( obj.m_pVirtualMemory )
 		, m_PageCapacity( obj.m_PageCapacity )
 		, m_pRegionBase( obj.m_pRegionBase )
@@ -785,7 +797,7 @@ namespace OreOreLib
 
 				// Initialize RegionTag
 				RegionTag* pRTag = (RegionTag*)m_pRegionBase;
-				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );
+				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedFirstPageSize, m_AlignedPageSize, this );
 				pRTag->ConnectAfter( &m_VirtualMemoryNil );
 				pRTag->AllocationBase = m_pVirtualMemory;// 仮想メモリ空間の先頭アドレスを保持する
 
@@ -860,7 +872,7 @@ namespace OreOreLib
 
 				// Initialize RegionTag
 				RegionTag* pRTag = (RegionTag*)m_pRegionBase;
-				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedPageSize, this );
+				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedFirstPageSize, m_AlignedPageSize, this );
 				pRTag->ConnectAfter( &m_VirtualMemoryNil );
 
 				newPage = (Page*)( m_pRegionBase + m_AlignedRegionTagSize );
@@ -1110,13 +1122,16 @@ namespace OreOreLib
 	{
 		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 			size_t base	= size_t(ptr) & RegionTag::AlignmentMask;
-			ASSERT( base % RegionTag::Alignment == 0 && _T("PoolAllocator::GetPage(): Cound not find base address from ptr") );
 		#else
 			size_t base		= (size_t)OSAllocator::GetAllocationBase( ptr );
 		#endif
 
 		size_t offset = (size_t)ptr - base;
 		ASSERT( offset >= m_AlignedRegionTagSize );
+
+		//ASSERT( ((RegionTag*)(base))->RegionTagSize == m_AlignedRegionTagSize );
+		//ASSERT( ((RegionTag*)(base))->PageSize == m_AlignedPageSize );
+		//ASSERT( ((RegionTag*)(base))->FirstPageSize == m_AlignedFirstPageSize );/
 
 		return offset < m_AlignedFirstPageSize ?
 				(Page*)( base + m_AlignedRegionTagSize ) :
@@ -1128,7 +1143,6 @@ namespace OreOreLib
 	//{
 	//	#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 	//		size_t base	= size_t(ptr) & RegionTag::AlignmentMask;
-	//		ASSERT( base % RegionTag::Alignment == 0 && _T("PoolAllocator::GetPage(): Cound not find base address from ptr") );
 	//	#else
 	//		size_t base		= (size_t)OSAllocator::GetAllocationBase( ptr );
 	//	#endif
