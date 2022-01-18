@@ -1008,7 +1008,9 @@ namespace OreOreLib
 				while( page != &m_Nil )
 				{
 					Page* nextpage = page->next;
-					void* base = OSAllocator::GetAllocationBase( page );					
+
+// TODO: ENABLE_VIRTUAL_ADDRESS_ALIGNMENT. 2022.01.18
+void* base = OSAllocator::GetAllocationBase( page );					
 					if( base == feed )
 					{
 						tcout << _T( "      " ) << (unsigned*)page << tendl;

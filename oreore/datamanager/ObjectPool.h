@@ -25,16 +25,15 @@ namespace OreOreLib
 	{
 		using ObjPage = ObjectPage<T, PageBloks >;
 
-		template < typename T, uint16 CAPACITY >
-		struct ObjPageNode
+		struct PageNode
 		{
-			ObjectPool< T, CAPACITY > pool;//uint8 data[1];//
-			ObjPageNode* next = nullptr;
-			static const size_t HeaderSize = sizeof(next);// next byte length
+			ObjPage		page;//uint8 data[1];//
+			PageNode*	prev = nullptr;
+			PageNode*	next = nullptr;
+//			static const size_t HeaderSize = sizeof(next);// next byte length
 
-TODO:  nextだけで実装可能か検討する. 2022.01.18
 
-			void ConnectAfter( Page* pnode )
+			void ConnectAfter( PageNode* pnode )
 			{
 				if( !IsAlone() )	return;
 			
@@ -50,7 +49,7 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 			}
 
 
-			void ConnectBefore( Page* pnode )
+			void ConnectBefore( PageNode* pnode )
 			{
 				if( !IsAlone() )	return;
 			
@@ -102,7 +101,7 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 		ObjectPool()
 			: m_pAllocator( nullptr )
 
-			, m_Nil{ &m_Nil, 0x00 }
+//			, m_Nil{ &m_Nil, m_Nil, m_Nil }
 			, m_CleanFront( &m_Nil )
 			, m_DirtyFront( &m_Nil )
 			, m_UsedupFront( &m_Nil )
@@ -113,7 +112,15 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 
 		~ObjectPool()
 		{
+			m_pAllocator = nullptr;
+		}
 
+
+		void Init( PoolAllocator* const palloc )
+		{
+			m_pAllocator = palloc;
+
+			m_pAllocator->Init( sizeof( PageNode ) * 8, sizeof( PageNode ) );
 		}
 
 
@@ -121,17 +128,16 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 		{
 			tcout << _T( "ObjectPool::Cleanup()...\n" );
 
-			ObjPageNode* page = m_CleanFront;
+			PageNode* page = m_CleanFront;
 			while( page != &m_Nil )
 			{
-				ObjPageNode* nextpage = page->next;
-				void* base = OSAllocator::GetAllocationBase( page );					
-				if( base == feed )
-				{
-					tcout << _T( "      " ) << (unsigned*)page << tendl;
-					if( page == m_CleanFront )	m_CleanFront = nextpage;
-					page->Disconnect();
-				}
+				PageNode* nextpage = page->next;
+
+				tcout << _T( "      " ) << (unsigned*)page << tendl;
+				if( page == m_CleanFront )	m_CleanFront = nextpage;
+				page->Disconnect();
+
+				m_pAllocator->Free( page );
 				page = nextpage;
 			}
 
@@ -165,8 +171,8 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 			}
 
 
-			ObjPageNode* pagetag	= m_DirtyFront;
-			ObjPage* page = pagetag->data;
+			PageNode* pageNode	= m_DirtyFront;
+			ObjPage* page = &pageNode->page;
 
 			T* ptr = page->Reserve();
 
@@ -180,7 +186,7 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 
 				// Update m_UsedupFront if necessary
 				if( IsEmpty(m_UsedupFront) )
-					m_UsedupFront = page;
+					m_UsedupFront = (PageNode*)page;
 			}
 
 
@@ -201,15 +207,17 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 			tcout << _T( "ObjectPool::Free()..." ) << ptr << tendl;
 		
 			// Get ObjPage from ptr
-			ObjPage* page = m_pAllocator->GetBlockBase( ptr );
+			PageNode* pageNode = (PageNode*)m_pAllocator->GetBlockBase( ptr );
 		
 			// return false if page not found. 
-			if( !page )
+			if( !pageNode )
 				return false;
+
+			ObjPage* page = pageNode->pool;
 
 			// Clean: 0, Dirty: 1, Usedup: 2
 			auto stateBefore = page->PageState();//PageStates stateBefore = GetPageState( page );
-			FreeBlock( page, ptr );
+			page-> Free( ptr );
 			ptr = nullptr;
 			auto stateAfter = page->PageState();//PageStates stateAfter = GetPageState( page );
 
@@ -218,7 +226,7 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 			{
 				tcout << _T( "  Usedup -> Dirty...\n" );
 
-				ObjPageNode* pPivot = IsEmpty( m_DirtyFront ) ? m_CleanFront : m_DirtyFront;
+				PageNode* pPivot = IsEmpty( m_DirtyFront ) ? m_CleanFront : m_DirtyFront;
 
 				if( page->next != pPivot )
 				{
@@ -267,7 +275,7 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 					m_UsedupFront = &m_Nil;
 				}
 
-				m_CleanFront	= page;
+				m_CleanFront = page;
 			}
 
 			else if( stateBefore==ObjectPage::Dirty && stateAfter==ObjectPage::Dirty )// Do nothing.
@@ -285,7 +293,7 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 		{
 			while( m_Nil.next )
 			{
-				ObjPageNode* next = m_Nil.next;
+				PageNode* next = m_Nil.next;
 				m_Nil.DisconnectNext();
 				((ObjPage*)next->data)->~ObjPage();
 
@@ -305,15 +313,15 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 
 
 		//enum PageStates{ Clean, Dirty, Usedup, NumPageStates };
-		ObjPageNode	m_Nil;
-		ObjPageNode*	m_CleanFront;
-		ObjPageNode*	m_DirtyFront;
-		ObjPageNode*	m_UsedupFront;
+		PageNode	m_Nil;
+		PageNode*	m_CleanFront;
+		PageNode*	m_DirtyFront;
+		PageNode*	m_UsedupFront;
 
 
 		// Private helper functions
 
-		bool IsEmpty( const ObjPageNode* p ) const
+		bool IsEmpty( const PageNode* p ) const
 		{
 			return p==&m_Nil;
 		}
@@ -322,18 +330,18 @@ TODO:  nextだけで実装可能か検討する. 2022.01.18
 		ObjPage* GetObjPage( const void* ptr )
 		{
 			// ptrから先頭ブロックへ戻る
-			ObjPageNode* page = m_pAllocator->GetBlockBase( ptr );
+			PageNode* page = m_pAllocator->GetBlockBase( ptr );
 			return ((ObjPage*)page->data);
 		}
 
 
 		void AllocatePages( uint32 numPages )
 		{
-			ObjPageNode* newPage = nullptr;
+			PageNode* newPage = nullptr;
 
 			for( uint32 i=0; i<numPages; ++i )
 			{
-				newPage = static_cast<ObjPageNode*>( m_pAllocator->Allocate() );
+				newPage = static_cast<PageNode*>( m_pAllocator->Allocate() );
 
 				// Deploy as "Clean" page.
 				newPage->ConnectBefore( m_CleanFront );
