@@ -116,21 +116,12 @@ namespace OreOreLib
 	//######################################################################################//
 
 
-	//void RegionTag::Init( size_t rtagsize, size_t regionsize, size_t pagesize, PoolAllocator* pallocator )
-	//{
-	//	next			= nullptr;
-	//	RegionTagSize	= rtagsize;
-	//	RegionSize		= regionsize;
-	//	PageSize		= pagesize;
-	//	pAllocator		= pallocator;
-
-	//	//NumActivePages	= ( regionsize - rtagsize ) / pagesize;
-	//	//NumFreeOSPages	= pRTag->NumActivePages;
-	//}
-
-
-
-	void RegionTag::Init( size_t regionTagSize, size_t regionSize, size_t firstPageSize, size_t pageSize, PoolAllocator* allocator )
+	void RegionTag::Init(
+		size_t regionTagSize, size_t regionSize, size_t firstPageSize, size_t pageSize, PoolAllocator* allocator
+		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+		, void* base
+		#endif
+	)
 	{
 		next			= nullptr;
 		RegionTagSize	= regionTagSize;
@@ -138,6 +129,13 @@ namespace OreOreLib
 		FirstPageSize	= firstPageSize;
 		PageSize		= pageSize;
 		pAllocator		= allocator;
+
+		#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+		AllocationBase	= base;
+		#endif
+
+		//NumActivePages	= ( regionsize - rtagsize ) / pagesize;
+		//NumFreeOSPages	= pRTag->NumActivePages;
 	}
 
 
@@ -196,11 +194,11 @@ namespace OreOreLib
 		, m_DirtyFront( nullptr )
 		, m_UsedupFront( nullptr )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
+		, m_RegionNil{ 0 }
 		, m_pVirtualMemory( nullptr )
 		, m_PageCapacity( 0 )
-		, m_pRegionBase( nullptr )
-		, m_CommitedPageCount( 0 )
+		, m_pCurrentCommitBase( nullptr )
+		, m_CurrentCommitedPageCount( 0 )
 	{
 
 	}
@@ -220,11 +218,11 @@ namespace OreOreLib
 		, m_DirtyFront( nullptr )
 		, m_UsedupFront( nullptr )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
+		, m_RegionNil{ 0 }
 		, m_pVirtualMemory( nullptr )
 		, m_PageCapacity( 0 )
-		, m_pRegionBase( nullptr )
-		, m_CommitedPageCount( 0 )
+		, m_pCurrentCommitBase( nullptr )
+		, m_CurrentCommitedPageCount( 0 )
 	{
 		ASSERT( allocSize > blockSize && blockSize > 0 );
 
@@ -258,11 +256,11 @@ namespace OreOreLib
 		, m_DirtyFront( nullptr )
 		, m_UsedupFront( nullptr )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
+		, m_RegionNil{ 0 }
 		, m_pVirtualMemory( nullptr )
 		, m_PageCapacity( obj.m_PageCapacity )
-		, m_pRegionBase( nullptr )
-		, m_CommitedPageCount( 0 )
+		, m_pCurrentCommitBase( nullptr )
+		, m_CurrentCommitedPageCount( 0 )
 	{
 		tcout << _T( "Copy constructor...\n" );
 
@@ -293,11 +291,11 @@ namespace OreOreLib
 		, m_DirtyFront( obj.m_DirtyFront )
 		, m_UsedupFront( obj.m_UsedupFront )
 
-		, m_VirtualMemoryNil{ nullptr, 0, 0, 0, 0, nullptr }
+		, m_RegionNil{ 0 }
 		, m_pVirtualMemory( obj.m_pVirtualMemory )
 		, m_PageCapacity( obj.m_PageCapacity )
-		, m_pRegionBase( obj.m_pRegionBase )
-		, m_CommitedPageCount( obj.m_CommitedPageCount )
+		, m_pCurrentCommitBase( obj.m_pCurrentCommitBase )
+		, m_CurrentCommitedPageCount( obj.m_CurrentCommitedPageCount )
 	{
 		tcout << _T( "Move constructor...\n" );
 
@@ -307,13 +305,13 @@ namespace OreOreLib
 		obj.m_UsedupFront	= nullptr;
 
 		// Move Feeds from obj to *this
-		if( obj.m_VirtualMemoryNil.next != &obj.m_VirtualMemoryNil )
-			m_VirtualMemoryNil.next = obj.m_VirtualMemoryNil.next;
+		if( obj.m_RegionNil.next != &obj.m_RegionNil )
+			m_RegionNil.next = obj.m_RegionNil.next;
 
 		// Detach Feed references from obj
-		obj.m_VirtualMemoryNil.next	= nullptr;
-		obj.m_pVirtualMemory	= nullptr;
-		obj.m_pRegionBase		= nullptr;
+		obj.m_RegionNil.next		= nullptr;
+		obj.m_pVirtualMemory		= nullptr;
+		obj.m_pCurrentCommitBase	= nullptr;
 
 	}
 
@@ -393,22 +391,23 @@ namespace OreOreLib
 
 			m_pVirtualMemory			= obj.m_pVirtualMemory;
 			m_PageCapacity				= obj.m_PageCapacity;
-			m_pRegionBase				= obj.m_pRegionBase;
-			m_CommitedPageCount			= obj.m_CommitedPageCount;
+			m_pCurrentCommitBase		= obj.m_pCurrentCommitBase;
+			m_CurrentCommitedPageCount	= obj.m_CurrentCommitedPageCount;
 
 
 			// Detach page references from obj
-			obj.m_CleanFront	= nullptr;
-			obj.m_DirtyFront	= nullptr;
-			obj.m_UsedupFront	= nullptr;
+			obj.m_CleanFront			= nullptr;
+			obj.m_DirtyFront			= nullptr;
+			obj.m_UsedupFront			= nullptr;
 
 			// Move Feeds from obj to *this
-			if( obj.m_VirtualMemoryNil.next != &obj.m_VirtualMemoryNil )
-				m_VirtualMemoryNil.next = obj.m_VirtualMemoryNil.next;
+			if( obj.m_RegionNil.next != &obj.m_RegionNil )
+				m_RegionNil.next = obj.m_RegionNil.next;
 
 			// Detach Feed references from obj
-			obj.m_VirtualMemoryNil.next = nullptr;
-			obj.m_pVirtualMemory = nullptr;
+			obj.m_RegionNil.next		= nullptr;
+			obj.m_pVirtualMemory		= nullptr;
+			obj.m_pCurrentCommitBase	= nullptr;
 		}
 
 		return *this;
@@ -715,12 +714,9 @@ namespace OreOreLib
 
 		tcout << tendl;
 
-		tcout << _T( " Feeds:\n" );
-		for( RegionTag* rtag=m_VirtualMemoryNil.next; rtag!=nullptr; rtag=rtag->next )
-		{
+		tcout << _T( " Allocated Regions:\n" );
+		for( RegionTag* rtag=m_RegionNil.next; rtag!=nullptr; rtag=rtag->next )
 			OSAllocator::DisplayMemoryInfo( rtag );
-		}
-
 
 
 		tcout << _T( " UsedUp Pages...\n" );
@@ -762,14 +758,14 @@ namespace OreOreLib
 	{
 		Page* newPage = nullptr;
 
-		for( uint32 i=0; i<numPages; ++i, ++m_CommitedPageCount )
+		for( uint32 i=0; i<numPages; ++i, ++m_CurrentCommitedPageCount )
 		{
 			//============= Detach if m_pVirtualMemory is over capacity =============//
-			if( m_CommitedPageCount >= m_PageCapacity )
+			if( m_CurrentCommitedPageCount >= m_PageCapacity )
 			{
-				tcout << _T("PoolAllocator::AllocatePages(): Virtual memory capacity over: ") << m_pVirtualMemory << _T(".....") << m_CommitedPageCount << tendl;
-				m_pVirtualMemory	= nullptr;
-				m_pRegionBase		= nullptr;
+				tcout << _T("PoolAllocator::AllocatePages(): Virtual memory capacity over: ") << m_pVirtualMemory << _T(".....") << m_CurrentCommitedPageCount << tendl;
+				m_pVirtualMemory		= nullptr;
+				m_pCurrentCommitBase	= nullptr;
 			}
 
 
@@ -783,40 +779,39 @@ namespace OreOreLib
 				ASSERT( m_pVirtualMemory && _T("Failed virtual memory allocation.") );
 
 				// Find memory space from reserved region
-				m_pRegionBase = (uint8*)RoundUp( (size_t)m_pVirtualMemory, RegionTag::Alignment );// set aligned addres start
-				//ASSERT( m_pRegionBase == (uint8*)OSAllocator::FindRegion( m_pRegionBase, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
+				m_pCurrentCommitBase = (uint8*)RoundUp( (size_t)m_pVirtualMemory, RegionTag::Alignment );// set aligned addres start
+				//ASSERT( m_pCurrentCommitBase == (uint8*)OSAllocator::FindRegion( m_pCurrentCommitBase, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
 				
-				m_CommitedPageCount = 0;
+				m_CurrentCommitedPageCount = 0;
 			}
 
 
 			//===================== Initialize memory management tag(s)  ===============//
-			if( m_CommitedPageCount == 0 )// First page initialization( RegionTag and PageTag )
+			if( m_CurrentCommitedPageCount == 0 )// First page initialization( RegionTag and PageTag )
 			{
-				OSAllocator::Commit( m_pRegionBase, m_AlignedFirstPageSize );
+				OSAllocator::Commit( m_pCurrentCommitBase, m_AlignedFirstPageSize );
 
 				// Initialize RegionTag
-				RegionTag* pRTag = (RegionTag*)m_pRegionBase;
-				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedFirstPageSize, m_AlignedPageSize, this );
-				pRTag->ConnectAfter( &m_VirtualMemoryNil );
-				pRTag->AllocationBase = m_pVirtualMemory;// 仮想メモリ空間の先頭アドレスを保持する
+				RegionTag* pRTag = (RegionTag*)m_pCurrentCommitBase;
+				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedFirstPageSize, m_AlignedPageSize, this, m_pVirtualMemory );
+				pRTag->ConnectAfter( &m_RegionNil );
 
 				// Initialize PageTag
-				newPage = (Page*)( m_pRegionBase + m_AlignedRegionTagSize );
+				newPage = (Page*)( m_pCurrentCommitBase + m_AlignedRegionTagSize );
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
 
-				m_pRegionBase += m_AlignedFirstPageSize;
+				m_pCurrentCommitBase += m_AlignedFirstPageSize;
 			}
 			else// After the second pages( PageTag only )
 			{
-				newPage = (Page*)OSAllocator::Commit( m_pRegionBase, m_AlignedPageSize );
+				newPage = (Page*)OSAllocator::Commit( m_pCurrentCommitBase, m_AlignedPageSize );
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
 
-				m_pRegionBase += m_AlignedPageSize;
+				m_pCurrentCommitBase += m_AlignedPageSize;
 			}
 
 
@@ -839,14 +834,14 @@ namespace OreOreLib
 	{
 		Page* newPage = nullptr;
 
-		for( uint32 i=0; i<numPages; ++i, ++m_CommitedPageCount )
+		for( uint32 i=0; i<numPages; ++i, ++m_CurrentCommitedPageCount )
 		{
 			//============= Detach if m_pVirtualMemory is over capacity =============//
-			if( m_CommitedPageCount >= m_PageCapacity )
+			if( m_CurrentCommitedPageCount >= m_PageCapacity )
 			{
 				tcout << _T("PoolAllocator::AllocatePages(): Virtual memory capacity over: ") << m_pVirtualMemory << tendl;
-				m_pVirtualMemory	= nullptr;
-				m_pRegionBase		= nullptr;
+				m_pVirtualMemory		= nullptr;
+				m_pCurrentCommitBase	= nullptr;
 			}
 
 
@@ -858,41 +853,41 @@ namespace OreOreLib
 				
 				ASSERT( m_pVirtualMemory && _T("Failed virtual memory allocation.") );
 
-				m_pRegionBase = (uint8* )m_pVirtualMemory;
-				//ASSERT( m_pRegionBase == (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
+				m_pCurrentCommitBase = (uint8* )m_pVirtualMemory;
+				//ASSERT( m_pCurrentCommitBase == (uint8*)OSAllocator::FindRegion( m_pVirtualMemory, OSAllocator::Reserved, m_AlignedFirstPageSize, m_AlignedReserveSize ) );
 
-				m_CommitedPageCount = 0;
+				m_CurrentCommitedPageCount = 0;
 			}
 
 
 			//===================== Initialize memory management tag(s)  ===============//
-			if( m_CommitedPageCount == 0 )// First page initialization( RegionTag and PageTag )
+			if( m_CurrentCommitedPageCount == 0 )// First page initialization( RegionTag and PageTag )
 			{
-				OSAllocator::Commit( m_pRegionBase, m_AlignedFirstPageSize );
+				OSAllocator::Commit( m_pCurrentCommitBase, m_AlignedFirstPageSize );
 
 				// Initialize RegionTag
-				RegionTag* pRTag = (RegionTag*)m_pRegionBase;
+				RegionTag* pRTag = (RegionTag*)m_pCurrentCommitBase;
 				pRTag->Init( m_AlignedRegionTagSize, m_AlignedReserveSize, m_AlignedFirstPageSize, m_AlignedPageSize, this );
-				pRTag->ConnectAfter( &m_VirtualMemoryNil );
+				pRTag->ConnectAfter( &m_RegionNil );
 
-				newPage = (Page*)( m_pRegionBase + m_AlignedRegionTagSize );
+				newPage = (Page*)( m_pCurrentCommitBase + m_AlignedRegionTagSize );
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumFirstPageActiveBlocks, m_BitFlagSize );
 
-				m_pRegionBase += m_AlignedFirstPageSize;
+				m_pCurrentCommitBase += m_AlignedFirstPageSize;
 			}
 			else// After the second pages( PageTag only )
 			{
-				newPage = (Page*)OSAllocator::Commit( m_pRegionBase, m_AlignedPageSize );
+				newPage = (Page*)OSAllocator::Commit( m_pCurrentCommitBase, m_AlignedPageSize );
 				//tcout << "  Page: "<< (unsigned *)reserved << tendl;
 
 				// Initialize PageTag
 				PageTag* pPTag = GetPageTag( newPage );
 				pPTag->Init( /*m_PageTagSize,*/ m_NumActiveBlocks, m_BitFlagSize );
 
-				m_pRegionBase += m_AlignedPageSize;
+				m_pCurrentCommitBase += m_AlignedPageSize;
 			}
 
 			
@@ -929,10 +924,10 @@ namespace OreOreLib
 	{
 		m_CleanFront = m_DirtyFront = m_UsedupFront = nullptr;
 
-		while( m_VirtualMemoryNil.next )
+		while( m_RegionNil.next )
 		{
-			RegionTag* next = m_VirtualMemoryNil.next;
-			m_VirtualMemoryNil.DisconnectNext();
+			RegionTag* next = m_RegionNil.next;
+			m_RegionNil.DisconnectNext();
 			
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 				OSAllocator::Release( next->AllocationBase );
@@ -941,10 +936,10 @@ namespace OreOreLib
 			#endif
 		}
 
-		m_VirtualMemoryNil.next	= nullptr;
-		m_pVirtualMemory		= nullptr;
-		m_pRegionBase			= nullptr;
-		m_CommitedPageCount		= 0;
+		m_RegionNil.next			= nullptr;
+		m_pVirtualMemory			= nullptr;
+		m_pCurrentCommitBase		= nullptr;
+		m_CurrentCommitedPageCount	= 0;
 	}
 
 
@@ -953,8 +948,8 @@ namespace OreOreLib
 	{
 		tcout << _T( "PoolAllocator::Cleanup()...\n" );
 
-		RegionTag* currRTag = m_VirtualMemoryNil.next;
-		RegionTag* prevRTag = &m_VirtualMemoryNil;
+		RegionTag* prevRTag = &m_RegionNil;
+		RegionTag* currRTag = m_RegionNil.next;
 
 		while( currRTag )
 		{
@@ -962,6 +957,7 @@ namespace OreOreLib
 			{
 				tcout << _T( "  Unused Region found: " ) << (unsigned *)currRTag << tendl;
 
+				// Disconnect currRTag from linked list
 				prevRTag->DisconnectNext();
 				
 				// Removing commited clean pages inside currRTag
@@ -994,9 +990,9 @@ namespace OreOreLib
 				#endif
 				{
 					tcout << _T( "    Invalidating FeedFront...\n" );
-					m_pVirtualMemory	= nullptr;
-					m_pRegionBase		= nullptr;
-					m_CommitedPageCount	= 0;
+					m_pVirtualMemory			= nullptr;
+					m_pCurrentCommitBase		= nullptr;
+					m_CurrentCommitedPageCount	= 0;
 				}
 
 				#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
@@ -1129,13 +1125,9 @@ namespace OreOreLib
 		size_t offset = (size_t)ptr - base;
 		ASSERT( offset >= m_AlignedRegionTagSize );
 
-		//ASSERT( ((RegionTag*)(base))->RegionTagSize == m_AlignedRegionTagSize );
-		//ASSERT( ((RegionTag*)(base))->PageSize == m_AlignedPageSize );
-		//ASSERT( ((RegionTag*)(base))->FirstPageSize == m_AlignedFirstPageSize );/
-
-		return offset < m_AlignedFirstPageSize ?
-				(Page*)( base + m_AlignedRegionTagSize ) :
-				(Page*)( base + m_AlignedFirstPageSize + Round( offset - m_AlignedFirstPageSize, m_AlignedPageSize ) );
+		return offset < m_AlignedFirstPageSize
+			? (Page*)( base + m_AlignedRegionTagSize )// ptr is in the first page
+			: (Page*)( base + m_AlignedFirstPageSize + Round( offset - m_AlignedFirstPageSize, m_AlignedPageSize ) );// ptr is in the second and the subsequent pages
 	}
 
 	// Old implementetaion.
@@ -1168,13 +1160,7 @@ namespace OreOreLib
 
 	Page* PoolAllocator::SafeGetPage( const void* ptr ) const
 	{
-		//for( Page* page=m_Nil.next; page!=&m_Nil; page=page->next )
-		//{
-		//	uint8* pool = GetPool( page );
-		//	if( (uint8*)ptr >= pool && (uint8*)ptr < pool+m_PoolSize )
-		//		return page;
-		//}
-
+		// Search usedup pages
 		for( Page* page=m_UsedupFront; page!=nullptr; page=page->next )
 		{
 			uint8* pool = GetPool( page );
@@ -1182,6 +1168,7 @@ namespace OreOreLib
 				return page;
 		}
 
+		// Search dirty pages
 		for( Page* page=m_DirtyFront; page!=nullptr; page=page->next )
 		{
 			uint8* pool = GetPool( page );
@@ -1189,12 +1176,14 @@ namespace OreOreLib
 				return page;
 		}
 
+		// Search clean pages( should not be found )
+		#ifdef _DEBUG
 		for( Page* page=m_CleanFront; page!=nullptr; page=page->next )
 		{
 			uint8* pool = GetPool( page );
-			if( (uint8*)ptr >= pool && (uint8*)ptr < pool+m_PoolSize )
-				return page;
+			ASSERT( (uint8*)ptr >= pool && (uint8*)ptr < pool+m_PoolSize );
 		}
+		#endif
 
 
 		return nullptr;
@@ -1341,7 +1330,6 @@ namespace OreOreLib
 		#else
 		return (RegionTag*)OSAllocator::GetAllocationBase( ptr );
 		#endif
-		//return (RegionTag*)OSAllocator::GetAllocationBase( ptr );
 	}
 
 

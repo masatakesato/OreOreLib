@@ -223,12 +223,13 @@ namespace OreOreLib
 			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
 				auto base = OSAllocator::ReserveUncommited( RoundUp( allocSize, RegionTag::Alignment ) );
 				RegionTag* mem = (RegionTag*)OSAllocator::CommitAligned( base, allocSize, RegionTag::Alignment );
-				mem->AllocationBase = base;
+				mem->Init( sizeof(RegionTag), size, 1, 1, nullptr, base );// Set RegionTag.pAllocator to nullptr
 			#else
 				RegionTag* mem = (RegionTag*)OSAllocator::ReserveAndCommit( allocSize );
+				mem->Init( sizeof(RegionTag), size, 1, 1, nullptr );// Set RegionTag.pAllocator to nullptr
 			#endif
 
-			mem->Init( sizeof(RegionTag), size, 1, 1, nullptr );// Set RegionTag.pAllocator to nullptr
+			
 			//OSAllocator::DisplayMemoryInfo( mem );
 			//tcout << "  Allocated address: " << (uint8*)mem + sizeof(RegionTag) << tendl;
 

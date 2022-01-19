@@ -128,8 +128,13 @@ namespace OreOreLib
 		//size_t	NumActivePages;// number of available pages
 		//size_t	NumFreeOSPages;// number of free-to-use pages
 
-//		void Init( size_t rtagsize, size_t regionsize, size_t pagesize, PoolAllocator* pallocator );
-		void Init( size_t regionTagSize, size_t regionSize, size_t firstPageSize, size_t pageSize, PoolAllocator* pAllocator );
+
+		void Init(
+			size_t regionTagSize, size_t regionSize, size_t firstPageSize, size_t pageSize, PoolAllocator* allocator
+			#ifdef ENABLE_VIRTUAL_ADDRESS_ALIGNMENT
+			, void* base
+			#endif
+		);
 		void ConnectAfter( RegionTag* ptag );
 		void DisconnectNext();
 
@@ -223,35 +228,34 @@ namespace OreOreLib
 		//============== Private variables =================//
 
 		// Page structural paremeters
-		size_t	m_BlockSize;		// size of single data
-		uint32	m_CommitBatchSize;	// number of pages to commit at once
-		size_t	m_PageSize;			// page size
-		//size_t	m_PageDataSize;			// = m_AllocSize - Page::HeaderSize;
-		size_t	m_BitFlagSize;
-		size_t	m_PageTagSize;
-		int32	m_NumActiveBlocks;
-		size_t	m_PoolSize;
+		size_t		m_BlockSize;		// size of single data
+		uint32		m_CommitBatchSize;	// number of pages to commit at once
+		size_t		m_PageSize;			// page size
+		//size_t	m_PageDataSize;		// = m_PageSize - Page::HeaderSize;
+		size_t		m_BitFlagSize;
+		size_t		m_PageTagSize;
+		int32		m_NumActiveBlocks;
+		size_t		m_PoolSize;
 
 		// Feed and relevant parameters.
-		size_t	m_AlignedPageSize;	// m_PageSize aligned by OS page size (4096 bytes etc..)
-		size_t	m_AlignedReserveSize;// Virtual memory reserve size. Alinged by OS allocation granularity (64kb etc...)
-		size_t	m_AlignedFirstPageSize;// Size of FirstPage (containing RegionTag )
-		uint16	m_NumFirstPageActiveBlocks;
-		size_t	m_AlignedRegionTagSize;// sizeof RegionTag alignmed to m_BlockSize (or alignmed to OS page size if RegionTag only page allocation)
+		size_t		m_AlignedPageSize;		// m_PageSize aligned by OS page size (4096 bytes etc..)
+		size_t		m_AlignedReserveSize;	// Virtual memory reserve size. Alinged by OS allocation granularity (64kb etc...)
+		size_t		m_AlignedFirstPageSize;	// Size of FirstPage (containing RegionTag )
+		uint16		m_NumFirstPageActiveBlocks;
+		size_t		m_AlignedRegionTagSize;	// sizeof RegionTag alignmed to m_BlockSize (or alignmed to OS page size if RegionTag only page allocation)
 
 		// Page linked list
 		enum PageStates{ Clean, Dirty, Usedup, NumPageStates };
-//		Page	m_Nil;
-		Page*	m_CleanFront;
-		Page*	m_DirtyFront;
-		Page*	m_UsedupFront;
+		Page*		m_CleanFront;
+		Page*		m_DirtyFront;
+		Page*		m_UsedupFront;
 
 		// Virtual memory
-		RegionTag	m_VirtualMemoryNil;		// Nill for Virtual Memory list.
-		void*		m_pVirtualMemory;		// Current Virtual Memory reserved from OS.
-		uint32		m_PageCapacity;		// Maximum number of pages m_pVirtualMemory can hold.
-		uint8*		m_pRegionBase;	// Base address of m_pVirtualMemory aligned by RegionTag::Alignment.
-		uint32		m_CommitedPageCount;
+		RegionTag	m_RegionNil;				// Nill for Virtual Memory list.
+		void*		m_pVirtualMemory;			// Current Virtual Memory reserved from OS.
+		uint32		m_PageCapacity;				// Maximum number of pages m_pVirtualMemory can hold.
+		uint8*		m_pCurrentCommitBase;		// Temporary variable to store base address for page commit.
+		uint32		m_CurrentCommitedPageCount;// Temporary variable. Number of commited pagtes from m_pRegionBase.
 
 
 		//============== Private methods =================//
