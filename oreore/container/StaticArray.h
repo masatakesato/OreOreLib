@@ -250,7 +250,12 @@ namespace OreOreLib
 		bool Reserve( SizeType ) = delete;
 		bool Extend( SizeType ) = delete;
 		bool Shrink( SizeType ) = delete;
-
+		SizeType InsertBefore( SizeType ) = delete;
+		SizeType InsertBefore( SizeType, const T& ) = delete;
+		SizeType InsertBefore( SizeType, T&& ) = delete;
+		SizeType InsertAfter( SizeType ) = delete;
+		SizeType InsertAfter( SizeType, const T& ) = delete;
+		SizeType InsertAfter( SizeType, T&& ) = delete;
 
 		// Hide parent methods
 		using Memory<T>::Init;
@@ -260,6 +265,8 @@ namespace OreOreLib
 		using Memory<T>::Resize;
 		using Memory<T>::Extend;
 		using Memory<T>::Shrink;
+		using Memory<T>::InsertBefore;
+		using Memory<T>::InsertAfter;
 
 	};
 

@@ -110,15 +110,29 @@ namespace OreOreLib
 
 	private:
 
-		using Memory<T>::Init;
-		using Memory<T>::Release;
-
-		bool Resize( SizeType ) = delete;//using Memory<T>::Resize;
+		// Delete unnecessary parent methods
+		bool Resize( SizeType ) = delete;
 		bool Resize( SizeType, const T& ) = delete;
 		bool Reserve( SizeType ) = delete;
-		bool Extend( SizeType ) = delete;//using Memory<T>::Extend;
-		bool Shrink( SizeType ) = delete;//using Memory<T>::Shrink;
+		bool Extend( SizeType ) = delete;
+		bool Shrink( SizeType ) = delete;
+		SizeType InsertBefore( SizeType ) = delete;
+		SizeType InsertBefore( SizeType, const T& ) = delete;
+		SizeType InsertBefore( SizeType, T&& ) = delete;
+		SizeType InsertAfter( SizeType ) = delete;
+		SizeType InsertAfter( SizeType, const T& ) = delete;
+		SizeType InsertAfter( SizeType, T&& ) = delete;
 
+		// Hide parent methods
+		using Memory<T>::Init;
+		using Memory<T>::Release;
+		//using Memory<T>::Clear;
+		using Memory<T>::Reserve;
+		using Memory<T>::Resize;
+		using Memory<T>::Extend;
+		using Memory<T>::Shrink;
+		using Memory<T>::InsertBefore;
+		using Memory<T>::InsertAfter;
 
 	};
 

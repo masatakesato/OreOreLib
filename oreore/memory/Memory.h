@@ -780,6 +780,111 @@ namespace OreOreLib
 		}
 
 
+		inline SizeType InsertBefore( SizeType elm )
+		{
+			SizeType newlen = m_Length + 1;
+			ASSERT( elm < newlen );
+
+			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+
+			if( m_pData )
+			{
+				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
+				MemMove( &newdata[0], &m_pData[0], elm );
+				// Move m_pData[ elm+1 : m_Length-1 ]
+				MemMove( &newdata[ elm+1 ], &m_pData[elm], m_Length - elm );
+
+				DeallocateBuffer();
+			}
+
+			// Init newdata[ elm ]
+			T* val = new ( &newdata[elm] ) T();//newdata[elm] = T();//
+
+			m_Capacity	= newlen;
+			m_pData		= newdata;
+			m_Length	= newlen;
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			return elm;
+		}
+
+
+		inline SizeType InsertBefore( SizeType elm, const T& src )
+		{
+			SizeType newlen = m_Length + 1;
+			ASSERT( elm < newlen );
+
+			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+
+			if( m_pData )
+			{
+				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
+				MemMove( &newdata[0], &m_pData[0], elm );
+				// Move m_pData[ elm+1 : m_Length-1 ]
+				MemMove( &newdata[ elm+1 ], &m_pData[elm], m_Length - elm );
+
+				DeallocateBuffer();
+			}
+
+			// Move src to newdata[ elm ]
+			T* val = new ( &newdata[elm] ) T(src);//newdata[elm] = src;//
+
+			m_Capacity	= newlen;
+			m_pData		= newdata;
+			m_Length	= newlen;
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			return elm;
+		}
+
+
+		inline SizeType InsertBefore( SizeType elm, T&& src )
+		{
+			SizeType newlen = m_Length + 1;
+			ASSERT( elm < newlen );
+
+			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+
+			if( m_pData )
+			{
+				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
+				MemMove( &newdata[0], &m_pData[0], elm );
+				// Move m_pData[ elm+1 : m_Length-1 ]
+				MemMove( &newdata[ elm+1 ], &m_pData[elm], m_Length - elm );
+
+				DeallocateBuffer();
+			}
+
+			// Move src to newdata[ elm ]
+			T* val = new ( &newdata[elm] ) T( (T&&)src );//newdata[elm] = (T&&)src;//
+
+			m_Capacity	= newlen;
+			m_pData		= newdata;
+			m_Length	= newlen;
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			return elm;
+		}
+
+		
+		inline SizeType InsertAfter( SizeType elm )
+		{
+			return InsertBefore( elm + 1 );
+		}
+
+
+		inline SizeType InsertAfter( SizeType elm, const T& src )
+		{
+			return InsertBefore( elm+1, src );
+		}
+
+
+		inline SizeType InsertAfter( SizeType elm, T&& src )
+		{
+			return InsertBefore( elm+1, (T&&)src );
+		}
+
+
 		inline void CopyFrom( const Memory& src )
 		{
 			MemCopy( m_pData, src.m_pData, Min(m_Length, src.m_Length) );

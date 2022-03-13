@@ -85,78 +85,37 @@ namespace OreOreLib
 
 		inline SizeType AddToFront()
 		{
-			return InsertBefore( 0 );
+			return this->InsertBefore( 0 );
 		}
 
-		inline SizeType AddToTail()
-		{
-			return InsertBefore( this->m_Length );
-		}
 
-		inline SizeType InsertBefore( SizeType elm )
-		{
-			if( this->Resize( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
-				return -1;
-			ShiftElementsRight( elm );
-			return elm;
-		}
-
-		inline SizeType InsertAfter( SizeType elm )
-		{
-			return InsertBefore( elm + 1 );
-		}
-
-		
 		inline SizeType AddToFront( const T& src )
 		{
-			return InsertBefore( 0, src );
+			return this->InsertBefore( 0, src );
 		}
+
 
 		inline SizeType AddToFront( T&& src )
 		{
-			return InsertBefore( 0, (T&&)src );
+			return this->InsertBefore( 0, (T&&)src );
 		}
+
+
+		inline SizeType AddToTail()
+		{
+			return this->InsertBefore( this->m_Length );
+		}
+
 
 		inline SizeType AddToTail( const T& src )
 		{
-			return InsertBefore( this->m_Length, src );
+			return this->InsertBefore( this->m_Length, src );
 		}
+
 
 		inline SizeType AddToTail( T&& src )
 		{
-			return InsertBefore( this->m_Length, (T&&)src );
-		}
-
-
-		inline SizeType InsertBefore( SizeType elm, const T& src )
-		{
-			if( this->Resize( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
-				return -1;
-			ShiftElementsRight( elm );
-			T* val = new ( &this->m_pData[elm] ) T(src);//this->m_pData[elm] = src;
-			return elm;
-		}
-
-
-		inline SizeType InsertBefore( SizeType elm, T&& src )
-		{
-			if( this->Resize( this->m_Length + 1)==false )//if( this->Extend( 1 )==false )
-				return -1;
-			ShiftElementsRight( elm );
-			T* val = new ( &this->m_pData[elm] ) T( (T&&)src );//this->m_pData[elm] = src;
-			return elm;
-		}
-
-
-
-		inline SizeType InsertAfter( SizeType elm, const T& src )
-		{
-			return InsertBefore( elm+1, src );
-		}
-
-		inline SizeType InsertAfter( SizeType elm, T&& src )
-		{
-			return InsertBefore( elm+1, (T&&)src );
+			return this->InsertBefore( this->m_Length, (T&&)src );
 		}
 
 
@@ -192,10 +151,10 @@ namespace OreOreLib
 		
 		inline void Remove( SizeType elm )
 		{
-			ASSERT( elm<this->m_Length );
+			ASSERT( elm < this->m_Length );
 
 			if( this->m_Length > 1 )
-				ShiftElementsLeft( elm );
+				ShiftElementsLeft( elm + 1 );
 			else
 				this->m_pData[elm].~T();
 
@@ -248,12 +207,6 @@ namespace OreOreLib
 			if( this->m_Length <= ( elm + num ) || num == 0 )
 				return;
 
-			//if( this->m_Length < elm + num )
-			//SizeType numtomove = this->m_Length - ( elm + num );
-			//if( numtomove > 0 )
-//				MemMove( &this->m_pData[elm+num], &this->m_pData[elm], /*numtomove*/this->m_Length - ( elm + num ) );
-
-
 			T* pDst = this->m_pData + this->m_Length - 1;
 			T* pSrc = pDst - num;
 
@@ -272,16 +225,10 @@ namespace OreOreLib
 		}
 
 
-//TODO: MemMove使えない. 要素毎にデストラクタ呼び出しながら移動する
-
 		inline void ShiftElementsLeft( SizeType elm, SizeType num=1 )
 		{
-			if( this->m_Length <= ( elm + num ) || num == 0 )
+			if( elm < num || num == 0 )
 				return;
-
-			//SizeType numtomove = this->m_Length - ( elm + num );
-			//if( numtomove > 0 )
-//MemMove( &this->m_pData[elm], &this->m_pData[elm+num], /*numtomove*/this->m_Length - ( elm + num ) );
 
 			T* pSrc = this->m_pData + Max( num, elm );
 			T* pDst = pSrc - num;
@@ -298,8 +245,8 @@ namespace OreOreLib
 			// destruct empty elements
 			while( pDst != this->end() )
 				(pDst++)->~T();
-
 		}
+
 
 	};
 
