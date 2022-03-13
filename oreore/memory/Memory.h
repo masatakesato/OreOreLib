@@ -292,6 +292,8 @@ namespace OreOreLib
 		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
 	}
 
+
+//TODO: 重複要素のデストラクタ呼び出し必要
 	// Non-Trivial MemMove
 	template < class SrcIter, class DstIter >
 	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
@@ -304,10 +306,12 @@ namespace OreOreLib
 		while( begin != end )
 		{
 			// Placement new version
+// 未初期化知領域にデータを新規移動する場合がある
+// 既存領域データを削除した上書きする場合もある
 			//out->~DstIter();// Desctuct existing data
-			new ( out ) DstIter( (DstIter&&)( *begin ) );// Desctuct existing data from destination memory
+			new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
 
-			// Copy assignment operator version
+			// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
 			//*out = *(DstIter*)begin;
 
 			++begin; ++out;

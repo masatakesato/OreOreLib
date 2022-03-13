@@ -95,10 +95,9 @@ namespace OreOreLib
 
 		inline SizeType InsertBefore( SizeType elm )
 		{
-			if( this->ReallocateBuffer( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
+			if( this->Resize( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
-			this->m_pData[elm] = T();
 			return elm;
 		}
 
@@ -131,7 +130,7 @@ namespace OreOreLib
 
 		inline SizeType InsertBefore( SizeType elm, const T& src )
 		{
-			if( this->ReallocateBuffer( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
+			if( this->Resize( this->m_Length + 1 )==false )//if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
 			T* val = new ( &this->m_pData[elm] ) T(src);//this->m_pData[elm] = src;
@@ -141,11 +140,10 @@ namespace OreOreLib
 
 		inline SizeType InsertBefore( SizeType elm, T&& src )
 		{
-			if( this->ReallocateBuffer( this->m_Length + 1)==false )//if( this->Extend( 1 )==false )
+			if( this->Resize( this->m_Length + 1)==false )//if( this->Extend( 1 )==false )
 				return -1;
 			ShiftElementsRight( elm );
-			//this->m_pData[elm] = src;
-			T* val = new ( &this->m_pData[elm] ) T( (T&&)src );
+			T* val = new ( &this->m_pData[elm] ) T( (T&&)src );//this->m_pData[elm] = src;
 			return elm;
 		}
 
@@ -251,9 +249,28 @@ namespace OreOreLib
 			//if( this->m_Length < elm + num )
 			//SizeType numtomove = this->m_Length - ( elm + num );
 			//if( numtomove > 0 )
-				MemMove( &this->m_pData[elm+num], &this->m_pData[elm], /*numtomove*/this->m_Length - ( elm + num ) );
+//				MemMove( &this->m_pData[elm+num], &this->m_pData[elm], /*numtomove*/this->m_Length - ( elm + num ) );
+
+
+			T* pDst = this->m_pData + this->m_Length - 1;
+			T* pSrc = pDst - num;
+
+			while( pSrc >= this->m_pData + elm )
+			{
+				pDst->~T();
+				new ( pDst ) T( (T&&)( *pSrc ) );
+
+				--pDst;
+				--pSrc;
+			}
+
+			// destruct empty elements
+			for( SizeType i=0; i<num; ++i )
+				(this->m_pData + i)->~T();
 		}
 
+
+TODO: MemMove使えない. 要素毎にデストラクタ呼び出しながら移動する
 
 		inline void ShiftElementsLeft( SizeType elm, SizeType num=1 )
 		{
