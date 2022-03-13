@@ -194,8 +194,10 @@ namespace OreOreLib
 		{
 			ASSERT( elm<this->m_Length );
 
-			this->m_pData[elm].~T();
-			ShiftElementsLeft( elm );
+			if( this->m_Length > 1 )
+				ShiftElementsLeft( elm );
+			else
+				this->m_pData[elm].~T();
 
 			--this->m_Length;
 			this->m_AllocSize -= this->c_ElementSize;
@@ -257,8 +259,8 @@ namespace OreOreLib
 
 			while( pSrc >= this->m_pData + elm )
 			{
-				pDst->~T();
-				new ( pDst ) T( (T&&)( *pSrc ) );
+				pDst->~T();// destruct dst data first 
+				new ( pDst ) T( (T&&)( *pSrc ) );// then move src data
 
 				--pDst;
 				--pSrc;
@@ -266,11 +268,11 @@ namespace OreOreLib
 
 			// destruct empty elements
 			for( SizeType i=0; i<num; ++i )
-				(this->m_pData + i)->~T();
+				(this->m_pData + elm + i)->~T();
 		}
 
 
-TODO: MemMove使えない. 要素毎にデストラクタ呼び出しながら移動する
+//TODO: MemMove使えない. 要素毎にデストラクタ呼び出しながら移動する
 
 		inline void ShiftElementsLeft( SizeType elm, SizeType num=1 )
 		{
@@ -279,7 +281,24 @@ TODO: MemMove使えない. 要素毎にデストラクタ呼び出しながら�
 
 			//SizeType numtomove = this->m_Length - ( elm + num );
 			//if( numtomove > 0 )
-				MemMove( &this->m_pData[elm], &this->m_pData[elm+num], /*numtomove*/this->m_Length - ( elm + num ) );
+//MemMove( &this->m_pData[elm], &this->m_pData[elm+num], /*numtomove*/this->m_Length - ( elm + num ) );
+
+			T* pSrc = this->m_pData + Max( num, elm );
+			T* pDst = pSrc - num;
+
+			while( pSrc < this->end() )
+			{
+				pDst->~T();// destruct dst data first 
+				new ( pDst ) T( (T&&)( *pSrc ) );// then move src data
+
+				++pDst;
+				++pSrc;
+			}
+
+			// destruct empty elements
+			while( pDst != this->end() )
+				(pDst++)->~T();
+
 		}
 
 	};
