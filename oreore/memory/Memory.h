@@ -436,9 +436,12 @@ namespace OreOreLib
 			, m_Capacity( sizeof ...(Args) )
 			, m_pData( AllocateBuffer( SizeType( sizeof ...(Args) ) )  )
 		{
-			auto p = m_pData;
-			for( const auto& val : std::initializer_list<T>{args...} )
-				*(p++) = val;	
+			auto ilist = std::initializer_list<T>{ args... };
+			MemCopy( begin(), ilist.begin(), m_Length );
+
+			//auto p = m_pData;
+			//for( const auto& val : std::initializer_list<T>{args...} )
+			//	*(p++) = val;
 		}
 
 		// Constructor with initializer_list
@@ -448,9 +451,11 @@ namespace OreOreLib
 			, m_Capacity( SizeType( ilist.size() ) )
 			, m_pData( AllocateBuffer( SizeType( ilist.size() ) ) )
 		{
-			auto p = m_pData;
-			for( const auto& val : ilist )
-				*(p++) = val;
+			MemCopy( begin(), ilist.begin(), m_Length );
+			
+			//auto p = m_pData;
+			//for( const auto& val : ilist )
+			//	*(p++) = val;
 		}
 
 

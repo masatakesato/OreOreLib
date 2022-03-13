@@ -59,6 +59,7 @@ namespace OreOreLib
 			this->m_pData		= obj.m_pData;
 			this->m_Length		= obj.m_Length;
 			this->m_AllocSize	= 0;
+			this->m_Capacity		= obj.m_Length;// restrict accessible elements to active length
 		}
 
 
@@ -68,6 +69,7 @@ namespace OreOreLib
 			this->m_pData		= (Ptr)pdata;
 			this->m_Length		= length;
 			this->m_AllocSize	= 0;
+			this->m_Capacity		= length;// restrict accessible elements to active length
 		}
 
 
@@ -76,6 +78,7 @@ namespace OreOreLib
 			this->m_pData		= (T*)obj.begin();
 			this->m_Length		= obj.Length();
 			this->m_AllocSize	= 0;
+			this->m_Capacity	= obj.Length();// restrict accessible elements to active length
 		}
 
 
@@ -87,8 +90,9 @@ namespace OreOreLib
 
 		void Release()
 		{
-			this->m_pData = nullptr;
-			this->m_Length = 0;
+			this->m_pData		= nullptr;
+			this->m_Length		= 0;
+			this->m_Capacity	= 0;
 		}
 
 
