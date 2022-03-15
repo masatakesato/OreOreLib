@@ -28,3 +28,4 @@ def func2( input ):
 
 def func3( array ):
 	print( "py_test1.func3" )
+	print( array )
