@@ -61,7 +61,7 @@ inline bool IsNegative( const T& a )
 template< typename T >
 T Sign(  const T& a )
 {
-	return (a>0)-(a<0);
+	return T( (a>0)-(a<0) );
 }
 
 

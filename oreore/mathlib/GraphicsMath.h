@@ -1152,6 +1152,14 @@ union Mat4
 	}
 
 
+
+	friend tostream& operator<<( tostream& stream, const Mat4& obj )
+	{
+		stream << _T("(") << obj.mat[0] << _T("\n") << obj.mat[1] << _T("\n") << obj.mat[2] << _T("\n") << obj.mat[3] << _T(")");
+		return stream;
+	}
+
+
 };
 
 
