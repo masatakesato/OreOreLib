@@ -213,6 +213,24 @@ void Reverse( Vec2<T>& inout )
 }
 
 
+// Absolute
+template< typename T >
+void Abs( Vec2<T>& out, const Vec2<T>& in )
+{
+	out.x = abs( in.x );
+	out.y = abs( in.y );
+}
+
+
+// Absolute
+template< typename T >
+void Abs( Vec2<T>& inout )
+{
+	inout.x = abs( inout.x );
+	inout.y = abs( inout.y );
+}
+
+
 // Add
 template< typename T >
 void Add( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
@@ -325,6 +343,20 @@ inline void Scale( Vec2<T>& out, const Vec2<T>& in, T scale )
 {
 	out.x = in.x * scale;
 	out.y = in.y * scale;
+}
+
+
+template< typename T >
+inline T MaxElement( const Vec2<T>& in )
+{
+	return in.x > in.y ? in.x : in.y;
+}
+
+
+template< typename T >
+inline T MinElement( const Vec2<T>& in )
+{
+	return in.x < in.y ? in.x : in.y;
 }
 
 
@@ -524,6 +556,26 @@ void Reverse( Vec3<T>& inout )
 }
 
 
+// Absolute
+template< typename T >
+void Abs( Vec3<T>& out, const Vec3<T>& in )
+{
+	out.x = abs( in.x );
+	out.y = abs( in.y );
+	out.z = abs( in.z );
+}
+
+
+// Absolute
+template< typename T >
+void Abs( Vec3<T>& inout )
+{
+	inout.x = abs( inout.x );
+	inout.y = abs( inout.y );
+	inout.z = abs( inout.z );
+}
+
+
 // Add
 template< typename T >
 inline void Add( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
@@ -666,6 +718,32 @@ inline void Scale( Vec3<T>& out, const Vec3<T>& in, T scale )
 	out.y = in.y * scale;
 	out.z = in.z * scale;
 }
+
+
+template< typename T >
+inline T MaxElement( const Vec3<T>& in )
+{
+	return Max( Max(in.x, in.y), in.z );
+}
+
+
+template< typename T >
+inline T MinElement( const Vec3<T>& in )
+{
+	return Min( Min(in.x, in.y), in.z );
+}
+
+
+template< typename T >
+inline T MinMaxElement( T& minimum, T& maximum, const Vec3<T>& in )
+{
+	minimum = maximum = in.x;
+	if( in.y < minimum ) minimum = in.y;
+	if( in.y > maximum ) maximum = in.y;
+	if( in.z < minimum ) minimum = in.z;
+	if( in.z > maximum ) maximum = in.z;
+}
+
 
 
 template< typename T >
@@ -870,6 +948,28 @@ void Reverse( Vec4<T>& inout )
 }
 
 
+// Absolute
+template< typename T >
+void Abs( Vec4<T>& out, const Vec4<T>& in )
+{
+	out.x = abs( in.x );
+	out.y = abs( in.y );
+	out.z = abs( in.z );
+	out.w = abs( in.w );
+}
+
+
+// Absolute
+template< typename T >
+void Abs( Vec4<T>& inout )
+{
+	inout.x = abs( inout.x );
+	inout.y = abs( inout.y );
+	inout.z = abs( inout.z );
+	inout.w = abs( inout.w );
+}
+
+
 // Add
 template< typename T >
 inline void Add( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
@@ -990,6 +1090,20 @@ inline void Scale( Vec4<T>& out, const Vec4<T>& in, T scale )
 	out.y = in.y * scale;
 	out.z = in.z * scale;
 	out.w = in.w * scale;
+}
+
+
+template< typename T >
+inline T MaxElement( const Vec4<T>& in )
+{
+	return Max( Max( Max(in.x, in.y), in.z ), in.w );
+}
+
+
+template< typename T >
+inline T MinElement( const Vec4<T>& in )
+{
+	return Min( Min( Min(in.x, in.y), in.z ), in.w );
 }
 
 
