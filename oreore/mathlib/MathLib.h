@@ -91,6 +91,14 @@ inline const T Saturate( const T& a )
 
 
 template< typename T >
+inline const void Clamp( T& x, const T& a, const T& b )
+{
+	x = Min( Max( x, a ), b );
+}
+
+
+
+template< typename T >
 inline const T Clamp( const T& x, const T& a, const T& b )
 {
 	return Min( Max( x, a ), b );

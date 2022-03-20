@@ -305,7 +305,9 @@ inline T Distance( const Vec2<T>& in1, const Vec2<T>& in2 )
 {
 	const T dx	= in1.x - in2.x;
 	const T dy	= in1.y - in2.y;
-	return	sqrt( Max( dx * dx + dy * dy, ( std::numeric_limits<T>::min )( ) ) );
+	const T sqrd = dx * dx + dy * dy;
+	return sqrd < std::numeric_limits<T>::min() ? (T)0 : sqrt( sqrd );
+	//return	sqrt( Max( dx * dx + dy * dy, ( std::numeric_limits<T>::min )( ) ) );
 }
 
 
@@ -675,7 +677,9 @@ inline T Distance( const Vec3<T>& in1, const Vec3<T>& in2 )
 	const T dx	= in1.x - in2.x;
 	const T dy	= in1.y - in2.y;
 	const T dz	= in1.z - in2.z;
-	return	sqrt( Max( dx * dx + dy * dy + dz * dz, ( std::numeric_limits<T>::min )( ) ) );
+	const T sqrd = dx * dx + dy * dy + dz * dz;
+	return sqrd < std::numeric_limits<T>::min() ? (T)0 : sqrt( sqrd );
+	//return	sqrt( Max( dx * dx + dy * dy + dz * dz, ( std::numeric_limits<T>::min )( ) ) );
 }
 
 
@@ -1044,7 +1048,9 @@ inline T Distance( const Vec4<T>& in1, const Vec4<T>& in2 )
 	const T dy	= in1.y - in2.y;
 	const T dz	= in1.z - in2.z;
 	const T dw	= in1.w - in2.w;
-	return	sqrt( Max( dx * dx + dy * dy + dz * dz + dw * dw, ( std::numeric_limits<T>::min )( ) ) );
+	const T sqrd = dx * dx + dy * dy + dz * dz;
+	return sqrd < std::numeric_limits<T>::min() ? (T)0 : sqrt( sqrd );
+	//return	sqrt( Max( dx * dx + dy * dy + dz * dz + dw * dw, ( std::numeric_limits<T>::min )( ) ) );
 }
 
 
@@ -1646,6 +1652,23 @@ inline void MatRotationZ( Mat4<T>& mat, T theta )
 	mat.m10 = sin( theta );	mat.m11 = cos( theta );	mat.m12 = 0;		mat.m13 = 0;
 	mat.m20 = 0;			mat.m21 = 0;			mat.m22 = 1;		mat.m23 = 0;
 	mat.m30 = 0;			mat.m31 = 0;			mat.m32 = 0;		mat.m33 = 1;
+}
+
+
+template< typename T >
+inline void MatRotation( Mat4<T>& mat, const Vec3<T>& dir, const Vec3<T>& up )
+{
+	Vec3<T> hor;
+	CrossProduct( hor, up, dir );
+	Normalize( hor );
+
+	Vec3<T> vert;
+	CrossProduct( vert, dir, hor );
+	
+	mat.m00 = dir.x;	mat.m01 = hor.x;	mat.m02 = vert.x;	mat.m03 = 0;
+	mat.m10 = dir.y;	mat.m11 = hor.y;	mat.m12 = vert.y;	mat.m13 = 0;
+	mat.m20 = dir.z;	mat.m21 = hor.z;	mat.m22 = vert.z;	mat.m23 = 0;
+	mat.m30 = 0;		mat.m31 = 0;		mat.m32 = 0;		mat.m33 = 1;
 }
 
 
