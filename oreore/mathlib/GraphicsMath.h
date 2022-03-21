@@ -287,7 +287,9 @@ inline void CrossProduct( Vec2<T>& out, const Vec2<T>& in1, const Vec2<T>& in2 )
 template< typename T >
 inline T Length( const Vec2<T>& in )
 {
-	return sqrt( Max( in.x * in.x + in.y * in.y, ( std::numeric_limits<T>::min )( ) ) );
+	const T sqrd = in.x * in.x + in.y * in.y;
+	return sqrd < (std::numeric_limits<T>::min)() ? (T)0 : sqrt( sqrd );
+//	return sqrt( Max( in.x * in.x + in.y * in.y, (std::numeric_limits<T>::min)() ) );
 }
 
 
@@ -306,8 +308,8 @@ inline T Distance( const Vec2<T>& in1, const Vec2<T>& in2 )
 	const T dx	= in1.x - in2.x;
 	const T dy	= in1.y - in2.y;
 	const T sqrd = dx * dx + dy * dy;
-	return sqrd < std::numeric_limits<T>::min() ? (T)0 : sqrt( sqrd );
-	//return	sqrt( Max( dx * dx + dy * dy, ( std::numeric_limits<T>::min )( ) ) );
+	return sqrd < (std::numeric_limits<T>::min)() ? (T)0 : sqrt( sqrd );
+	//return	sqrt( Max( dx * dx + dy * dy, (std::numeric_limits<T>::min)() ) );
 }
 
 
@@ -323,9 +325,18 @@ inline T DistanceSqrd( const Vec2<T>& in1, const Vec2<T>& in2 )
 
 // Normalize
 template< typename T >
+inline void Normalize( Vec2<T>& out, const Vec2<T>& in )
+{
+	T length_inv	= ( T )1.0 / sqrt( Max( in.x * in.x + in.y * in.y, (std::numeric_limits<T>::min)() ) );
+	out.x	= in.x * length_inv;
+	out.y	= in.y * length_inv;
+}
+
+
+template< typename T >
 inline void Normalize( Vec2<T>& inout )
 {
-	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y, ( std::numeric_limits<T>::min )( ) ) );
+	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y, (std::numeric_limits<T>::min)() ) );
 	inout.x *= length_inv;
 	inout.y *= length_inv;
 }
@@ -616,6 +627,15 @@ inline void Subtract( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 }
 
 
+template< typename T >
+void Subtract( Vec3<T> &inout, const Vec3<T>& in )
+{
+	inout.x	-= in.x;
+	inout.y	-= in.y;
+	inout.z	-= in.z;
+}
+
+
 // Multiply
 template< typename T >
 inline void Multiply( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
@@ -658,7 +678,8 @@ inline void CrossProduct( Vec3<T>& out, const Vec3<T>& in1, const Vec3<T>& in2 )
 template< typename T >
 inline T Length( const Vec3<T>& in )
 {
-	return sqrt( Max( in.x * in.x + in.y * in.y + in.z * in.z, ( std::numeric_limits<T>::min )( ) ) );
+	const T sqrd = in.x * in.x + in.y * in.y + in.z * in.z;
+	return sqrd < (std::numeric_limits<T>::min)() ? (T)0 : sqrt( sqrd );
 }
 
 
@@ -678,8 +699,8 @@ inline T Distance( const Vec3<T>& in1, const Vec3<T>& in2 )
 	const T dy	= in1.y - in2.y;
 	const T dz	= in1.z - in2.z;
 	const T sqrd = dx * dx + dy * dy + dz * dz;
-	return sqrd < std::numeric_limits<T>::min() ? (T)0 : sqrt( sqrd );
-	//return	sqrt( Max( dx * dx + dy * dy + dz * dz, ( std::numeric_limits<T>::min )( ) ) );
+	return sqrd < (std::numeric_limits<T>::min)() ? (T)0 : sqrt( sqrd );
+	//return	sqrt( Max( dx * dx + dy * dy + dz * dz, (std::numeric_limits<T>::min)() ) );
 }
 
 
@@ -696,9 +717,19 @@ inline T DistanceSqrd( const Vec3<T>& in1, const Vec3<T>& in2 )
 
 // Normalize
 template< typename T >
+inline void Normalize( Vec3<T>& out, const Vec3<T>& in )
+{
+	T length_inv	= (T)1.0 / sqrt( Max( in.x * in.x + in.y * in.y + in.z * in.z, (std::numeric_limits<T>::min)() ) );
+	out.x	= in.x * length_inv;
+	out.y	= in.y * length_inv;
+	out.z	= in.z * length_inv;
+}
+
+
+template< typename T >
 inline void Normalize( Vec3<T>& inout )
 {
-	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y + inout.z * inout.z, ( std::numeric_limits<T>::min )( ) ) );
+	T length_inv	= (T)1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y + inout.z * inout.z, (std::numeric_limits<T>::min)() ) );
 	inout.x *= length_inv;
 	inout.y *= length_inv;
 	inout.z *= length_inv;
@@ -1006,6 +1037,16 @@ inline void Subtract( Vec4<T>& out, const Vec4<T>& in1, const Vec4<T>& in2 )
 }
 
 
+template< typename T >
+void Subtract( Vec4<T> &inout, const Vec4<T>& in )
+{
+	inout.x	-= in.x;
+	inout.y	-= in.y;
+	inout.z	-= in.z;
+	inout.w	-= in.w;
+}
+
+
 // Dot product
 template< typename T >
 inline T DotProduct( const Vec4<T>& in1, const Vec4<T>& in2 )
@@ -1028,7 +1069,9 @@ inline T DotProduct( const Vec4<T>& in1, const Vec4<T>& in2 )
 template< typename T >
 inline T Length( const Vec4<T>& in )
 {
-	return sqrt( Max( in.x * in.x + in.y * in.y + in.z * in.z + in.w * in.w, ( std::numeric_limits<T>::min )( ) ) );
+	const T sqrd = in.x * in.x + in.y * in.y + in.z * in.z + in.w * in.w;
+	return sqrd < (std::numeric_limits<T>::min)() ? (T)0 : sqrt( sqrd );
+	//return sqrt( Max( in.x * in.x + in.y * in.y + in.z * in.z + in.w * in.w, (std::numeric_limits<T>::min)() ) );
 }
 
 
@@ -1049,8 +1092,8 @@ inline T Distance( const Vec4<T>& in1, const Vec4<T>& in2 )
 	const T dz	= in1.z - in2.z;
 	const T dw	= in1.w - in2.w;
 	const T sqrd = dx * dx + dy * dy + dz * dz;
-	return sqrd < std::numeric_limits<T>::min() ? (T)0 : sqrt( sqrd );
-	//return	sqrt( Max( dx * dx + dy * dy + dz * dz + dw * dw, ( std::numeric_limits<T>::min )( ) ) );
+	return sqrd < (std::numeric_limits<T>::min)() ? (T)0 : sqrt( sqrd );
+	//return	sqrt( Max( dx * dx + dy * dy + dz * dz + dw * dw, (std::numeric_limits<T>::min)() ) );
 }
 
 
@@ -1068,9 +1111,20 @@ inline T DistanceSqrd( const Vec4<T>& in1, const Vec4<T>& in2 )
 
 // Normalize
 template< typename T >
+inline void Normalize( Vec4<T>& out, const Vec4<T>& in )
+{
+	T length_inv	= ( T )1.0 / sqrt( Max( in.x * in.x + in.y * in.y + in.z * in.z + in.w * in.w, (std::numeric_limits<T>::min)() ) );
+	out.x	= in.x * length_inv;
+	out.y	= in.y * length_inv;
+	out.z	= in.z * length_inv;
+	out.w	= in.w * length_inv;
+}
+
+
+template< typename T >
 inline void Normalize( Vec4<T>& inout )
 {
-	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y + inout.z * inout.z + inout.w * inout.w, ( std::numeric_limits<T>::min )( ) ) );
+	T length_inv	= ( T )1.0 / sqrt( Max( inout.x * inout.x + inout.y * inout.y + inout.z * inout.z + inout.w * inout.w, (std::numeric_limits<T>::min)() ) );
 	inout.x *= length_inv;
 	inout.y *= length_inv;
 	inout.z *= length_inv;
@@ -1936,12 +1990,22 @@ inline T Length( const Quaternion<T>& quat )
 template < typename T >
 inline void Normalize( Quaternion<T>& quat )
 {
-	float L_inv = ( T )1.0 / Length( quat );
+	T length_inv = ( T )1.0 / sqrt( Max( quat.w*quat.w + quat.x*quat.x + quat.y*quat.y +quat.z*quat.z, (std::numeric_limits<T>::min)() ) );
+	quat.w *= length_inv;
+	quat.x *= length_inv;
+	quat.y *= length_inv;
+	quat.z *= length_inv;
+}
 
-	quat.w *= L_inv;
-	quat.x *= L_inv;
-	quat.y *= L_inv;
-	quat.z *= L_inv;
+
+template < typename T >
+inline void Normalize( Quaternion<T>& out, const Quaternion<T>& in )
+{
+	T length_inv = ( T )1.0 / sqrt( Max( in.w*in.w + in.x*in.x + in.y*in.y +in.z*in.z, (std::numeric_limits<T>::min)() ) );
+	out.w	= in.w * length_inv;
+	out.x	= in.x * length_inv;
+	out.y	= in.y * length_inv;
+	out.z	= in.z * length_inv;
 }
 
 
