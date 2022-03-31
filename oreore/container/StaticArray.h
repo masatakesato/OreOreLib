@@ -18,10 +18,10 @@ namespace OreOreLib
 
 
 
-	template< typename T, sizeType Size, typename SizeType >
-	class ArrayBase< T, Size, SizeType, std::enable_if_t< Size!=detail::DynamicSize > > : public Memory<T, SizeType>
+	template< typename T, sizeType Size, typename InexType >
+	class ArrayBase< T, Size, InexType, std::enable_if_t< Size!=detail::DynamicSize > > : public Memory<T, InexType>
 	{
-		//using SizeType = typename Memory<T>::SizeType;
+		//using InexType = typename Memory<T>::InexType;
 
 	public:
 
@@ -38,7 +38,7 @@ namespace OreOreLib
 
 
 		// Constructor with external buffer
-		ArrayBase( SizeType len, T* pdata )
+		ArrayBase( InexType len, T* pdata )
 		{
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
@@ -77,7 +77,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		ArrayBase( const Memory<T, SizeType> &obj )
+		ArrayBase( const Memory<T, InexType> &obj )
 		{
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
@@ -129,7 +129,7 @@ namespace OreOreLib
 			return *this;
 		}
 
-		inline ArrayBase& operator=( const Memory<T, SizeType>& obj )
+		inline ArrayBase& operator=( const Memory<T, InexType>& obj )
 		{
 			if( this != &obj )
 			{
@@ -179,13 +179,13 @@ namespace OreOreLib
 		}
 
 
-		SizeType Length() const
+		InexType Length() const
 		{
 			return Size;
 		}
 
 
-		inline void Swap( SizeType i, SizeType j )
+		inline void Swap( InexType i, InexType j )
 		{
 			assert( i>=0 && i<this->length && j>=0 && j<this->length );
 
@@ -201,7 +201,7 @@ namespace OreOreLib
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
-			for( SizeType i=0; i<Size; ++i )
+			for( InexType i=0; i<Size; ++i )
 				tcout << _T("  [") << i << _T("]: ") << m_Data[i] << tendl;
 
 			tcout << tendl;
@@ -240,33 +240,33 @@ namespace OreOreLib
 	private:
 
 		// Delete unnecessary parent methods
-		void Init( SizeType ) = delete;
-		void Init( SizeType, const T& ) = delete;
+		void Init( InexType ) = delete;
+		void Init( InexType, const T& ) = delete;
 		template < typename ... Args >	void Init( Args const & ... args ) = delete;
 		void Release() = delete;
 		//void Clear() = delete;
-		bool Resize( SizeType ) = delete;
-		bool Resize( SizeType, const T& ) = delete;
-		bool Reserve( SizeType ) = delete;
-		bool Extend( SizeType ) = delete;
-		bool Shrink( SizeType ) = delete;
-		SizeType InsertBefore( SizeType ) = delete;
-		SizeType InsertBefore( SizeType, const T& ) = delete;
-		SizeType InsertBefore( SizeType, T&& ) = delete;
-		SizeType InsertAfter( SizeType ) = delete;
-		SizeType InsertAfter( SizeType, const T& ) = delete;
-		SizeType InsertAfter( SizeType, T&& ) = delete;
+		bool Resize( InexType ) = delete;
+		bool Resize( InexType, const T& ) = delete;
+		bool Reserve( InexType ) = delete;
+		bool Extend( InexType ) = delete;
+		bool Shrink( InexType ) = delete;
+		InexType InsertBefore( InexType ) = delete;
+		InexType InsertBefore( InexType, const T& ) = delete;
+		InexType InsertBefore( InexType, T&& ) = delete;
+		InexType InsertAfter( InexType ) = delete;
+		InexType InsertAfter( InexType, const T& ) = delete;
+		InexType InsertAfter( InexType, T&& ) = delete;
 
 		// Hide parent methods
-		using Memory<T,SizeType>::Init;
-		using Memory<T,SizeType>::Release;
-		//using Memory<T,SizeType>::Clear;
-		using Memory<T,SizeType>::Reserve;
-		using Memory<T,SizeType>::Resize;
-		using Memory<T,SizeType>::Extend;
-		using Memory<T,SizeType>::Shrink;
-		using Memory<T,SizeType>::InsertBefore;
-		using Memory<T,SizeType>::InsertAfter;
+		using Memory<T,InexType>::Init;
+		using Memory<T,InexType>::Release;
+		//using Memory<T,InexType>::Clear;
+		using Memory<T,InexType>::Reserve;
+		using Memory<T,InexType>::Resize;
+		using Memory<T,InexType>::Extend;
+		using Memory<T,InexType>::Shrink;
+		using Memory<T,InexType>::InsertBefore;
+		using Memory<T,InexType>::InsertAfter;
 
 	};
 

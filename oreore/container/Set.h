@@ -39,10 +39,10 @@ namespace OreOreLib
 
 
 
-		template < typename T, typename F, typename IndexType >
+		template < typename T, typename IndexType, typename F >
 		friend class SetIterator;
 
-		template < typename T, typename F, typename IndexType >
+		template < typename T, typename IndexType, typename F >
 		friend class Set;
 
 	};
@@ -56,7 +56,7 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template< typename T, typename F, typename IndexType >
+	template< typename T, typename IndexType, typename F >
 	class SetIterator
 	{
 	public:
@@ -72,7 +72,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		SetIterator( Set<T, F, IndexType>* pmap )
+		SetIterator( Set<T, IndexType, F >* pmap )
 			: m_pMap( pmap )
 			, m_pCurrentNode( nullptr )
 			, m_TableIndex( 0 )			
@@ -139,7 +139,7 @@ namespace OreOreLib
 
 	private:
 
-		Set<T, F, IndexType>*	m_pMap;
+		Set<T, IndexType, F>*	m_pMap;
 		SetNode<T>*				m_pCurrentNode;
 		IndexType				m_TableIndex;
 
@@ -154,15 +154,17 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template < typename T, typename F = KeyHash<T>, typename IndexType = MemSizeType >
+	template < typename T, typename IndexType = MemSizeType, typename F = KeyHash<T> >
 	class Set
 	{
+		using Iter = SetIterator< T, IndexType, F >;
+
 	public:
 
 		// Default constructor
 		Set( size_t hashSize=HashConst::DefaultHashSize )
 			: m_pTable( static_cast<IndexType>(hashSize) )
-			, hashFunc()
+			, m_HashFunc()
 			, m_numElements( 0 )
 		{
 
@@ -173,7 +175,7 @@ namespace OreOreLib
 		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same< Pair<T>, Args...>::value >* = nullptr >
 		//Set( Args const & ... args )
 		//	: m_pTable()
-		//	, hashFunc()
+		//	, m_HashFunc()
 		//	, m_numElements( 0 )
 		//{
 
@@ -182,7 +184,7 @@ namespace OreOreLib
 
 		Set( std::initializer_list<T> ilist )
 			: m_pTable( static_cast<IndexType>( ilist.size() ) )
-			, hashFunc()
+			, m_HashFunc()
 			, m_numElements( 0 )
 		{
 			for( const auto& val : ilist )
@@ -193,7 +195,7 @@ namespace OreOreLib
 		template < typename Iter >
 		Set( Iter first, Iter last )
 			: m_pTable( static_cast<IndexType>(last - first) )
-			, hashFunc()
+			, m_HashFunc()
 			, m_numElements( 0 )
 		{
 			for(; first != last; ++first )
@@ -211,7 +213,7 @@ namespace OreOreLib
 		// Copy constructor
 		Set( const Set& obj )
 			: m_pTable( obj.m_pTable.Length() )
-			, hashFunc( obj.hashFunc )
+			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
 		{
 
@@ -240,7 +242,7 @@ namespace OreOreLib
 		// Move constructor
 		Set( Set&& obj )
 			: m_pTable( (Memory<SetNode<T>*>)obj.m_pTable )
-			, hashFunc( obj.hashFunc )
+			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
 		{
 			obj.m_numElements = 0;
@@ -253,8 +255,7 @@ namespace OreOreLib
 			if( this != &obj )
 			{
 				m_pTable.Init( obj.m_pTable.Length() );
-
-				hashFunc		= obj.hashFunc;
+				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
 
 				for( int i=0; i<m_pTable.Length<int>(); ++i )
@@ -288,9 +289,9 @@ namespace OreOreLib
 			{
 				Clear();
 
-				hashFunc		= obj.hashFunc;
-				m_numElements	= obj.m_numElements;
 				m_pTable		= (Memory<SetNode<T>*, IndexType>&&)obj.m_pTable;
+				m_HashFunc		= obj.m_HashFunc;
+				m_numElements	= obj.m_numElements;
 
 				obj.m_numElements = 0;
 			}
@@ -301,7 +302,7 @@ namespace OreOreLib
 
 		void Put( const T& value )
 		{
-			IndexType hashValue = hashFunc.Get<IndexType>( value, m_pTable.Length() );
+			IndexType hashValue = m_HashFunc.Get<IndexType>( value, m_pTable.Length() );
 			SetNode<T>* prev = nullptr;
 			SetNode<T>* entry = m_pTable[ hashValue ];
 
@@ -331,7 +332,7 @@ namespace OreOreLib
 
 		void Remove( const T& value )
 		{
-			IndexType hashValue = hashFunc.Get<IndexType>( value, m_pTable.Length() );
+			IndexType hashValue = m_HashFunc.Get<IndexType>( value, m_pTable.Length() );
 			SetNode<T>* prev = nullptr;
 			SetNode<T>* entry = m_pTable[ hashValue ];
 
@@ -381,7 +382,7 @@ namespace OreOreLib
 
 		bool Exists( const T& value ) const
 		{
-			IndexType hashValue = hashFunc.Get<IndexType>( value, m_pTable.Length() );
+			IndexType hashValue = m_HashFunc.Get<IndexType>( value, m_pTable.Length() );
 			SetNode<T>* entry = m_pTable[ hashValue ];
 
 			for( auto entry = m_pTable[ hashValue ]; entry != nullptr; entry=entry->next )
@@ -406,15 +407,15 @@ namespace OreOreLib
 		}
 
 
-		SetIterator<T, F, IndexType> begin() const
+		Iter begin() const
 		{
-			return SetIterator<T, F, IndexType>( (Set*)this );
+			return Iter( (Set*)this );
 		}
 
 
-		SetIterator<T, F, IndexType> end() const
+		Iter end() const
 		{
-			return SetIterator<T, F, IndexType>( nullptr );
+			return Iter( nullptr );
 		}
 
 
@@ -422,12 +423,11 @@ namespace OreOreLib
 	private:
 
 		Memory<SetNode<T>*, IndexType>	m_pTable;
-		F hashFunc;
-		int	m_numElements = 0;
+		F								m_HashFunc;
+		IndexType						m_numElements;
 
 
-		template < typename T, typename F, typename IndexType >
-		friend class SetIterator;
+		friend class Iter;
 
 	};
 

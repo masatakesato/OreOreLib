@@ -70,7 +70,7 @@ int main()
 
 	{
 		float vals[] = { 0.5f, 0.6f, 0.6f };
-		const Set< float/*, tableSize*/ > set3( std::begin(vals), std::end(vals) );
+		const Set< float, uint64/*, tableSize*/ > set3( std::begin(vals), std::end(vals) );
 
 		for( auto& data : set3 )
 		{

@@ -70,7 +70,7 @@ int main()
 //	Pair<float, float> a = { {0.5f, 0.5f} };
 
 //	std::initializer_list< int > aaa;
-	const HashMap< tstring, float/*, tableSize*/ > hmap3 =
+	const HashMap< tstring, float, uint8/*, tableSize*/ > hmap3 =
 	{
 		{ _T("aaa"), 0.1f },	//Pair<tstring, float>{ _T("aaa"), 0.1f },
 		{ _T("bbb"), -5.5f }	//Pair<tstring, float>{ _T("bbb"), -5.5f }
@@ -78,9 +78,9 @@ int main()
 
 
 
-	//tcout << hmap3.At(_T("aaa")) << tendl;
-	//tcout << hmap3[ _T("aaa") ] << tendl;
-	//tcout << hmap3[ _T("bbb") ] << tendl;
+	tcout << hmap3.At(_T("aaa")) << tendl;
+	tcout << hmap3[ _T("aaa") ] << tendl;
+	tcout << hmap3[ _T("bbb") ] << tendl;
 
 
 	return 0;

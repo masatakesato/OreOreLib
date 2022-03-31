@@ -571,8 +571,8 @@ namespace OreOreLib
 	private:
 
 		Memory<HashNode<K, V>*, IndexType>	m_pTable;
-		F m_HashFunc;
-		int	m_numElements = 0;
+		F									m_HashFunc;
+		IndexType							m_numElements;
 
 
 		friend class Iterator;

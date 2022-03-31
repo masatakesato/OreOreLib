@@ -14,11 +14,10 @@
 namespace OreOreLib
 {
 
-
-	template< typename T, int64 ... Args >
-	class NDArrayBase< detail::NDSTATICARR<T>, Args... > : public StaticArray<T, mult_<Args...>::value >
+	template< typename T, typename IndexType, IndexType ... Args >
+	class NDArrayBase< detail::NDSTATICARR<T>, IndexType, Args... > : public StaticArrayImpl<T, mult_<Args...>::value, IndexType >
 	{
-		using SizeType = typename Memory<T>::SizeType;
+		using SizeType = typename IndexType;//Memory<T>::SizeType;
 		static constexpr int64 N = sizeof...(Args);
 		static constexpr int64 Size = mult_<Args...>::value;
 
@@ -26,7 +25,7 @@ namespace OreOreLib
 
 		// Default constructor
 		NDArrayBase()
-			: StaticArray<T, Size>()
+			: StaticArrayImpl<T, Size, IndexType>()
 		{
 			//tcout << _T( "NDStaticArray::NDStaticArray()...\n" );
 		}
@@ -34,7 +33,7 @@ namespace OreOreLib
 
 		// Constructor with external buffer
 		NDArrayBase( SizeType len, T* pdata )
-			: StaticArray<T, Size>( len, pdata )
+			: StaticArrayImpl<T, Size, IndexType>( len, pdata )
 		{
 			//tcout << _T( "NDStaticArray::NDStaticArray( SizeType len, T* pdata )...\n" );
 		}
@@ -43,7 +42,7 @@ namespace OreOreLib
 		// Constructor with initial data( variadic tempalte )
 		template < typename ... Vals, std::enable_if_t< (sizeof...(Vals)==Size) && TypeTraits::all_convertible<T, Vals...>::value >* = nullptr >
 		NDArrayBase( const Vals& ... vals )
-			: StaticArray<T, Size>( {(T)vals...} )
+			: StaticArrayImpl<T, Size, IndexType>( {(T)vals...} )
 		{
 			//tcout << _T( "NDStaticArray::NDStaticArray( const Vals& ... vals )...\n" );
 		}
@@ -51,7 +50,7 @@ namespace OreOreLib
 
 		// Constructor with initial data( initializer list )
 		NDArrayBase( std::initializer_list<T> ilist )
-			: StaticArray<T, Size>( ilist )
+			: StaticArrayImpl<T, Size, IndexType>( ilist )
 		{
 			//tcout << _T( "NDStaticArray::NDStaticArray( std::initializer_list<Type> ilist )...\n" );
 		}
@@ -88,7 +87,7 @@ namespace OreOreLib
 			return *this;
 		}
 
-		inline NDArrayBase& operator=( const Memory<T>& obj )
+		inline NDArrayBase& operator=( const Memory<T, IndexType>& obj )
 		{
 			if( this != &obj )
 			{

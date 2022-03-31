@@ -9,6 +9,13 @@ namespace OreOreLib
 {
 	namespace detail
 	{
+
+	//##########################################################################//
+	//																			//
+	//							ArrayBase templates								//
+	//																			//
+	//##########################################################################//
+
 		const sizeType DynamicSize = (~0u);
 		//-1;
 
@@ -31,22 +38,50 @@ namespace OreOreLib
 	}
 
 
-	template< typename T, sizeType Size, typename SizeType, typename enable=void > class ArrayBase; 
+	// ArrayBase declaration
+	template< typename T, sizeType Size, typename InexType, typename enable=void > class ArrayBase; 
 
+
+
+
+	//##########################################################################//
+	//																			//
+	//						NDArrayBase partial specialization					//
+	//																			//
+	//##########################################################################//
 
 	// Dynamic array
-	template< typename T, typename SizeType=MemSizeType >
-	using Array = ArrayBase< T, detail::DynamicSize, SizeType >;
-
+	template< typename T, typename InexType >
+	using ArrayImpl = ArrayBase< T, detail::DynamicSize, InexType >;
 
 	// Static array
-	template< typename T, sizeType Size, typename SizeType=MemSizeType >
-	using StaticArray = ArrayBase< T, Size, SizeType, std::enable_if_t< Size!=detail::DynamicSize > >;
-
+	template< typename T, sizeType Size, typename InexType >
+	using StaticArrayImpl = ArrayBase< T, Size, InexType, std::enable_if_t< Size!=detail::DynamicSize > >;
 
 	// Array view
-	template< typename T, typename SizeType=MemSizeType >
-	using ArrayView = ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, SizeType >;
+	template< typename T, typename InexType >
+	using ArrayViewImpl = ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, InexType >;
+
+
+
+
+	//##########################################################################//
+	//																			//
+	//						NDArrayBase full specialization						//
+	//																			//
+	//##########################################################################//
+
+	// Dynamic array
+	template< typename T >
+	using Array = ArrayImpl< T, MemSizeType >;
+
+	// Static array
+	template< typename T, sizeType Size >
+	using StaticArray = StaticArrayImpl< T, Size, MemSizeType >;
+
+	// Array view
+	template< typename T >
+	using ArrayView = ArrayViewImpl< T, MemSizeType >;
 
 
 }

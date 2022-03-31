@@ -47,7 +47,7 @@ int main()
 		OreOreLib::Array< OreOreLib::Array<float> > array2d;
 
 		array2d.Init( 4 );
-/*
+
 		int val=0;
 		array2d[0].AddToTail( float(val++) );
 		array2d[0].AddToTail( float(val++) );
@@ -104,13 +104,17 @@ int main()
 	//	return 0;
 	//}
 
-
-	// NG
+	
 	{
+		tcout << "//================== string add test ===================//\n";
+
 		OreOreLib::Array< tstring > strarr;
 		strarr.AddToTail( _T("1") );
 		strarr.AddToTail( _T("2") );
 		strarr.AddToFront( _T("0") );
+
+		for( auto& val : strarr )
+			tcout << val << tendl;
 	}
 
 
@@ -156,7 +160,7 @@ int main()
 
 		tcout << tendl;
 
-*/
+
 	}
 
 

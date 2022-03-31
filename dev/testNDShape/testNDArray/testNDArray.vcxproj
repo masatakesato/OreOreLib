@@ -76,6 +76,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\test\testNDShape\testNDArray_main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\oreore\container\NDArray.h" />
+    <ClInclude Include="..\..\..\oreore\container\NDArrayBase.h" />
+    <ClInclude Include="..\..\..\oreore\container\NDArrayView.h" />
+    <ClInclude Include="..\..\..\oreore\container\NDShape.h" />
+    <ClInclude Include="..\..\..\oreore\container\NDStaticArray.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

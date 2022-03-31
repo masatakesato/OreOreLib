@@ -13,34 +13,66 @@
 namespace OreOreLib
 {
 
+	//##########################################################################//
+	//																			//
+	//							NDArrayBase templates							//
+	//																			//
+	//##########################################################################//
+
 	namespace detail
 	{
 		// struct for NDArrayView specialization
 		template< typename T >	struct NDARRVIEW{ using Type = typename T; };
 
 		// struct for NDStaticArray specialization
-		template< typename T >	struct NDSTATICARR{ using Type = typename T; };
+		template< typename T >	struct NDSTATICARR{	using Type = typename T; };
 	}
 
 
 	// NDArrayBase declaration
-	template< typename T, int64 ...Ns > class NDArrayBase; 
+	template< typename T, typename IndexType, IndexType ...Ns > class NDArrayBase; 
 
 
-	// NDArray specialization
-	template< typename T, int64 N >
-	using NDArray = NDArrayBase< T, N >;
 
 
-	// NDStaticArray specialization
-	template< typename T, int64 ... Args >
-	using NDStaticArray = NDArrayBase< detail::NDSTATICARR<T>, Args... >;
+	//##########################################################################//
+	//																			//
+	//						NDArrayBase partial specialization					//
+	//																			//
+	//##########################################################################//
+
+	// NDStaticArray
+	template< typename T, typename IndexType, IndexType N >
+	using NDArrayImpl = NDArrayBase< T, IndexType, N >;
+		
+	// NDArrayView
+	template< typename T, typename IndexType, IndexType ...Ns >
+	using NDStaticArrayImpl = NDArrayBase< detail::NDSTATICARR<T>, IndexType, Ns... >;
+
+	// NDArrayView
+	template< typename T, typename IndexType, IndexType N >
+	using NDArrayViewImpl = NDArrayBase< detail::NDARRVIEW<T>, IndexType, N >;
 
 
-	// NDArrayView specialization
-	template< typename T, int64 N >
-	using NDArrayView = NDArrayBase< detail::NDARRVIEW<T>, N >;
-	
+
+
+	//##########################################################################//
+	//																			//
+	//						NDArrayBase full specialization						//
+	//																			//
+	//##########################################################################//
+
+	// NDArray
+	template< typename T, MemSizeType N >
+	using NDArray = NDArrayImpl< T, MemSizeType, N >;
+
+	// NDStaticArray
+	template< typename T, MemSizeType ...Ns >
+	using NDStaticArray = NDStaticArrayImpl< T, MemSizeType, Ns... >;
+
+	// NDArrayView
+	template< typename T, MemSizeType N >
+	using NDArrayView = NDArrayViewImpl< T, MemSizeType, N >;
 
 
 }

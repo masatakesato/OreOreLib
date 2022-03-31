@@ -99,7 +99,7 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-
+	//while(1)
 	{
 
 //		Val a(0.5f);

@@ -8,7 +8,7 @@
 #include	"../mathlib/MathLib.h"
 #include	"../algorithm/Algorithm.h"
 
-//TODO: Replace SizeType with MemSizeType
+//TODO: Replace IndexType with MemSizeType
 
 
 namespace OreOreLib
@@ -391,10 +391,10 @@ namespace OreOreLib
 	//																												//
 	//##############################################################################################################//
 
-	template< typename T, typename SizeType/* = MemSizeType*/ >
+	template< typename T, typename IndexType/* = MemSizeType*/ >
 	struct Memory
 	{
-//		using SizeType = typename MemSizeType;//typename uint32;//sizeType;//int32;//uint64;//
+//		using IndexType = typename MemSizeType;//typename uint32;//sizeType;//int32;//uint64;//
 
 	public:
 
@@ -410,7 +410,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		Memory( SizeType len )
+		Memory( IndexType len )
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
@@ -421,7 +421,7 @@ namespace OreOreLib
 
 		
 		// Constructor
-		Memory( SizeType len, const T& fill )
+		Memory( IndexType len, const T& fill )
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
@@ -438,7 +438,7 @@ namespace OreOreLib
 			: m_Length( sizeof ...(Args) )
 			, m_AllocSize( sizeof ...(Args) * sizeof(T) )
 			, m_Capacity( sizeof ...(Args) )
-			, m_pData( AllocateBuffer( SizeType( sizeof ...(Args) ) )  )
+			, m_pData( AllocateBuffer( static_cast<IndexType>( sizeof ...(Args) ) )  )
 		{
 			auto ilist = std::initializer_list<T>{ args... };
 			MemCopy( begin(), ilist.begin(), m_Length );
@@ -450,10 +450,10 @@ namespace OreOreLib
 
 		// Constructor with initializer_list
 		Memory( std::initializer_list<T> ilist )
-			: m_Length( SizeType( ilist.size() ) )
-			, m_AllocSize( SizeType( ilist.size() * sizeof(T) ) )
-			, m_Capacity( SizeType( ilist.size() ) )
-			, m_pData( AllocateBuffer( SizeType( ilist.size() ) ) )
+			: m_Length( static_cast<IndexType>( ilist.size() ) )
+			, m_AllocSize( static_cast<IndexType>( ilist.size() * sizeof(T) ) )
+			, m_Capacity( m_Length )
+			, m_pData( AllocateBuffer( m_Length ) )
 		{
 			MemCopy( begin(), ilist.begin(), m_Length );
 			
@@ -466,10 +466,10 @@ namespace OreOreLib
 		// Constructor with iterator
 		template < class Iter >
 		Memory( Iter first, Iter last )
-			: m_Length( SizeType( last - first ) )
+			: m_Length( static_cast<IndexType>( last - first ) )
 			, m_AllocSize( m_Length * sizeof(T) )
-			, m_Capacity( SizeType(last - first) )
-			, m_pData( AllocateBuffer( SizeType(last - first) ) )
+			, m_Capacity( m_Length )
+			, m_pData( AllocateBuffer( m_Length ) )
 		{
 			MemCopy( begin(), first, m_Length );
 		}
@@ -566,21 +566,21 @@ namespace OreOreLib
 
 
 		// Subscript operator for read only.( called if Memory is const )
-		inline const T& operator[]( SizeType n ) const&
+		inline const T& operator[]( IndexType n ) const&
 		{
 			return m_pData[n];
 		}
 
 
 		// Subscript operator for read-write.( called if Memory is non-const )
-		inline T& operator[]( SizeType n ) &
+		inline T& operator[]( IndexType n ) &
 		{
 			return m_pData[n];
 		}
 
 
 		// Subscript operator. ( called by following cases: "T a = Memory<T>(10)[n]", "auto&& a = Memory<T>(20)[n]" )
-		inline T operator[]( SizeType n ) const&&
+		inline T operator[]( IndexType n ) const&&
 		{
 			return std::move(m_pData[n]);// return object
 		}
@@ -605,7 +605,7 @@ namespace OreOreLib
 
 
 
-		void Init( SizeType len )
+		void Init( IndexType len )
 		{
 			if( len > m_Capacity )
 			{
@@ -619,7 +619,7 @@ namespace OreOreLib
 		}
 
 
-		void Init( SizeType len, const T& fill )
+		void Init( IndexType len, const T& fill )
 		{
 			if( len > m_Capacity )
 			{
@@ -638,7 +638,7 @@ namespace OreOreLib
 
 		void Init( std::initializer_list<T> ilist )
 		{
-			SizeType len = static_cast<SizeType>( ilist.size() );
+			IndexType len = static_cast<IndexType>( ilist.size() );
 
 			if( len > m_Capacity )
 			{
@@ -658,7 +658,7 @@ namespace OreOreLib
 		template < class Iter >
 		void Init( Iter first, Iter last )
 		{
-			SizeType len = static_cast<SizeType>( last - first );
+			IndexType len = static_cast<IndexType>( last - first );
 
 			if( len > m_Capacity )
 			{
@@ -689,7 +689,7 @@ namespace OreOreLib
 		}
 
 
-		void SetValues( uint8* pdata, SizeType len )
+		void SetValues( uint8* pdata, IndexType len )
 		{
 			ASSERT( pdata );
 			MemCopy( m_pData, (T*)pdata, Min( m_Length, len ) );
@@ -701,7 +701,7 @@ namespace OreOreLib
 		SetValues( const Args& ... args )
 		{
 			auto values = { (T)args... };
-			MemCopy( m_pData, values.begin(), Min( m_Length, (SizeType)values.size() ) );
+			MemCopy( m_pData, values.begin(), Min( m_Length, (IndexType)values.size() ) );
 		}
 
 
@@ -709,11 +709,11 @@ namespace OreOreLib
 		std::enable_if_t< std::is_convertible_v<Type, T>/*  std::is_same_v<Type, T>*/, void >
 		SetValues( std::initializer_list<Type> ilist )
 		{
-			MemCopy( m_pData, ilist.begin(), Min( m_Length, (SizeType)ilist.size() ) );
+			MemCopy( m_pData, ilist.begin(), Min( m_Length, (IndexType)ilist.size() ) );
 		}
 
 
-		inline bool Reserve( SizeType newlen )
+		inline bool Reserve( IndexType newlen )
 		{
 			if( newlen <= m_Capacity )
 				return false;
@@ -733,7 +733,7 @@ namespace OreOreLib
 		}
 
 
-		inline bool Resize( SizeType newlen )
+		inline bool Resize( IndexType newlen )
 		{
 			// Reallocate memory
 			auto oldlen = m_Length;
@@ -746,7 +746,7 @@ namespace OreOreLib
 		}
 
 
-		inline bool Resize( SizeType newlen, const T& fill )
+		inline bool Resize( IndexType newlen, const T& fill )
 		{
 			// Reallocate memory
 			auto oldlen = m_Length;
@@ -759,30 +759,30 @@ namespace OreOreLib
 		}
 
 
-		inline bool Extend( SizeType numelms )
+		inline bool Extend( IndexType numelms )
 		{
 			if( numelms==0 || numelms==~0u )	return false;
 			return Resize( m_Length + numelms );
 		}
 
 
-		inline bool Extend( SizeType numelms, const T& fill )
+		inline bool Extend( IndexType numelms, const T& fill )
 		{
 			if( numelms==0 || numelms==~0u )	return false;
 			return Resize( m_Length + numelms, fill );
 		}
 
 
-		inline bool Shrink( SizeType numelms )
+		inline bool Shrink( IndexType numelms )
 		{
 			if( m_Length > numelms )	return ReallocateBuffer( m_Length - numelms );
 			return false;
 		}
 
 
-		inline SizeType InsertBefore( SizeType elm )
+		inline IndexType InsertBefore( IndexType elm )
 		{
-			SizeType newlen = m_Length + 1;
+			IndexType newlen = m_Length + 1;
 			ASSERT( elm < newlen );
 
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
@@ -809,9 +809,9 @@ namespace OreOreLib
 		}
 
 
-		inline SizeType InsertBefore( SizeType elm, const T& src )
+		inline IndexType InsertBefore( IndexType elm, const T& src )
 		{
-			SizeType newlen = m_Length + 1;
+			IndexType newlen = m_Length + 1;
 			ASSERT( elm < newlen );
 
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
@@ -838,9 +838,9 @@ namespace OreOreLib
 		}
 
 
-		inline SizeType InsertBefore( SizeType elm, T&& src )
+		inline IndexType InsertBefore( IndexType elm, T&& src )
 		{
-			SizeType newlen = m_Length + 1;
+			IndexType newlen = m_Length + 1;
 			ASSERT( elm < newlen );
 
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
@@ -867,19 +867,19 @@ namespace OreOreLib
 		}
 
 		
-		inline SizeType InsertAfter( SizeType elm )
+		inline IndexType InsertAfter( IndexType elm )
 		{
 			return InsertBefore( elm + 1 );
 		}
 
 
-		inline SizeType InsertAfter( SizeType elm, const T& src )
+		inline IndexType InsertAfter( IndexType elm, const T& src )
 		{
 			return InsertBefore( elm+1, src );
 		}
 
 
-		inline SizeType InsertAfter( SizeType elm, T&& src )
+		inline IndexType InsertAfter( IndexType elm, T&& src )
 		{
 			return InsertBefore( elm+1, (T&&)src );
 		}
@@ -897,26 +897,26 @@ namespace OreOreLib
 		}
 
 
-		inline SizeType ElementSize() const
+		inline IndexType ElementSize() const
 		{
 			return c_ElementSize;
 		}
 
 
-		template < typename Type=SizeType >
+		template < typename Type=IndexType >
 		inline Type Length() const
 		{
 			return static_cast<Type>( m_Length );
 		}
 
 
-		inline SizeType Capacity() const
+		inline IndexType Capacity() const
 		{
 			return m_Capacity;
 		}
 
 
-		inline SizeType AllocatedSize() const
+		inline IndexType AllocatedSize() const
 		{
 			return m_AllocSize;
 		}
@@ -988,18 +988,18 @@ namespace OreOreLib
 
 	protected:
 
-		const SizeType c_ElementSize = (SizeType)sizeof(T);
+		const IndexType c_ElementSize = (IndexType)sizeof(T);
 
-		SizeType	m_Length;
-		SizeType	m_AllocSize;
+		IndexType	m_Length;
+		IndexType	m_AllocSize;
 		T*			m_pData;
 
-		SizeType	m_Capacity;
+		IndexType	m_Capacity;
 
 
 		// new delete memory without constructor
 		// https://stackoverflow.com/questions/4576307/c-allocate-memory-without-activating-constructors/4576402
-		inline T* AllocateBuffer( SizeType len, bool init=false )
+		inline T* AllocateBuffer( IndexType len, bool init=false )
 		{
 			// Allocate memory
 			/*T* buffer*/m_pData = static_cast<T*>( ::operator new( c_ElementSize * len ) );
@@ -1027,7 +1027,7 @@ namespace OreOreLib
 		}
 
 
-		inline bool ReallocateBuffer( SizeType newlen )
+		inline bool ReallocateBuffer( IndexType newlen )
 		{
 			if( newlen < m_Length )
 			{
@@ -1047,7 +1047,7 @@ namespace OreOreLib
 				m_pData		= newdata;
 			}
 
-			//for( SizeType i=m_Length; i<newlen; ++i )
+			//for( IndexType i=m_Length; i<newlen; ++i )
 			//	new ( m_pData+i ) T();
 
 			m_Length	= newlen;
