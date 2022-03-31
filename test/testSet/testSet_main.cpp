@@ -11,11 +11,11 @@ int main()
 
 	const size_t tableSize = 10;
 
-	Set<tstring, tableSize> set2;
+	Set<tstring/*, tableSize*/> set2;
 
-
+	//while(1)
 	{
-		Set<tstring, tableSize> set1;
+		Set<tstring/*, tableSize*/> set1;
 
 
 		set1.Put( _T("Value1") );
@@ -57,7 +57,7 @@ int main()
 	tcout << tendl;
 
 	{
-		const Set< tstring, tableSize > set3 = { _T("aaa"), _T("bbb"), _T("bbb") };
+		const Set< tstring/*, tableSize*/ > set3 = { _T("aaa"), _T("bbb"), _T("bbb") };
 
 		for( const auto& data : set3 )
 		{
@@ -70,7 +70,7 @@ int main()
 
 	{
 		float vals[] = { 0.5f, 0.6f, 0.6f };
-		const Set< float, tableSize > set3( std::begin(vals), std::end(vals) );
+		const Set< float/*, tableSize*/ > set3( std::begin(vals), std::end(vals) );
 
 		for( auto& data : set3 )
 		{
@@ -83,7 +83,7 @@ int main()
 	{
 		const StaticArray<const char*, 3> chararray = { "VK_KHR_swapchain", "VK_KHR_swapchain", "VK_KHR_swapchain" };
 
-		Set< std::string, tableSize > set3( chararray.begin(), chararray.end() );
+		Set< std::string/*, tableSize*/ > set3( chararray.begin(), chararray.end() );
 
 //		set3.Put( "dsfds" );
 

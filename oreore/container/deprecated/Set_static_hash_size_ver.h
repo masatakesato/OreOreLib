@@ -4,7 +4,6 @@
 #include	<exception>
 
 #include	"../common/HashCode.h"
-#include	"../memory/Memory.h"
 
 
 
@@ -39,10 +38,10 @@ namespace OreOreLib
 
 
 
-		template < typename T, typename F, typename IndexType >
+		template < typename T, size_t TableSize, typename F >
 		friend class SetIterator;
 
-		template < typename T, typename F, typename IndexType >
+		template < typename T, size_t TableSize, typename F >
 		friend class Set;
 
 	};
@@ -56,7 +55,7 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template< typename T, typename F, typename IndexType >
+	template< typename T, size_t TableSize, typename F >
 	class SetIterator
 	{
 	public:
@@ -72,21 +71,21 @@ namespace OreOreLib
 
 
 		// Constructor
-		SetIterator( Set<T, F, IndexType>* pmap )
+		SetIterator( Set<T, TableSize, F>* pmap )
 			: m_pMap( pmap )
 			, m_pCurrentNode( nullptr )
 			, m_TableIndex( 0 )			
 		{
 			if( pmap )
 			{
-				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length<IndexType>() )
+				while( m_pCurrentNode==nullptr && m_TableIndex < TableSize )
 				{
 					m_pCurrentNode = pmap->m_pTable[ m_TableIndex++ ];
 				}
 			}
 			else
 			{
-				m_TableIndex = (IndexType)HashConst::DefaultHashSize;
+				m_TableIndex = TableSize;
 			}
 		}
 
@@ -105,7 +104,7 @@ namespace OreOreLib
 		{
 			m_pCurrentNode = m_pCurrentNode->next;
 
-			while( m_pCurrentNode==nullptr && m_TableIndex < m_pMap->m_pTable.Length() )
+			while( m_pCurrentNode==nullptr && m_TableIndex < TableSize )
 				m_pCurrentNode = m_pMap->m_pTable[ m_TableIndex++ ];
 
 			return *this;
@@ -139,9 +138,9 @@ namespace OreOreLib
 
 	private:
 
-		Set<T, F, IndexType>*	m_pMap;
+		Set<T, TableSize, F>*	m_pMap;
 		SetNode<T>*				m_pCurrentNode;
-		IndexType				m_TableIndex;
+		int						m_TableIndex;
 
 	};
 
@@ -154,14 +153,14 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template < typename T, typename F = KeyHash<T>, typename IndexType = MemSizeType >
+	template < typename T, size_t TableSize = 64, typename F = KeyHash<T, TableSize> >
 	class Set
 	{
 	public:
 
 		// Default constructor
-		Set( size_t hashSize=HashConst::DefaultHashSize )
-			: m_pTable( static_cast<IndexType>(hashSize) )
+		Set()
+			: m_pTable()
 			, hashFunc()
 			, m_numElements( 0 )
 		{
@@ -181,7 +180,7 @@ namespace OreOreLib
 
 
 		Set( std::initializer_list<T> ilist )
-			: m_pTable( static_cast<IndexType>( ilist.size() ) )
+			: m_pTable()
 			, hashFunc()
 			, m_numElements( 0 )
 		{
@@ -192,7 +191,7 @@ namespace OreOreLib
 
 		template < typename Iter >
 		Set( Iter first, Iter last )
-			: m_pTable( static_cast<IndexType>(last - first) )
+			: m_pTable()
 			, hashFunc()
 			, m_numElements( 0 )
 		{
@@ -210,12 +209,12 @@ namespace OreOreLib
 
 		// Copy constructor
 		Set( const Set& obj )
-			: m_pTable( obj.m_pTable.Length() )
+			: m_pTable()
 			, hashFunc( obj.hashFunc )
 			, m_numElements( obj.m_numElements )
 		{
 
-			for( int i=0; i<m_pTable.Length<int>(); ++i )
+			for( int i=0; i<TableSize; ++i )
 			{
 				SetNode<T>* objentry = obj.m_pTable[i];
 				SetNode<T>* entry = m_pTable[i];
@@ -239,10 +238,12 @@ namespace OreOreLib
 
 		// Move constructor
 		Set( Set&& obj )
-			: m_pTable( (Memory<SetNode<T>*>)obj.m_pTable )
-			, hashFunc( obj.hashFunc )
+			: hashFunc( obj.hashFunc )
 			, m_numElements( obj.m_numElements )
 		{
+			memcpy( m_pTable, obj.m_pTable, sizeof (SetNode<T>*) * TableSize );
+
+			memset( obj.m_pTable, 0, sizeof (SetNode<T>*) * TableSize );
 			obj.m_numElements = 0;
 		}
 
@@ -252,12 +253,10 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				m_pTable.Init( obj.m_pTable.Length() );
-
 				hashFunc		= obj.hashFunc;
 				m_numElements	= obj.m_numElements;
 
-				for( int i=0; i<m_pTable.Length<int>(); ++i )
+				for( int i=0; i<TableSize; ++i )
 				{
 					SetNode<T>* objentry = obj.m_pTable[i];
 					SetNode<T>* entry = m_pTable[i];
@@ -286,12 +285,11 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				Clear();
-
 				hashFunc		= obj.hashFunc;
 				m_numElements	= obj.m_numElements;
-				m_pTable		= (Memory<SetNode<T>*, IndexType>&&)obj.m_pTable;
+				memcpy( m_pTable, obj.m_pTable, sizeof (SetNode<T>*) * TableSize );
 
+				memset( obj.m_pTable, 0, sizeof (SetNode<T>*) * TableSize );
 				obj.m_numElements = 0;
 			}
 
@@ -301,7 +299,7 @@ namespace OreOreLib
 
 		void Put( const T& value )
 		{
-			IndexType hashValue = hashFunc.Get<IndexType>( value, m_pTable.Length() );
+			uint64 hashValue = hashFunc( value );
 			SetNode<T>* prev = nullptr;
 			SetNode<T>* entry = m_pTable[ hashValue ];
 
@@ -331,7 +329,7 @@ namespace OreOreLib
 
 		void Remove( const T& value )
 		{
-			IndexType hashValue = hashFunc.Get<IndexType>( value, m_pTable.Length() );
+			uint64 hashValue = hashFunc( value );
 			SetNode<T>* prev = nullptr;
 			SetNode<T>* entry = m_pTable[ hashValue ];
 
@@ -361,7 +359,7 @@ namespace OreOreLib
 
 		void Clear()
 		{
-			for( int i=0; i<m_pTable.Length<int>(); ++i )
+			for( int i=0; i<TableSize; ++i )
 			{
 				SetNode<T>* entry = m_pTable[i];
 
@@ -381,7 +379,7 @@ namespace OreOreLib
 
 		bool Exists( const T& value ) const
 		{
-			IndexType hashValue = hashFunc.Get<IndexType>( value, m_pTable.Length() );
+			uint64 hashValue = hashFunc( value );
 			SetNode<T>* entry = m_pTable[ hashValue ];
 
 			for( auto entry = m_pTable[ hashValue ]; entry != nullptr; entry=entry->next )
@@ -406,27 +404,27 @@ namespace OreOreLib
 		}
 
 
-		SetIterator<T, F, IndexType> begin() const
+		SetIterator<T, TableSize, F> begin() const
 		{
-			return SetIterator<T, F, IndexType>( (Set*)this );
+			return SetIterator<T, TableSize, F>( (Set*)this );
 		}
 
 
-		SetIterator<T, F, IndexType> end() const
+		SetIterator<T, TableSize, F> end() const
 		{
-			return SetIterator<T, F, IndexType>( nullptr );
+			return SetIterator<T, TableSize, F>( nullptr );
 		}
 
 
 
 	private:
 
-		Memory<SetNode<T>*, IndexType>	m_pTable;
+		SetNode<T>*	m_pTable[ TableSize ];
 		F hashFunc;
 		int	m_numElements = 0;
 
 
-		template < typename T, typename F, typename IndexType >
+		template < typename T, size_t TableSize, typename F >
 		friend class SetIterator;
 
 	};

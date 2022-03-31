@@ -23,54 +23,54 @@ namespace OreOreLib
 	//######################################################################//
 
 
-	template< typename T >
-	class ArrayBase< T, detail::DynamicSize > : public Memory<T>
+	template< typename T, typename SizeType >
+	class ArrayBase< T, detail::DynamicSize, SizeType > : public Memory<T, SizeType>
 	{
-		using SizeType = typename Memory<T>::SizeType;
+		//using SizeType = typename Memory<T>::SizeType;
 
 	public:
 
 		// Default constructor
-		ArrayBase(): Memory<T>() {}
+		ArrayBase(): Memory<T, SizeType>() {}
 
 		// Constructor
-		ArrayBase( SizeType len ) : Memory<T>(len) {}
+		ArrayBase( SizeType len ) : Memory<T, SizeType>(len) {}
 
 		// Constructor
 //		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
 //		ArrayBase( Args const & ... args ) : Memory<T>( args ...) {}
 
 		// Constructor with initializer list
-		ArrayBase( std::initializer_list<T> ilist ) : Memory<T>( ilist ) {}
+		ArrayBase( std::initializer_list<T> ilist ) : Memory<T, SizeType>( ilist ) {}
 
 		// Constructor with default value
-		ArrayBase( SizeType len, const T& fill ): Memory<T>( len, fill ) {}
+		ArrayBase( SizeType len, const T& fill ): Memory<T, SizeType>( len, fill ) {}
 
 		// Constructor using Memory
-		ArrayBase( const Memory<T>& obj ) : Memory<T>( obj ) {}
+		ArrayBase( const Memory<T, SizeType>& obj ) : Memory<T, SizeType>( obj ) {}
 
 		// Constructor using iterator
 		template < class Iter >
-		ArrayBase( Iter first, Iter last ) : Memory<T>( first, last ) {}
+		ArrayBase( Iter first, Iter last ) : Memory<T, SizeType>( first, last ) {}
 
 		// Copy constructor
-		ArrayBase( const ArrayBase& obj ) : Memory<T>( (const Memory<T>&)obj ) {}
+		ArrayBase( const ArrayBase& obj ) : Memory<T, SizeType>( (const Memory<T>&)obj ) {}
 
 		// Move constructor
-		ArrayBase( ArrayBase&& obj ) : Memory<T>( (Memory<T>&&)obj ) {}
+		ArrayBase( ArrayBase&& obj ) : Memory<T, SizeType>( (Memory<T, SizeType>&&)obj ) {}
 
 
 		// Copy Assignment opertor =
 		inline ArrayBase& operator=( const ArrayBase& obj )
 		{
-			Memory<T>::operator=( obj );
+			Memory<T, SizeType>::operator=( obj );
 			return *this;
 		}
 
 
-		inline ArrayBase& operator=( const Memory<T>& obj )
+		inline ArrayBase& operator=( const Memory<T, SizeType>& obj )
 		{
-			Memory<T>::operator=( obj );
+			Memory<T, SizeType>::operator=( obj );
 			return *this;
 		}
 
@@ -78,7 +78,7 @@ namespace OreOreLib
 		// Move assignment opertor =
 		inline ArrayBase& operator=( ArrayBase&& obj )
 		{
-			Memory<T>::operator=( (ArrayBase&&)obj );
+			Memory<T, SizeType>::operator=( (ArrayBase&&)obj );
 			return *this;
 		}
 
@@ -259,8 +259,8 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template < typename T >
-	inline void Shuffle( Array<T>& arr )
+	template < typename T, typename SizeType >
+	inline void Shuffle( Array<T, SizeType>& arr )
 	{
 		for( sizeType i=0; i<arr.Length(); ++i )
 		{

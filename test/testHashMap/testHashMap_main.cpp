@@ -14,11 +14,11 @@ int main()
 
 	const size_t tableSize = 10;
 
-	HashMap<tstring, int, tableSize> hmap2;
+	HashMap<tstring, int/*, tableSize*/> hmap2;
 
-
+	//while(1)
 	{
-		HashMap<tstring, int, tableSize> hmap;
+		HashMap<tstring, int/*, tableSize*/> hmap;
 
 
 		hmap.Put( _T("Value1"), -6666 );
@@ -70,7 +70,7 @@ int main()
 //	Pair<float, float> a = { {0.5f, 0.5f} };
 
 //	std::initializer_list< int > aaa;
-	const HashMap< tstring, float, tableSize > hmap3 =
+	const HashMap< tstring, float/*, tableSize*/ > hmap3 =
 	{
 		{ _T("aaa"), 0.1f },	//Pair<tstring, float>{ _T("aaa"), 0.1f },
 		{ _T("bbb"), -5.5f }	//Pair<tstring, float>{ _T("bbb"), -5.5f }

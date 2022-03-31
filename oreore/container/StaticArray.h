@@ -18,10 +18,10 @@ namespace OreOreLib
 
 
 
-	template< typename T, sizeType Size >
-	class ArrayBase< T, Size,std::enable_if_t< Size!=detail::DynamicSize > > : public Memory<T>
+	template< typename T, sizeType Size, typename SizeType >
+	class ArrayBase< T, Size, SizeType, std::enable_if_t< Size!=detail::DynamicSize > > : public Memory<T, SizeType>
 	{
-		using SizeType = typename Memory<T>::SizeType;
+		//using SizeType = typename Memory<T>::SizeType;
 
 	public:
 
@@ -77,7 +77,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		ArrayBase( const Memory<T> &obj )
+		ArrayBase( const Memory<T, SizeType> &obj )
 		{
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
@@ -129,7 +129,7 @@ namespace OreOreLib
 			return *this;
 		}
 
-		inline ArrayBase& operator=( const Memory<T>& obj )
+		inline ArrayBase& operator=( const Memory<T, SizeType>& obj )
 		{
 			if( this != &obj )
 			{
@@ -258,15 +258,15 @@ namespace OreOreLib
 		SizeType InsertAfter( SizeType, T&& ) = delete;
 
 		// Hide parent methods
-		using Memory<T>::Init;
-		using Memory<T>::Release;
-		//using Memory<T>::Clear;
-		using Memory<T>::Reserve;
-		using Memory<T>::Resize;
-		using Memory<T>::Extend;
-		using Memory<T>::Shrink;
-		using Memory<T>::InsertBefore;
-		using Memory<T>::InsertAfter;
+		using Memory<T,SizeType>::Init;
+		using Memory<T,SizeType>::Release;
+		//using Memory<T,SizeType>::Clear;
+		using Memory<T,SizeType>::Reserve;
+		using Memory<T,SizeType>::Resize;
+		using Memory<T,SizeType>::Extend;
+		using Memory<T,SizeType>::Shrink;
+		using Memory<T,SizeType>::InsertBefore;
+		using Memory<T,SizeType>::InsertAfter;
 
 	};
 

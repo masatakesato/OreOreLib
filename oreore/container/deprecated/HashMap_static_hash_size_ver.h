@@ -4,7 +4,6 @@
 #include	<exception>
 
 #include	"../common/HashCode.h"
-#include	"../memory/Memory.h"
 #include	"Pair.h"
 
 
@@ -65,13 +64,60 @@ namespace OreOreLib
 
 
 
-		template < typename K, typename V, typename IndexType, typename F >
+		template < typename K, typename V, size_t TableSize, typename F >
 		friend class HashMapIterator;
 
-		template < typename K, typename V, typename IndexType, typename F >
+		template < typename K, typename V, size_t TableSize, typename F >
 		friend class HashMap;
 
 	};
+
+
+
+	//######################################################################//
+	//																		//
+	//					KewyHash class implementation						//
+	//																		//
+	//######################################################################//
+
+//TODO: Setと実装重複
+	//template < typename K, size_t TableSize >
+	//struct KeyHash
+	//{
+	//	uint64 operator()( const K& key ) const
+	//	{
+	//		return HashCode( key ) % TableSize;
+	//		//return *(uint64*)( &key ) % TableSize;
+	//	}
+
+	//};
+
+
+//TODO: Setと実装重複
+	// https://stackoverflow.com/questions/8094790/how-to-get-hash-code-of-a-string-in-c
+
+	//inline uint64 hashCode( const tstring& text )
+	//{
+	//	uint64 hash = 0, strlen = text.length(), i;
+	//	TCHAR character;
+
+	//	if( strlen == 0 )
+	//		return hash;
+
+	//	for( i=0; i<strlen; ++i )
+	//	{
+	//		character = text.at(i);
+	//		hash = (31 * hash) + character;
+	//	}
+
+	//	return hash;
+	//}
+
+
+	// https://web.stanford.edu/class/archive/cs/cs106b/cs106b.1178/lectures/27-Inheritance/code/Inheritance/lib/StanfordCPPLib/collections/hashcode.h
+	// https://web.stanford.edu/class/archive/cs/cs106b/cs106b.1178/lectures/27-Inheritance/code/Inheritance/lib/StanfordCPPLib/collections/hashcode.cpp
+
+
 
 
 
@@ -82,13 +128,13 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template< typename K, typename V, typename IndexType, typename F >
+	template< typename K, typename V, size_t TableSize, typename F >
 	class HashMapIterator
 	{
 	public:
 
 		// Default constructor
-		HashMapIterator( size_t tableSize )
+		HashMapIterator()
 			: m_pMap( nullptr )
 			, m_pCurrentNode( nullptr )
 			, m_TableIndex( 0 )
@@ -98,21 +144,21 @@ namespace OreOreLib
 
 
 		// Constructor
-		HashMapIterator( HashMap<K, V, IndexType, F>* pmap )
+		HashMapIterator( HashMap<K, V, TableSize, F>* pmap )
 			: m_pMap( pmap )
 			, m_pCurrentNode( nullptr )
-			, m_TableIndex( 0 )
+			, m_TableIndex( 0 )			
 		{
 			if( pmap )
 			{
-				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length() )
+				while( m_pCurrentNode==nullptr && m_TableIndex < TableSize )
 				{
 					m_pCurrentNode = pmap->m_pTable[ m_TableIndex++ ];
 				}
 			}
 			else
 			{
-				m_TableIndex = (IndexType)HashConst::DefaultHashSize;
+				m_TableIndex = TableSize;
 			}
 		}
 
@@ -131,7 +177,7 @@ namespace OreOreLib
 		{
 			m_pCurrentNode = m_pCurrentNode->next;
 
-			while( m_pCurrentNode==nullptr && m_TableIndex < m_pMap->m_pTable.Length() )
+			while( m_pCurrentNode==nullptr && m_TableIndex < TableSize )
 				m_pCurrentNode = m_pMap->m_pTable[ m_TableIndex++ ];
 
 			return *this;
@@ -178,9 +224,9 @@ namespace OreOreLib
 
 	private:
 
-		HashMap<K, V, IndexType, F >*	m_pMap;
+		HashMap<K, V, TableSize, F>*	m_pMap;
 		HashNode<K, V>*					m_pCurrentNode;
-		IndexType						m_TableIndex;
+		int								m_TableIndex;
 
 	};
 
@@ -193,18 +239,15 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template < typename K, typename V, typename IndexType = MemSizeType, typename F = KeyHash<K> >
+	template < typename K, typename V, size_t TableSize, typename F = KeyHash<K, TableSize> >
 	class HashMap
 	{
-		//using HashNodePtr = HashNode<K, V>*;
-		using Iterator = HashMapIterator<K, V, IndexType, F>;
-
 	public:
 
 		// Default constructor
-		HashMap( size_t hashSize=HashConst::DefaultHashSize )
-			: m_pTable( static_cast<IndexType>(hashSize) )
-			, m_HashFunc()
+		HashMap()
+			: m_pTable()
+			, hashFunc()
 			, m_numElements( 0 )
 		{
 
@@ -215,7 +258,7 @@ namespace OreOreLib
 		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same< Pair<K, V>, Args...>::value >* = nullptr >
 		//HashMap( Args const & ... args )
 		//	: m_pTable()
-		//	, m_HashFunc()
+		//	, hashFunc()
 		//	, m_numElements( 0 )
 		//{
 
@@ -224,8 +267,8 @@ namespace OreOreLib
 
 
 		HashMap( std::initializer_list< Pair<K, V> > list )
-			: m_pTable( static_cast<IndexType>( list.size() ) )
-			, m_HashFunc()
+			: m_pTable()
+			, hashFunc()
 			, m_numElements( int(list.size()) )
 		{
 
@@ -243,12 +286,12 @@ namespace OreOreLib
 
 		// Copy constructor
 		HashMap( const HashMap& obj )
-			: m_pTable( obj.m_pTable.Length() )
-			, m_HashFunc( obj.m_HashFunc )
+			: m_pTable()
+			, hashFunc( obj.hashFunc )
 			, m_numElements( obj.m_numElements )
 		{
 
-			for( int i=0; i<m_pTable.Length<int>(); ++i )
+			for( int i=0; i<TableSize; ++i )
 			{
 				HashNode<K, V>* objentry = obj.m_pTable[i];
 				HashNode<K, V>* entry = m_pTable[i];
@@ -272,10 +315,12 @@ namespace OreOreLib
 
 		// Move constructor
 		HashMap( HashMap&& obj )
-			: m_pTable( (Memory<HashNode<K, V>*, IndexType> &&) obj.m_pTable )
-			, m_HashFunc( obj.m_HashFunc )
+			: hashFunc( obj.hashFunc )
 			, m_numElements( obj.m_numElements )
 		{
+			memcpy( m_pTable, obj.m_pTable, sizeof (HashNode<K,V>*) * TableSize );
+
+			memset( obj.m_pTable, 0, sizeof (HashNode<K,V>*) * TableSize );
 			obj.m_numElements = 0;
 		}
 
@@ -285,11 +330,10 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				m_pTable.Init( obj.m_pTable.Length() );
-				m_HashFunc		= obj.m_HashFunc;
+				hashFunc		= obj.hashFunc;
 				m_numElements	= obj.m_numElements;
 
-				for( int i=0; i<m_pTable.Length<int>(); ++i )
+				for( int i=0; i<TableSize; ++i )
 				{
 					HashNode<K, V>* objentry = obj.m_pTable[i];
 					HashNode<K, V>* entry = m_pTable[i];
@@ -318,12 +362,11 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				Clear();
-
-				m_pTable		= (Memory<HashNode<K, V>*, IndexType> &&) obj.m_pTable;
-				m_HashFunc		= obj.m_HashFunc;
+				hashFunc		= obj.hashFunc;
 				m_numElements	= obj.m_numElements;
+				memcpy( m_pTable, obj.m_pTable, sizeof (HashNode<K,V>*) * TableSize );
 
+				memset( obj.m_pTable, 0, sizeof (HashNode<K,V>*) * TableSize );
 				obj.m_numElements = 0;
 			}
 
@@ -334,7 +377,7 @@ namespace OreOreLib
 		// Subscription operator for read only.( called if HashMap is const )
 		inline const V& operator[]( const K& key ) const&
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
 			while( entry && entry->first != key )
@@ -350,7 +393,7 @@ namespace OreOreLib
 		// Subscription operator for read-write.( called if HashMap is non-const )
 		inline V& operator[]( const K& key ) &
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 			HashNode<K, V>* prev = entry;
 
@@ -380,7 +423,7 @@ namespace OreOreLib
 		// Subscription operator. ( called by following cases: "T a = HashMap<tstring, int, T>()[n]", "auto&& a = HashMap<tstring, int, T>()[n]" )
 		inline V operator[]( const K& key ) const&&
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
 			while( entry && entry->first != key )
@@ -397,7 +440,7 @@ namespace OreOreLib
 		// At method for non-const HashMap 
 		V& At( const K& key )
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
 			while( entry && entry->first != key )
@@ -414,7 +457,7 @@ namespace OreOreLib
 		// At method for const HashMap 
 		const V& At( const K& key ) const
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
 			while( entry && entry->first != key )
@@ -430,7 +473,7 @@ namespace OreOreLib
 
 		bool Get( const K& key, V& value )
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
 			while( entry )
@@ -450,7 +493,7 @@ namespace OreOreLib
 
 		void Put( const K& key, const V& value )
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* prev = nullptr;
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
@@ -480,7 +523,7 @@ namespace OreOreLib
 
 		void Remove( const K& key )
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* prev = nullptr;
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
@@ -510,7 +553,7 @@ namespace OreOreLib
 
 		void Clear()
 		{
-			for( int i=0; i<m_pTable.Length<int>(); ++i )
+			for( int i=0; i<TableSize; ++i )
 			{
 				HashNode<K, V>* entry = m_pTable[i];
 
@@ -530,7 +573,7 @@ namespace OreOreLib
 
 		bool Exists( const K& key ) const
 		{
-			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			uint64 hashValue = hashFunc( key );
 			HashNode<K, V>* entry = m_pTable[ hashValue ];
 
 			for( auto entry = m_pTable[ hashValue ]; entry != nullptr; entry=entry->next )
@@ -555,29 +598,31 @@ namespace OreOreLib
 		}
 
 
-		Iterator begin() const
+		HashMapIterator<K, V, TableSize, F> begin() const
 		{
-			return Iterator( (HashMap*)this );
+			return HashMapIterator<K, V, TableSize, F>( (HashMap*)this );
 		}
 
 
-		Iterator end() const
+		HashMapIterator<K, V, TableSize, F> end() const
 		{
-			return Iterator( nullptr );
+			return HashMapIterator<K, V, TableSize, F>( nullptr );
 		}
 
 
 
 	private:
 
-		Memory<HashNode<K, V>*, IndexType>	m_pTable;
-		F m_HashFunc;
+		HashNode<K, V>*	m_pTable[ TableSize ];
+		F hashFunc;
 		int	m_numElements = 0;
 
 
-		friend class Iterator;
+		template < typename K, typename V, size_t TableSize, typename F >
+		friend class HashMapIterator;
 
 	};
+
 
 
 }// end of namespace

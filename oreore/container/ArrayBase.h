@@ -31,22 +31,22 @@ namespace OreOreLib
 	}
 
 
-	template< typename T, sizeType Size, typename enable=void > class ArrayBase; 
+	template< typename T, sizeType Size, typename SizeType, typename enable=void > class ArrayBase; 
 
 
 	// Dynamic array
-	template< typename T >
-	using Array = ArrayBase< T, detail::DynamicSize >;
+	template< typename T, typename SizeType=MemSizeType >
+	using Array = ArrayBase< T, detail::DynamicSize, SizeType >;
 
 
 	// Static array
-	template< typename T, sizeType Size >
-	using StaticArray = ArrayBase< T, Size, std::enable_if_t< Size!=detail::DynamicSize > >;
+	template< typename T, sizeType Size, typename SizeType=MemSizeType >
+	using StaticArray = ArrayBase< T, Size, SizeType, std::enable_if_t< Size!=detail::DynamicSize > >;
 
 
 	// Array view
-	template< typename T >
-	using ArrayView = ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize >;
+	template< typename T, typename SizeType=MemSizeType >
+	using ArrayView = ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, SizeType >;
 
 
 }

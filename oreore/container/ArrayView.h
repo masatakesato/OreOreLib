@@ -16,10 +16,10 @@ namespace OreOreLib
 {
 
 
-	template< typename T >
-	class ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize > : public Memory<T>
+	template< typename T, typename SizeType >
+	class ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, SizeType > : public Memory<T, SizeType>
 	{
-		using SizeType = typename Memory<T>::SizeType;
+		//using SizeType = typename Memory<T>::SizeType;
 		using Ptr = T*;
 		using ConstPtr = const T*;
 

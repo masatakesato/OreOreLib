@@ -391,10 +391,10 @@ namespace OreOreLib
 	//																												//
 	//##############################################################################################################//
 
-	template< typename T >
+	template< typename T, typename SizeType/* = MemSizeType*/ >
 	struct Memory
 	{
-		using SizeType = typename MemSizeType;//typename uint32;//sizeType;//int32;//uint64;//
+//		using SizeType = typename MemSizeType;//typename uint32;//sizeType;//int32;//uint64;//
 
 	public:
 
@@ -1070,8 +1070,8 @@ namespace OreOreLib
 	//##############################################################################################################//
 
 
-	template < typename T >
-	inline sizeType Find( const Memory<T>& arr, const T& item )
+	template < typename T, typename IndexType >
+	inline IndexType Find( const Memory<T, IndexType>& arr, const T& item )
 	{
 		for( const auto& elm : arr )
 		{
@@ -1084,8 +1084,8 @@ namespace OreOreLib
 
 
 
-	template < typename T >
-	inline bool Exists( const Memory<T>& arr, const T& item )
+	template < typename T, typename IndexType >
+	inline bool Exists( const Memory<T, IndexType>& arr, const T& item )
 	{
 		for( const auto& elm : arr )
 		{
@@ -1112,8 +1112,8 @@ namespace OreOreLib
 
 
 
-	template < typename T, typename Predicate >
-	inline int64 FindIf( const Memory<T>& arr, Predicate pred )
+	template < typename T, typename IndexType, typename Predicate >
+	inline IndexType FindIf( const Memory<T, IndexType>& arr, Predicate pred )
 	{
 		auto first = arr.begin();
 		const auto last = arr.end();

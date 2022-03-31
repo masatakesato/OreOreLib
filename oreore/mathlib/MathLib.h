@@ -66,19 +66,29 @@ T Sign(  const T& a )
 
 
 
-template< typename T >
-inline const T Max( const T& a, const T& b )
+template< typename T1, typename T2 >
+inline const T1 Max( const T1& a, const T2& b )
 {
-	return a < b ? b : a;     // or: return comp(a,b)?b:a; for version (2)
+	return a < (T1)b ? (T1)b : a;     // or: return comp(a,b)?b:a; for version (2)
 }
+//template< typename T >
+//inline const T Max( const T& a, const T& b )
+//{
+//	return a < b ? b : a;     // or: return comp(a,b)?b:a; for version (2)
+//}
 
 
 
-template< typename T >
-inline const T Min( const T& a, const T& b )
+template< typename T1, typename T2 >
+inline const T1 Min( const T1& a, const T2& b )
 {
-	return !( b < a ) ? a : b;
+	return !( (T1)b < a ) ? a : (T1)b;
 }
+//template< typename T >
+//inline const T Min( const T& a, const T& b )
+//{
+//	return !( b < a ) ? a : b;
+//}
 
 
 
@@ -90,34 +100,47 @@ inline const T Saturate( const T& a )
 
 
 
-template< typename T >
-inline const void Clamp( T& x, const T& a, const T& b )
+template< typename T1, typename T2, typename T3 >
+inline const void Clamp( T1& x, const T2& a, const T3& b )
 {
-	x = Min( Max( x, a ), b );
+	x = Min( Max( x, (T1)a ), (T1)b );
 }
+//template< typename T >
+//inline const void Clamp( T& x, const T& a, const T& b )
+//{
+//	x = Min( Max( x, a ), b );
+//}
 
 
 
-template< typename T >
-inline const T Clamp( const T& x, const T& a, const T& b )
+template< typename T1, typename T2, typename T3 >
+inline const T1 Clamp( const T1& x, const T2& a, const T3& b )
 {
-	return Min( Max( x, a ), b );
+	return Min( Max( x, (T1)a ), (T1)b );
 }
+//template< typename T >
+//inline const T Clamp( const T& x, const T& a, const T& b )
+//{
+//	return Min( Max( x, a ), b );
+//}
 
 
 
+template< typename T1, typename T2, typename T3, typename T4 >
+inline void Lerp( T1& out, const T2& start, const T3& end, T4 percent )
+{
+	out	= T1( T1(start) + percent * T1( end - start ) );
+}
+//template< typename T1, typename T2 >
+//inline void Lerp( T1& out, const T1& start, const T1& end, T2 percent )
+//{
+//	out	= T1( T2(start) + percent * T2( end - start ) );
+//}
 //template< typename T >
 //inline void Lerp( T& out, const T& start, const T& end, T percent )
 //{
 //	out	= start + percent * ( end - start );
 //}
-
-
-template< typename T1, typename T2 >
-inline void Lerp( T1& out, const T1& start, const T1& end, T2 percent )
-{
-	out	= T1( T2(start) + percent * T2( end - start ) );
-}
 
 
 

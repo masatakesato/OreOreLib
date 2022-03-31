@@ -4,7 +4,10 @@
 #include	"Utility.h"
 
 
+// https://web.stanford.edu/class/archive/cs/cs106b/cs106b.1178/lectures/27-Inheritance/code/Inheritance/lib/StanfordCPPLib/collections/hashcode.h
 // https://web.stanford.edu/class/archive/cs/cs106b/cs106b.1178/lectures/27-Inheritance/code/Inheritance/lib/StanfordCPPLib/collections/hashcode.cpp
+
+
 
 
 namespace OreOreLib
@@ -13,6 +16,7 @@ namespace OreOreLib
 
 	namespace HashConst
 	{
+		const uint64 DefaultHashSize = 16;
 		const uint64 Seed		= 5381;
 		const uint64 Multiplier	= 33;//31
 		const uint64 Mask		= uint64(-1) >> 1;
@@ -66,6 +70,8 @@ namespace OreOreLib
 
 
 
+	template < typename K, size_t TableSize=-1 >	struct KeyHash;
+
 
 	template < typename K, size_t TableSize >
 	struct KeyHash
@@ -76,7 +82,35 @@ namespace OreOreLib
 			//return *(uint64*)( &key ) % TableSize;
 		}
 
+
+		template < typename T >
+		T Get( const K& key ) const
+		{
+			return (T)HashCode( key ) % TableSize;
+		}
+
 	};
+
+
+
+	template < typename K >
+	struct KeyHash<K, -1>
+	{
+		uint64 operator()( const K& key, size_t tableSize ) const
+		{
+			return HashCode( key ) % tableSize;
+			//return *(uint64*)( &key ) % TableSize;
+		}
+
+
+		template < typename T >
+		T Get( const K& key, size_t tableSize ) const
+		{
+			return (T)HashCode( key ) % tableSize;
+		}
+
+	};
+
 
 
 
