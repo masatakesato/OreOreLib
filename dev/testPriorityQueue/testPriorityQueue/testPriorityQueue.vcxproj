@@ -84,7 +84,7 @@
     <ClCompile Include="..\..\..\test\testPriorityQueue\testPriorityQueue_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\oreore\PriorityQueue.h" />
+    <ClInclude Include="..\..\..\oreore\container\PriorityQueue.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

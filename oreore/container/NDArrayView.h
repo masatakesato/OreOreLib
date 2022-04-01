@@ -297,7 +297,7 @@ namespace OreOreLib
 		}
 
 
-		// Subscript operator. ( called by following cases: "T a = Memory<T>(10)[n]", "auto&& a = Memory<T>(20)[n]" )
+		// Subscript operator. ( called by following cases: "T a = Memory<T, IndexType>(10)[n]", "auto&& a = Memory<T, IndexType>(20)[n]" )
 		//inline T operator[]( IndexType n ) const&&
 		//{
 		//	return std::move(this->m_pData[n]);// return object

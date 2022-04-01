@@ -21,7 +21,7 @@
 
 
 
-template <int N>
+template < int N >
 class ServerPrethreading
 {
 public:
@@ -177,7 +177,7 @@ void ServerPrethreading<N>::Accept( SOCKET sock )
 
 
 
-template <int N>
+template < int N >
 void ServerPrethreading<N>::Close()
 {
 	closesocket( m_Socket );
@@ -186,11 +186,11 @@ void ServerPrethreading<N>::Close()
 
 
 
-template <int N>
+template < int N >
 void ServerPrethreading<N>::Send_Recv( SOCKET sock, void *serializer, std::shared_ptr<Dispatcher>& func )
 {
 	int numrcv;
-	static OreOreLib::Memory<char> raw_message;
+	static OreOreLib::Memory<char, OreOreLib::MemSizeType> raw_message;
 
 	while( true )
 	{

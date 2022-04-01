@@ -21,8 +21,6 @@ namespace OreOreLib
 	template< typename T, sizeType Size, typename InexType >
 	class ArrayBase< T, Size, InexType, std::enable_if_t< Size!=detail::DynamicSize > > : public Memory<T, InexType>
 	{
-		//using InexType = typename Memory<T>::InexType;
-
 	public:
 
 		// Default constructor

@@ -75,7 +75,7 @@ Dispatcher g_Dispatcher;
 
 
 
-auto Dispatch( OreOreLib::Memory<char>& data )
+auto Dispatch( OreOreLib::Memory<char, OreOreLib::MemSizeType>& data )
 {
 	return g_Dispatcher.Dispatch( data );
 }
@@ -93,7 +93,7 @@ auto Call_client( const std::string& proc_name, Args ...args )
 
 
 
-	OreOreLib::Memory<char> mem( (int)sbuf.size(), sbuf.data() );
+	OreOreLib::Memory<char, OreOreLib::MemSizeType> mem( (int)sbuf.size(), sbuf.data() );
 	auto result = Dispatch( mem );//g_Dispatcher.Dispatch( mem );
 
 

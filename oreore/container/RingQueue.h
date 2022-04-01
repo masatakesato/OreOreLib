@@ -11,28 +11,26 @@ namespace OreOreLib
 {
 
 
-	template< typename T >
+	template< typename T, typename IndexType = MemSizeType  >
 	class RingQueue
 	{
-		using SizeType = typename MemSizeType;
-
 	public:
 
 		RingQueue();
-		RingQueue( SizeType max_size );
+		RingQueue( IndexType max_size );
 		virtual ~RingQueue();
 
-		void Init( SizeType max_size );
+		void Init( IndexType max_size );
 		void Clear();
 		void Release();
 
-		void Extend( SizeType numelms );
-		bool Shrink( SizeType numelms );
+		void Extend( IndexType numelms );
+		bool Shrink( IndexType numelms );
 
 		void Enqueue( T elm );
 		T Dequeue();
 
-		int next( SizeType index ) const { return ( index + 1 ) % m_Queue.Length(); }
+		IndexType next( IndexType index ) const { return ( index + 1 ) % m_Queue.Length(); }
 		bool IsFull() const { return m_ActiveSize >= m_Queue.Length(); }
 		bool IsEmpty() const { return m_ActiveSize==0; }
 
@@ -41,18 +39,18 @@ namespace OreOreLib
 
 	private:
 		
-		SizeType	m_ActiveSize;
-		Memory<T>	m_Queue;
-		SizeType	front;// キュー先頭のオブジェクトが入っている要素のインデックス
-		SizeType	rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
+		IndexType				m_ActiveSize;
+		Memory<T, IndexType>	m_Queue;
+		IndexType				front;// キュー先頭のオブジェクトが入っている要素のインデックス
+		IndexType				rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
 
 	};
 
 
 
 
-	template< typename T >
-	RingQueue<T>::RingQueue()
+	template< typename T, typename IndexType >
+	RingQueue<T, IndexType>::RingQueue()
 		: m_ActiveSize( 0 )
 		, front( ~0u )
 		, rear( ~0u )
@@ -61,8 +59,8 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	RingQueue<T>::RingQueue( SizeType max_size )
+	template< typename T, typename IndexType >
+	RingQueue<T, IndexType>::RingQueue( IndexType max_size )
 		: m_ActiveSize( 0 )
 		, m_Queue( max_size )
 		, front( 0 )
@@ -72,16 +70,16 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	RingQueue<T>::~RingQueue()
+	template< typename T, typename IndexType >
+	RingQueue<T, IndexType>::~RingQueue()
 	{
 		Release();
 	}
 
 
 
-	template< typename T >
-	void RingQueue<T>::Init( SizeType max_size )
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Init( IndexType max_size )
 	{
 		Release();
 		
@@ -93,8 +91,8 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	void RingQueue<T>::Clear()
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Clear()
 	{
 		front			= 0;
 		rear			= 0;
@@ -103,8 +101,8 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	void RingQueue<T>::Release()
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Release()
 	{
 		m_Queue.Release();
 		m_ActiveSize	= 0;
@@ -114,8 +112,8 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	void RingQueue<T>::Extend( SizeType numelms )
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Extend( IndexType numelms )
 	{
 		m_Queue.Extend( numelms );
 
@@ -143,8 +141,8 @@ namespace OreOreLib
 	*/
 
 
-	template< typename T >
-	bool RingQueue<T>::Shrink( SizeType numelms )
+	template< typename T, typename IndexType >
+	bool RingQueue<T, IndexType>::Shrink( IndexType numelms )
 	{
 		auto new_length = m_Queue.Length() - Min( numelms, m_Queue.Length() );
 		if( new_length < m_ActiveSize )// 縮小可能な下限値を割り込んだ場合は中止.
@@ -189,8 +187,8 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	void RingQueue<T>::Enqueue( T elm )
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Enqueue( T elm )
 	{
 		if( IsFull() )
 		{
@@ -208,8 +206,8 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	T RingQueue<T>::Dequeue()
+	template< typename T, typename IndexType >
+	T RingQueue<T, IndexType>::Dequeue()
 	{
 		T elm = 0;
 
@@ -230,14 +228,14 @@ namespace OreOreLib
 
 
 
-	template< typename T >
-	void RingQueue<T>::Display()
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Display()
 	{
 		tcout << typeid(*this).name() << "[" << front << ", " << rear << "]" << tendl;
 
-		for( SizeType i=0; i<m_ActiveSize; ++i )
+		for( IndexType i=0; i<m_ActiveSize; ++i )
 		{
-			SizeType idx = (front + i) % m_Queue.Length();
+			IndexType idx = (front + i) % m_Queue.Length();
 			tcout << "[" << idx << "]: " << m_Queue[idx] << tendl;
 			if((idx+1)% m_Queue.Length()==rear)	break;
 		}

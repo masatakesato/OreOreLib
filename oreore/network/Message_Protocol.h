@@ -104,7 +104,7 @@ static int send_message( SOCKET sock, const char* data, int data_size )
 
 
 
-static int recieve_message( SOCKET sock, OreOreLib::Memory<char>& data )//char* data, int data_size  )
+static int recieve_message( SOCKET sock, OreOreLib::Memory<char, OreOreLib::MemSizeType>& data )//char* data, int data_size  )
 {
 	try
 	{
