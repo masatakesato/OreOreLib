@@ -1096,7 +1096,7 @@ namespace OreOreLib
 		for( const auto& elm : arr )
 		{
 			if( elm == item )
-				return &elm - &arr[0];
+				return static_cast<IndexType>( &elm - &arr[0] );
 		}
 
 		return -1;
