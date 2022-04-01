@@ -24,51 +24,51 @@ namespace OreOreLib
 
 
 	template< typename T, typename InexType >
-	class ArrayBase< T, detail::DynamicSize, InexType > : public Memory<T, InexType>
+	class ArrayBase< T, detail::DynamicSize, InexType > : public MemoryBase<T, InexType>
 	{
 	public:
 
 		// Default constructor
-		ArrayBase(): Memory<T, InexType>() {}
+		ArrayBase(): MemoryBase<T, InexType>() {}
 
 		// Constructor
-		ArrayBase( InexType len ) : Memory<T, InexType>(len) {}
+		ArrayBase( InexType len ) : MemoryBase<T, InexType>(len) {}
 
 		// Constructor
 //		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-//		ArrayBase( Args const & ... args ) : Memory<T, InexType>( args ...) {}
+//		ArrayBase( Args const & ... args ) : MemoryBase<T, InexType>( args ...) {}
 
 		// Constructor with initializer list
-		ArrayBase( std::initializer_list<T> ilist ) : Memory<T, InexType>( ilist ) {}
+		ArrayBase( std::initializer_list<T> ilist ) : MemoryBase<T, InexType>( ilist ) {}
 
 		// Constructor with default value
-		ArrayBase( InexType len, const T& fill ): Memory<T, InexType>( len, fill ) {}
+		ArrayBase( InexType len, const T& fill ): MemoryBase<T, InexType>( len, fill ) {}
 
-		// Constructor using Memory
-		ArrayBase( const Memory<T, InexType>& obj ) : Memory<T, InexType>( obj ) {}
+		// Constructor using MemoryBase
+		ArrayBase( const MemoryBase<T, InexType>& obj ) : MemoryBase<T, InexType>( obj ) {}
 
 		// Constructor using iterator
 		template < class Iter >
-		ArrayBase( Iter first, Iter last ) : Memory<T, InexType>( first, last ) {}
+		ArrayBase( Iter first, Iter last ) : MemoryBase<T, InexType>( first, last ) {}
 
 		// Copy constructor
-		ArrayBase( const ArrayBase& obj ) : Memory<T, InexType>( (const Memory<T, InexType>&)obj ) {}
+		ArrayBase( const ArrayBase& obj ) : MemoryBase<T, InexType>( (const MemoryBase<T, InexType>&)obj ) {}
 
 		// Move constructor
-		ArrayBase( ArrayBase&& obj ) : Memory<T, InexType>( (Memory<T, InexType>&&)obj ) {}
+		ArrayBase( ArrayBase&& obj ) : MemoryBase<T, InexType>( (MemoryBase<T, InexType>&&)obj ) {}
 
 
 		// Copy Assignment opertor =
 		inline ArrayBase& operator=( const ArrayBase& obj )
 		{
-			Memory<T, InexType>::operator=( obj );
+			MemoryBase<T, InexType>::operator=( obj );
 			return *this;
 		}
 
 
-		inline ArrayBase& operator=( const Memory<T, InexType>& obj )
+		inline ArrayBase& operator=( const MemoryBase<T, InexType>& obj )
 		{
-			Memory<T, InexType>::operator=( obj );
+			MemoryBase<T, InexType>::operator=( obj );
 			return *this;
 		}
 
@@ -76,7 +76,7 @@ namespace OreOreLib
 		// Move assignment opertor =
 		inline ArrayBase& operator=( ArrayBase&& obj )
 		{
-			Memory<T, InexType>::operator=( (ArrayBase&&)obj );
+			MemoryBase<T, InexType>::operator=( (ArrayBase&&)obj );
 			return *this;
 		}
 

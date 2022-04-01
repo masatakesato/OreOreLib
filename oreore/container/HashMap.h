@@ -272,7 +272,7 @@ namespace OreOreLib
 
 		// Move constructor
 		HashMap( HashMap&& obj )
-			: m_pTable( (Memory<HashNode<K, V>*, IndexType> &&) obj.m_pTable )
+			: m_pTable( (MemoryBase<HashNode<K, V>*, IndexType> &&) obj.m_pTable )
 			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
 		{
@@ -320,7 +320,7 @@ namespace OreOreLib
 			{
 				Clear();
 
-				m_pTable		= (Memory<HashNode<K, V>*, IndexType> &&) obj.m_pTable;
+				m_pTable		= (MemoryBase<HashNode<K, V>*, IndexType> &&) obj.m_pTable;
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
 
@@ -570,9 +570,9 @@ namespace OreOreLib
 
 	private:
 
-		Memory<HashNode<K, V>*, IndexType>	m_pTable;
-		F									m_HashFunc;
-		IndexType							m_numElements;
+		MemoryBase<HashNode<K, V>*, IndexType>	m_pTable;
+		F										m_HashFunc;
+		IndexType								m_numElements;
 
 
 		friend class Iterator;

@@ -26,7 +26,7 @@ public:
 
 
 	template < typename IndexType >
-	auto Dispatch( OreOreLib::Memory<char, IndexType>& sbuf )//const msgpack::sbuffer& sbuf )
+	auto Dispatch( OreOreLib::MemoryBase<char, IndexType>& sbuf )//const msgpack::sbuffer& sbuf )
 	{
 		//msgpack::unpacked msg;
 		//msgpack::unpack( msg, sbuf.begin(), sbuf.Length() );//sbuf.data(), sbuf.size() );

@@ -8,7 +8,6 @@
 #include	"../mathlib/MathLib.h"
 #include	"../algorithm/Algorithm.h"
 
-//TODO: Replace IndexType with MemSizeType
 
 
 namespace OreOreLib
@@ -38,6 +37,29 @@ namespace OreOreLib
 		using MemSizeType = typename uint32;// default configuration
 
 	#endif
+
+
+
+
+	//##############################################################################################################//
+	//																												//
+	//											MemoryBase class declaration											//
+	//																												//
+	//##############################################################################################################//
+
+	template< typename T, typename IndexType >	struct MemoryBase;
+
+
+
+
+	//##############################################################################################################//
+	//																												//
+	//											Memory partial specialization										//
+	//																												//
+	//##############################################################################################################//
+
+	template < typename T >
+	using Memory = MemoryBase< T, MemSizeType >;
 
 
 
@@ -387,41 +409,39 @@ namespace OreOreLib
 
 	//##############################################################################################################//
 	//																												//
-	//											Memory class implementation											//
+	//										MemoryBase class implementation											//
 	//																												//
 	//##############################################################################################################//
 
-	template< typename T, typename IndexType/* = MemSizeType*/ >
-	struct Memory
+	template< typename T, typename IndexType >
+	struct MemoryBase
 	{
-//		using IndexType = typename MemSizeType;//typename uint32;//sizeType;//int32;//uint64;//
-
 	public:
 
 		// Default constructor
-		Memory()
+		MemoryBase()
 			: m_Length( 0 )
 			, m_AllocSize( 0 )
 			, m_Capacity( 0 )
 			, m_pData( nullptr )
 		{
-			//tcout << _T("Memory default constructor...\n");
+			//tcout << _T("MemoryBase default constructor...\n");
 		}
 
 
 		// Constructor
-		Memory( IndexType len )
+		MemoryBase( IndexType len )
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
 			, m_pData( AllocateBuffer(len, true) )
 		{
-			//tcout << _T("Memory constructor(dynamic allocation)...\n");
+			//tcout << _T("MemoryBase constructor(dynamic allocation)...\n");
 		}
 
 		
 		// Constructor
-		Memory( IndexType len, const T& fill )
+		MemoryBase( IndexType len, const T& fill )
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
@@ -434,7 +454,7 @@ namespace OreOreLib
 
 		// Constructor
 		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-		Memory( Args const & ... args )
+		MemoryBase( Args const & ... args )
 			: m_Length( sizeof ...(Args) )
 			, m_AllocSize( sizeof ...(Args) * sizeof(T) )
 			, m_Capacity( sizeof ...(Args) )
@@ -449,7 +469,7 @@ namespace OreOreLib
 		}
 
 		// Constructor with initializer_list
-		Memory( std::initializer_list<T> ilist )
+		MemoryBase( std::initializer_list<T> ilist )
 			: m_Length( static_cast<IndexType>( ilist.size() ) )
 			, m_AllocSize( static_cast<IndexType>( ilist.size() * sizeof(T) ) )
 			, m_Capacity( m_Length )
@@ -465,7 +485,7 @@ namespace OreOreLib
 
 		// Constructor with iterator
 		template < class Iter >
-		Memory( Iter first, Iter last )
+		MemoryBase( Iter first, Iter last )
 			: m_Length( static_cast<IndexType>( last - first ) )
 			, m_AllocSize( m_Length * sizeof(T) )
 			, m_Capacity( m_Length )
@@ -476,21 +496,21 @@ namespace OreOreLib
 
 
 		// Destructor
-		virtual ~Memory()
+		virtual ~MemoryBase()
 		{
-			//tcout << _T("Memory destructor...\n");
+			//tcout << _T("MemoryBase destructor...\n");
 			Release();
 		}
 
 
 		// Copy constructor
-		Memory( const Memory& obj )
+		MemoryBase( const MemoryBase& obj )
 			: m_Length( obj.m_Length )
 			, m_AllocSize( obj.m_AllocSize )
 			, m_Capacity( obj.m_Capacity )
 			, m_pData( nullptr )
 		{
-			//tcout << _T("Memory copy constructor...\n");
+			//tcout << _T("MemoryBase copy constructor...\n");
 			if( obj.m_pData )
 			{
 				AllocateBuffer( m_Capacity );
@@ -500,14 +520,14 @@ namespace OreOreLib
 
 
 		// Move constructor
-		Memory( Memory&& obj )
+		MemoryBase( MemoryBase&& obj )
 			: m_Length( obj.m_Length )
 			, m_AllocSize( obj.m_AllocSize )
 			, m_Capacity( obj.m_Capacity )
 			, m_pData( obj.m_pData )
 
 		{
-			//tcout << _T("Memory move constructor...\n");
+			//tcout << _T("MemoryBase move constructor...\n");
 
 			obj.m_Length	= 0;
 			obj.m_AllocSize	= 0;
@@ -517,11 +537,11 @@ namespace OreOreLib
 
 
 		// Copy Assignment operator =
-		inline Memory& operator=( const Memory& obj )
+		inline MemoryBase& operator=( const MemoryBase& obj )
 		{
 			if( this != &obj )
 			{
-				//tcout << _T("Memory copy assignment operator...\n");
+				//tcout << _T("MemoryBase copy assignment operator...\n");
 				m_Length	= obj.m_Length;
 				m_AllocSize	= obj.m_AllocSize;
 				m_Capacity	= obj.m_Capacity;
@@ -539,11 +559,11 @@ namespace OreOreLib
 
 
 		// Move assignment operator =
-		inline Memory& operator=( Memory&& obj )
+		inline MemoryBase& operator=( MemoryBase&& obj )
 		{
 			if( this != &obj )
 			{
-				//tcout << _T("Memory move assignment operator...\n");
+				//tcout << _T("MemoryBase move assignment operator...\n");
 
 				// free current m_pData first.
 				DeallocateBuffer();
@@ -565,21 +585,21 @@ namespace OreOreLib
 		}
 
 
-		// Subscript operator for read only.( called if Memory is const )
+		// Subscript operator for read only.( called if MemoryBase is const )
 		inline const T& operator[]( IndexType n ) const&
 		{
 			return m_pData[n];
 		}
 
 
-		// Subscript operator for read-write.( called if Memory is non-const )
+		// Subscript operator for read-write.( called if MemoryBase is non-const )
 		inline T& operator[]( IndexType n ) &
 		{
 			return m_pData[n];
 		}
 
 
-		// Subscript operator. ( called by following cases: "T a = Memory<T,IndexType>(10)[n]", "auto&& a = Memory<T,IndexType>(20)[n]" )
+		// Subscript operator. ( called by following cases: "T a = MemoryBase<T,IndexType>(10)[n]", "auto&& a = MemoryBase<T,IndexType>(20)[n]" )
 		inline T operator[]( IndexType n ) const&&
 		{
 			return std::move(m_pData[n]);// return object
@@ -592,13 +612,13 @@ namespace OreOreLib
 		}
 
 
-		inline bool operator==( const Memory& rhs ) const
+		inline bool operator==( const MemoryBase& rhs ) const
 		{
 			return m_pData == rhs.m_pData;
 		}
 
 
-		inline bool operator !=( const Memory& rhs ) const
+		inline bool operator !=( const MemoryBase& rhs ) const
 		{
 			return m_pData != rhs.m_pData;
 		}
@@ -885,13 +905,13 @@ namespace OreOreLib
 		}
 
 
-		inline void CopyFrom( const Memory& src )
+		inline void CopyFrom( const MemoryBase& src )
 		{
 			MemCopy( m_pData, src.m_pData, Min(m_Length, src.m_Length) );
 		}
 
 
-		inline void CopyTo( Memory& dst ) const
+		inline void CopyTo( MemoryBase& dst ) const
 		{
 			MemCopy( dst.m_pData, m_pData, Min(m_Length, dst.m_Length) );
 		}
@@ -1071,7 +1091,7 @@ namespace OreOreLib
 
 
 	template < typename T, typename IndexType >
-	inline IndexType Find( const Memory<T, IndexType>& arr, const T& item )
+	inline IndexType Find( const MemoryBase<T, IndexType>& arr, const T& item )
 	{
 		for( const auto& elm : arr )
 		{
@@ -1085,7 +1105,7 @@ namespace OreOreLib
 
 
 	template < typename T, typename IndexType >
-	inline bool Exists( const Memory<T, IndexType>& arr, const T& item )
+	inline bool Exists( const MemoryBase<T, IndexType>& arr, const T& item )
 	{
 		for( const auto& elm : arr )
 		{
@@ -1113,7 +1133,7 @@ namespace OreOreLib
 
 
 	template < typename T, typename IndexType, typename Predicate >
-	inline IndexType FindIf( const Memory<T, IndexType>& arr, Predicate pred )
+	inline IndexType FindIf( const MemoryBase<T, IndexType>& arr, Predicate pred )
 	{
 		auto first = arr.begin();
 		const auto last = arr.end();
@@ -1121,7 +1141,7 @@ namespace OreOreLib
 		for(; first != last; ++first )
 		{
 			if( pred(*first) )
-				return first - arr.begin();
+				return static_cast<IndexType>( first - arr.begin() );
 		}
 
 		return -1;

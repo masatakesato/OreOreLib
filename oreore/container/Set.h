@@ -241,7 +241,7 @@ namespace OreOreLib
 
 		// Move constructor
 		Set( Set&& obj )
-			: m_pTable( (Memory<SetNode<T>*>)obj.m_pTable )
+			: m_pTable( (MemoryBase<SetNode<T>*, IndexType>)obj.m_pTable )
 			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
 		{
@@ -289,7 +289,7 @@ namespace OreOreLib
 			{
 				Clear();
 
-				m_pTable		= (Memory<SetNode<T>*, IndexType>&&)obj.m_pTable;
+				m_pTable		= (MemoryBase<SetNode<T>*, IndexType>&&)obj.m_pTable;
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
 
@@ -422,9 +422,9 @@ namespace OreOreLib
 
 	private:
 
-		Memory<SetNode<T>*, IndexType>	m_pTable;
-		F								m_HashFunc;
-		IndexType						m_numElements;
+		MemoryBase<SetNode<T>*, IndexType>	m_pTable;
+		F									m_HashFunc;
+		IndexType							m_numElements;
 
 
 		friend class Iter;

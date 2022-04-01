@@ -39,10 +39,10 @@ namespace OreOreLib
 
 	private:
 		
-		IndexType				m_ActiveSize;
-		Memory<T, IndexType>	m_Queue;
-		IndexType				front;// キュー先頭のオブジェクトが入っている要素のインデックス
-		IndexType				rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
+		IndexType					m_ActiveSize;
+		MemoryBase<T, IndexType>	m_Queue;
+		IndexType					front;// キュー先頭のオブジェクトが入っている要素のインデックス
+		IndexType					rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
 
 	};
 

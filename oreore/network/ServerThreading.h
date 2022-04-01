@@ -148,7 +148,7 @@ void ServerThreading::Close()
 void ServerThreading::Send_Recv( SOCKET sock, void *serializer, std::shared_ptr<Dispatcher>& func )
 {
 	int numrcv;
-	static OreOreLib::Memory<char, int> raw_message;
+	static OreOreLib::MemoryBase<char, int> raw_message;
 
 	while( true )
 	{

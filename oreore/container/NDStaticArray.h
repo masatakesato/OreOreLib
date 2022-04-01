@@ -86,7 +86,7 @@ namespace OreOreLib
 			return *this;
 		}
 
-		inline NDArrayBase& operator=( const Memory<T, IndexType>& obj )
+		inline NDArrayBase& operator=( const MemoryBase<T, IndexType>& obj )
 		{
 			if( this != &obj )
 			{
@@ -217,9 +217,9 @@ namespace OreOreLib
 		const NDShape<N, IndexType> m_Shape = NDShape<N, IndexType>(Args...);
 
 
-		//using Memory<T, IndexType>::operator[];
-		//using Memory<T, IndexType>::begin;
-		//using Memory<T, IndexType>::end;
+		//using MemoryBase<T, IndexType>::operator[];
+		//using MemoryBase<T, IndexType>::begin;
+		//using MemoryBase<T, IndexType>::end;
 
 	};
 

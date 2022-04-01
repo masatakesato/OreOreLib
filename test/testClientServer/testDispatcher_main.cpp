@@ -75,7 +75,7 @@ Dispatcher g_Dispatcher;
 
 
 template < typename IndexType >
-auto Dispatch( OreOreLib::Memory<char, IndexType>& data )
+auto Dispatch( OreOreLib::MemoryBase<char, IndexType>& data )
 {
 	return g_Dispatcher.Dispatch( data );
 }
@@ -93,7 +93,7 @@ auto Call_client( const std::string& proc_name, Args ...args )
 
 
 
-	OreOreLib::Memory<char, int> mem( /*(OreOreLib::MemSizeType)sbuf.size(),*/ sbuf.data(), sbuf.data() + sbuf.size() ); 
+	OreOreLib::MemoryBase<char, int> mem( /*(OreOreLib::MemSizeType)sbuf.size(),*/ sbuf.data(), sbuf.data() + sbuf.size() ); 
 	auto result = Dispatch( mem );//g_Dispatcher.Dispatch( mem );
 
 

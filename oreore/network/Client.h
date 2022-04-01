@@ -43,7 +43,7 @@ private:
 	//void*	__m_Serializer;
 	SOCKET	__m_socket;
 
-	OreOreLib::Memory<char, int>	buffer;
+	OreOreLib::MemoryBase<char, int>	buffer;
 
 
 	static SOCKET make_connection( tstring const& host_, int port_, int timeout_, int trial_ );

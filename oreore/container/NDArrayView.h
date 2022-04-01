@@ -281,7 +281,7 @@ namespace OreOreLib
 
 
 
-		// Subscript operator for read only.( called if Memory is const )
+		// Subscript operator for read only.( called if NDArrayView is const )
 		inline const T& operator[]( IndexType n ) const&
 		{
 			IndexType indexND[N];
@@ -289,7 +289,7 @@ namespace OreOreLib
 		}
 
 
-		// Subscript operator for read-write.( called if Memory is non-const )
+		// Subscript operator for read-write.( called if NDArrayView is non-const )
 		inline T& operator[]( IndexType n ) &
 		{
 			IndexType indexND[N];
@@ -297,7 +297,7 @@ namespace OreOreLib
 		}
 
 
-		// Subscript operator. ( called by following cases: "T a = Memory<T, IndexType>(10)[n]", "auto&& a = Memory<T, IndexType>(20)[n]" )
+		// Subscript operator. ( called by following cases: "T a = MemoryBase<T, IndexType>(10)[n]", "auto&& a = MemoryBase<T, IndexType>(20)[n]" )
 		//inline T operator[]( IndexType n ) const&&
 		//{
 		//	return std::move(this->m_pData[n]);// return object
@@ -328,10 +328,10 @@ namespace OreOreLib
 
 
 
-		using Memory<T, IndexType>::SetValues;
-		using Memory<T, IndexType>::operator[];
-		//using Memory<T, IndexType>::begin;
-		//using Memory<T, IndexType>::end;
+		using MemoryBase<T, IndexType>::SetValues;
+		using MemoryBase<T, IndexType>::operator[];
+		//using MemoryBase<T, IndexType>::begin;
+		//using MemoryBase<T, IndexType>::end;
 	};
 
 

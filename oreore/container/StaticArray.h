@@ -19,7 +19,7 @@ namespace OreOreLib
 
 
 	template< typename T, sizeType Size, typename InexType >
-	class ArrayBase< T, Size, InexType, std::enable_if_t< Size!=detail::DynamicSize > > : public Memory<T, InexType>
+	class ArrayBase< T, Size, InexType, std::enable_if_t< Size!=detail::DynamicSize > > : public MemoryBase<T, InexType>
 	{
 	public:
 
@@ -75,7 +75,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		ArrayBase( const Memory<T, InexType> &obj )
+		ArrayBase( const MemoryBase<T, InexType> &obj )
 		{
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
@@ -127,7 +127,7 @@ namespace OreOreLib
 			return *this;
 		}
 
-		inline ArrayBase& operator=( const Memory<T, InexType>& obj )
+		inline ArrayBase& operator=( const MemoryBase<T, InexType>& obj )
 		{
 			if( this != &obj )
 			{
@@ -164,7 +164,7 @@ namespace OreOreLib
 		}
 
 
-		// Subscription operator. ( called by following cases: "T& a = StaticMemory<T,10>[n]", "auto&& a = Memory<T,20>[n]" )
+		// Subscription operator. ( called by following cases: "T& a = StaticMemory<T,10>[n]", "auto&& a = MemoryBase<T,20>[n]" )
 		inline T operator[]( std::size_t n ) const&&
 		{
 			return std::move(m_Data[n]);// return object
@@ -256,15 +256,15 @@ namespace OreOreLib
 		InexType InsertAfter( InexType, T&& ) = delete;
 
 		// Hide parent methods
-		using Memory<T,InexType>::Init;
-		using Memory<T,InexType>::Release;
-		//using Memory<T,InexType>::Clear;
-		using Memory<T,InexType>::Reserve;
-		using Memory<T,InexType>::Resize;
-		using Memory<T,InexType>::Extend;
-		using Memory<T,InexType>::Shrink;
-		using Memory<T,InexType>::InsertBefore;
-		using Memory<T,InexType>::InsertAfter;
+		using MemoryBase<T,InexType>::Init;
+		using MemoryBase<T,InexType>::Release;
+		//using MemoryBase<T,InexType>::Clear;
+		using MemoryBase<T,InexType>::Reserve;
+		using MemoryBase<T,InexType>::Resize;
+		using MemoryBase<T,InexType>::Extend;
+		using MemoryBase<T,InexType>::Shrink;
+		using MemoryBase<T,InexType>::InsertBefore;
+		using MemoryBase<T,InexType>::InsertAfter;
 
 	};
 

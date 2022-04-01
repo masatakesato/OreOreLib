@@ -27,7 +27,7 @@ namespace OreOreLib
 		NDArrayBase( Args const & ... args )
 			: m_Shape( args... )
 		{
-			Memory<T, IndexType>::Init( m_Shape.Size() );
+			MemoryBase<T, IndexType>::Init( m_Shape.Size() );
 		}
 
 
@@ -36,7 +36,7 @@ namespace OreOreLib
 		NDArrayBase( std::initializer_list<T_INDEX> ilist )
 			: m_Shape( ilist )
 		{
-			Memory<T, IndexType>::Init( m_Shape.Size() );
+			MemoryBase<T, IndexType>::Init( m_Shape.Size() );
 		}
 
 
@@ -90,15 +90,15 @@ namespace OreOreLib
 		// Copy Assignment opertor =
 		inline NDArrayBase& operator=( const NDArrayBase& obj )
 		{
-			Memory<T, IndexType>::operator=( obj );
+			MemoryBase<T, IndexType>::operator=( obj );
 			m_Shape = obj.m_Shape;
 			return *this;
 		}
 
 
-		inline NDArrayBase& operator=( const Memory<T, IndexType>& obj )
+		inline NDArrayBase& operator=( const MemoryBase<T, IndexType>& obj )
 		{
-			Memory<T, IndexType>::operator=( obj );
+			MemoryBase<T, IndexType>::operator=( obj );
 			m_Shape.Init( obj.Length() );
 			return *this;
 		}
@@ -107,13 +107,13 @@ namespace OreOreLib
 		// Move assignment opertor =
 		inline NDArrayBase& operator=( NDArrayBase&& obj )
 		{
-			Memory<T, IndexType>::operator=( (NDArrayBase&&)obj );
+			MemoryBase<T, IndexType>::operator=( (NDArrayBase&&)obj );
 			m_Shape = obj.m_Shape;
 			return *this;
 		}
 
 
-		void Init( const Memory<T, IndexType>& obj )
+		void Init( const MemoryBase<T, IndexType>& obj )
 		{
 			ArrayImpl<T, IndexType>::Init( obj );
 			m_Shape.Init( obj.Length() );
@@ -125,7 +125,7 @@ namespace OreOreLib
 		//Init( const Args& ... args )
 		//{
 		//	m_Shape.Init( args... );
-		//	Memory<T, IndexType>::Init( m_Shape.Size() );
+		//	MemoryBase<T, IndexType>::Init( m_Shape.Size() );
 		//}
 
 
@@ -134,7 +134,7 @@ namespace OreOreLib
 		Init( std::initializer_list<T_INDEX> ilist )
 		{
 			m_Shape.Init( ilist );
-			Memory<T, IndexType>::Init( m_Shape.Size() );
+			MemoryBase<T, IndexType>::Init( m_Shape.Size() );
 		}
 
 
@@ -264,13 +264,13 @@ namespace OreOreLib
 		NDShape<N, IndexType> m_Shape;
 
 
-		using Memory<T, IndexType>::Init;
-		using Memory<T, IndexType>::Resize;
-		using Memory<T, IndexType>::Extend;
-		using Memory<T, IndexType>::Shrink;
-		using Memory<T, IndexType>::operator[];
-		//using Memory<T, IndexType>::begin;
-		//using Memory<T, IndexType>::end;
+		using MemoryBase<T, IndexType>::Init;
+		using MemoryBase<T, IndexType>::Resize;
+		using MemoryBase<T, IndexType>::Extend;
+		using MemoryBase<T, IndexType>::Shrink;
+		using MemoryBase<T, IndexType>::operator[];
+		//using MemoryBase<T, IndexType>::begin;
+		//using MemoryBase<T, IndexType>::end;
 
 	};
 

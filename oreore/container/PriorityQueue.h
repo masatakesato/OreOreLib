@@ -40,8 +40,8 @@ namespace OreOreLib
 
 	private:
 		
-		IndexType			m_ActiveSize;
-		/*Array*/Memory<T, IndexType>	m_HeapArray;
+		IndexType					m_ActiveSize;
+		MemoryBase<T, IndexType>	m_HeapArray;
 
 		void TrickleUp( IndexType index );		// 下にある小さな値の要素を上に上げる
 		void TrickleDown( IndexType index );		// 上にある大きな値の要素を下に沈める

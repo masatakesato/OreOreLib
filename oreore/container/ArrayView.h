@@ -17,9 +17,9 @@ namespace OreOreLib
 
 
 	template< typename T, typename InexType >
-	class ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, InexType > : public Memory<T, InexType>
+	class ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, InexType > : public MemoryBase<T, InexType>
 	{
-		//using InexType = typename Memory<T, InexType>::InexType;
+		//using InexType = typename MemoryBase<T, InexType>::InexType;
 		using Ptr = T*;
 		using ConstPtr = const T*;
 
@@ -27,7 +27,7 @@ namespace OreOreLib
 
 		// Default constructor
 		ArrayBase()
-			: Memory<T, InexType>()
+			: MemoryBase<T, InexType>()
 		{
 		}
 
@@ -40,7 +40,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		ArrayBase( const Memory<T, InexType>& obj )
+		ArrayBase( const MemoryBase<T, InexType>& obj )
 		{
 			Init( obj );
 		}
@@ -73,7 +73,7 @@ namespace OreOreLib
 		}
 
 
-		void Init( const Memory<T, InexType>& obj )
+		void Init( const MemoryBase<T, InexType>& obj )
 		{
 			this->m_pData		= (T*)obj.begin();
 			this->m_Length		= obj.Length();
@@ -124,15 +124,15 @@ namespace OreOreLib
 		InexType InsertAfter( InexType, T&& ) = delete;
 
 		// Hide parent methods
-		using Memory<T, InexType>::Init;
-		using Memory<T, InexType>::Release;
-		//using Memory<T, InexType>::Clear;
-		using Memory<T, InexType>::Reserve;
-		using Memory<T, InexType>::Resize;
-		using Memory<T, InexType>::Extend;
-		using Memory<T, InexType>::Shrink;
-		using Memory<T, InexType>::InsertBefore;
-		using Memory<T, InexType>::InsertAfter;
+		using MemoryBase<T, InexType>::Init;
+		using MemoryBase<T, InexType>::Release;
+		//using MemoryBase<T, InexType>::Clear;
+		using MemoryBase<T, InexType>::Reserve;
+		using MemoryBase<T, InexType>::Resize;
+		using MemoryBase<T, InexType>::Extend;
+		using MemoryBase<T, InexType>::Shrink;
+		using MemoryBase<T, InexType>::InsertBefore;
+		using MemoryBase<T, InexType>::InsertAfter;
 
 	};
 
