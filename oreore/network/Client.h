@@ -27,7 +27,7 @@ public:
 	Client( tstring host, int port, int timeout, int trial );
 	virtual ~Client();
 
-	template <typename... Args>
+	template < typename... Args >
 	msgpack::object_handle Call( tstring const& proc_name, Args ...args );
 	bool IsReady();
 	void Close();
@@ -43,7 +43,7 @@ private:
 	//void*	__m_Serializer;
 	SOCKET	__m_socket;
 
-	OreOreLib::Memory<char, OreOreLib::MemSizeType>	buffer;
+	OreOreLib::Memory<char, int>	buffer;
 
 
 	static SOCKET make_connection( tstring const& host_, int port_, int timeout_, int trial_ );
@@ -52,11 +52,11 @@ private:
 
 
 
-Client::Client() :
-	__m_host( "localhost" ),
-	__m_port( 8080 ),
-	__m_timeout( 1000 ),
-	__m_trial( 5 )
+Client::Client()
+	: __m_host( "localhost" )
+	, __m_port( 8080 )
+	, __m_timeout( 1000 )
+	, __m_trial( 5 )
 {
 	__m_socket = make_connection( __m_host, __m_port, __m_timeout, __m_trial );
 }

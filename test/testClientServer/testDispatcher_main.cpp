@@ -74,15 +74,15 @@ Dispatcher g_Dispatcher;
 
 
 
-
-auto Dispatch( OreOreLib::Memory<char, OreOreLib::MemSizeType>& data )
+template < typename IndexType >
+auto Dispatch( OreOreLib::Memory<char, IndexType>& data )
 {
 	return g_Dispatcher.Dispatch( data );
 }
 
 
 
-template <typename T, typename... Args>
+template < typename T, typename... Args >
 auto Call_client( const std::string& proc_name, Args ...args )
 {
 	auto msg = std::make_tuple( proc_name, std::make_tuple( args... ) );
@@ -93,7 +93,7 @@ auto Call_client( const std::string& proc_name, Args ...args )
 
 
 
-	OreOreLib::Memory<char, OreOreLib::MemSizeType> mem( (int)sbuf.size(), sbuf.data() );
+	OreOreLib::Memory<char, int> mem( /*(OreOreLib::MemSizeType)sbuf.size(),*/ sbuf.data(), sbuf.data() + sbuf.size() ); 
 	auto result = Dispatch( mem );//g_Dispatcher.Dispatch( mem );
 
 
@@ -123,7 +123,7 @@ int main()
 
 
 
-	auto result = Call_client<int>( "add", 4, 4 );
+	auto result = Call_client<int>( "add", 4, 14 );
 
 
 

@@ -148,7 +148,7 @@ void Server::Close()
 void Server::Send_Recv( SOCKET sock, void *serializer, std::shared_ptr<Dispatcher>& func )
 {
 	int numrcv;
-	static OreOreLib::Memory<char, OreOreLib::MemSizeType> raw_message;
+	static OreOreLib::Memory<char, int> raw_message;
 
 	while(true)
 	{

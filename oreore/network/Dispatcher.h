@@ -18,14 +18,15 @@ class Dispatcher
 {
 public:
 	
-	template <typename F>
+	template < typename F >
 	void BindFunc( const tstring& name, F func )
 	{
 		BindFunc<F>( name, func, func_kind_info<F>::result_type(), func_kind_info<F>::args_type() );
 	}
 
 
-	auto Dispatch( OreOreLib::Memory<char, OreOreLib::MemSizeType>& sbuf )//const msgpack::sbuffer& sbuf )
+	template < typename IndexType >
+	auto Dispatch( OreOreLib::Memory<char, IndexType>& sbuf )//const msgpack::sbuffer& sbuf )
 	{
 		//msgpack::unpacked msg;
 		//msgpack::unpack( msg, sbuf.begin(), sbuf.Length() );//sbuf.data(), sbuf.size() );
@@ -54,19 +55,19 @@ private:
 
 
 	// result/args = void/zero
-	template <typename F>
+	template < typename F >
 	void BindFunc( const tstring& name, F func, const result_void&, const args_zero& );
 
 	// BindFunc with result/args = void/non-zero
-	template <typename F>
+	template < typename F >
 	void BindFunc( const tstring& name, F func, const result_void&, const args_nonzero& );
 
 	// BindFunc with result/args = non-void/zero
-	template <typename F>
+	template < typename F >
 	void BindFunc( const tstring& name, F func, const result_nonvoid&, const args_zero& );
 
 	// BindFunc with result/args = non-void/non-zero
-	template <typename F>
+	template < typename F >
 	void BindFunc( const tstring& name, F func, const result_nonvoid&, const args_nonzero& );
 
 };
@@ -75,7 +76,7 @@ private:
 
 
 // result/args = void/zero
-template <typename F>
+template < typename F >
 void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, const args_zero& )
 {
 	m_Funcs.insert
@@ -94,7 +95,7 @@ void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, cons
 
 
 // BindFunc with result/args = void/non-zero
-template <typename F>
+template < typename F >
 void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, const args_nonzero& )
 {
 	using args_type = typename func_traits<F>::args_type;
@@ -120,7 +121,7 @@ void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, cons
 
 
 // BindFunc with result/args = non-void/zero
-template <typename F>
+template < typename F >
 void Dispatcher::BindFunc( const tstring& name, F func, const result_nonvoid&, const args_zero& )
 {
 	using args_type = typename func_traits<F>::args_type;
