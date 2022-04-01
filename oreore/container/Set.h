@@ -183,7 +183,7 @@ namespace OreOreLib
 
 
 		Set( std::initializer_list<T> ilist )
-			: m_pTable( static_cast<IndexType>( ilist.size() ) )
+			: m_pTable( static_cast<IndexType>( ilist.size() * HashConst::LoadFactor ) )
 			, m_HashFunc()
 			, m_numElements( 0 )
 		{
@@ -194,7 +194,7 @@ namespace OreOreLib
 
 		template < typename Iter >
 		Set( Iter first, Iter last )
-			: m_pTable( static_cast<IndexType>(last - first) )
+			: m_pTable( static_cast<IndexType>( (last - first) * HashConst::LoadFactor ) )
 			, m_HashFunc()
 			, m_numElements( 0 )
 		{
@@ -302,6 +302,11 @@ namespace OreOreLib
 
 		void Put( const T& value )
 		{
+			// Rehash if load facter exceeds limit value
+			if( (float32)(m_numElements + 1) / m_pTable.Length<float32>() > HashConst::LoadFactorLimit )
+				Rehash();
+
+			// Put value into m_pTable
 			IndexType hashValue = m_HashFunc.Get<IndexType>( value, m_pTable.Length() );
 			SetNode<T>* prev = nullptr;
 			SetNode<T>* entry = m_pTable[ hashValue ];
@@ -425,6 +430,72 @@ namespace OreOreLib
 		MemoryBase<SetNode<T>*, IndexType>	m_pTable;
 		F									m_HashFunc;
 		IndexType							m_numElements;
+
+
+
+		void Rehash()
+		{
+			// Create new hash table
+			auto newLen = static_cast<IndexType>( ( m_numElements + 1 ) / HashConst::LoadFactor );
+			tcout << _T("Set::Rehash()... ") << m_pTable.Length<int>() << _T("->") << newLen << tendl;
+
+
+			MemoryBase<SetNode<T>*, IndexType>	newTable( newLen );
+
+			// transfer nodes from m_pTable to newTable
+			for( int i=0; i<m_pTable.Length<int>(); ++i )
+			{
+				SetNode<T>* entry = m_pTable[i];
+
+				while( entry )
+				{
+					SetNode<T>* prev = entry;
+					entry = entry->next;
+					if( TransferSetNode( prev, newTable ) == false )
+						SafeDelete( prev );
+				}
+
+				m_pTable[i] = nullptr;
+			}
+
+			m_pTable = (MemoryBase<SetNode<T>*, IndexType>&&)newTable;
+		}
+
+
+		bool TransferSetNode( SetNode<T>* node, MemoryBase<SetNode<T>*, IndexType>& pTable )
+		{
+			// Put value into pTable
+			IndexType hashValue = m_HashFunc.Get<IndexType>( node->value, pTable.Length() );
+			SetNode<T>* prev = nullptr;
+			SetNode<T>* entry = pTable[ hashValue ];
+
+			// move to last element
+			while( entry != nullptr && entry->value != node->value )
+			{
+				prev = entry;
+				entry = entry->next;
+			}
+
+			if( entry == nullptr )
+			{
+				// disconnect node from current linklist
+				node->next = nullptr;
+
+				if( prev == nullptr )
+					pTable[ hashValue ] = node;
+				else
+					prev->next = node;
+
+				return true;
+			}
+
+			return false;
+		}
+
+
+
+
+
 
 
 		friend class Iter;

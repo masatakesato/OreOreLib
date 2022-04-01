@@ -8,6 +8,15 @@
 // https://web.stanford.edu/class/archive/cs/cs106b/cs106b.1178/lectures/27-Inheritance/code/Inheritance/lib/StanfordCPPLib/collections/hashcode.cpp
 
 
+// https://www.quora.com/How-do-I-determine-the-array-size-for-a-resizing-hash-table
+// Recommended hash table size: larger than 1.2 times the number of items
+// ハッシュテーブル拡張時は 1.4倍で設定する
+// ハッシュテーブルサイズが要素数の1.2倍を割り込んだら、
+
+// https://stackoverflow.com/questions/22741966/how-to-choose-size-of-hash-table
+// ハッシュテーブルのロードファクターを75%、理想的には70%に抑える
+
+
 
 
 namespace OreOreLib
@@ -16,7 +25,11 @@ namespace OreOreLib
 
 	namespace HashConst
 	{
-		const uint64 DefaultHashSize = 16;
+		const float32 LoadFactor		= 0.7f;
+		const float32 LoadFactorLimit	= 0.75f;
+
+		const uint64 DefaultHashSize	= 16;
+
 		const uint64 Seed		= 5381;
 		const uint64 Multiplier	= 33;//31
 		const uint64 Mask		= uint64(-1) >> 1;
