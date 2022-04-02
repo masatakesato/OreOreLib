@@ -38,6 +38,30 @@ namespace OreOreLib
 
 	//######################################################################//
 	//																		//
+	//							Class declaration							//
+	//																		//
+	//######################################################################//
+
+	// HashMapBase 
+	template < typename K, typename V, typename IndexType, typename F, sizeType HashSize >	class HashMapBase;
+
+
+	// Dynamic HashMap
+	template < typename K, typename V, typename IndexType = MemSizeType, typename F = KeyHash<K> >
+	using HashMap = HashMapBase< K, V, IndexType, F, detail::DynamicSize >;
+
+	// Static HashMap
+	template < typename K, typename V, sizeType HashSize, typename IndexType = MemSizeType, typename F = KeyHash<K> >
+	using StaticHashMap = SetBase< K, V, IndexType, F, HashSize >;
+
+
+TODO: まずはHashMapを実装して動かす.SetからRehash処理を移植する
+TODO: copy/move assignment operator に Clear();を追加してテストする
+
+
+
+	//######################################################################//
+	//																		//
 	//								HashNode								//
 	//																		//
 	//######################################################################//

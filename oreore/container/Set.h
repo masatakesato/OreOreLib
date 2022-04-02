@@ -19,16 +19,23 @@
 namespace OreOreLib
 {
 	
+	//######################################################################//
+	//																		//
+	//							Class declaration							//
+	//																		//
+	//######################################################################//
+
+	// SetBase 
 	template < typename T, typename IndexType, typename F, sizeType HashSize >	class SetBase;
 
 
+	// Dynamic Set
 	template < typename T, typename IndexType = MemSizeType, typename F = KeyHash<T> >
 	using Set = SetBase< T, IndexType, F, detail::DynamicSize >;
 
-
+	// Static Set
 	template < typename T, sizeType HashSize, typename IndexType = MemSizeType, typename F = KeyHash<T> >
 	using StaticSet = SetBase< T, IndexType, F, HashSize >;
-
 
 
 
