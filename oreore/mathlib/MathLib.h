@@ -156,7 +156,7 @@ inline const T Log( const T& a, const T& b )
 
 
 template< typename T >
-inline const T Floor( const T& val, const T& unit )
+inline const T Floor( const T& val, const T& unit=1 )
 {
 	return	static_cast<T>( floor( float64( val ) / float64( unit ) ) * float64( unit ) );
 }
@@ -164,18 +164,18 @@ inline const T Floor( const T& val, const T& unit )
 
 
 template< typename T >
-inline const T Ceil( const T& val, const T& unit )
+inline const T Ceil( const T& val, const T& unit=1 )
 {
 	return	static_cast<T>( ceil( float64( val ) / float64( unit ) ) * float64( unit ) );
 }
 
 
 
-template< typename T >
-inline const int fRound( const T& x )
-{
-	return	(int)rintf( x );
-}
+//template< typename T >// Round floating value x to nearest integer
+//inline const int fRound( const T& x )
+//{
+//	return	(int)rintf( x );
+//}
 
 
 

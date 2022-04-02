@@ -81,7 +81,7 @@ int main()
 	tcout << tendl;
 
 	{
-		const StaticArray<const char*, 3> chararray = { "VK_KHR_swapchain", "VK_KHR_swapchain", "VK_KHR_swapchain" };
+		const StaticArray<const char*, 3> chararray = { "VK_KHR_swapchain", "VK_KHR_swapchain_", "VK_KHR_swapchain__" };
 
 		Set< std::string/*, tableSize*/ > set3( chararray.begin(), chararray.end() );
 

@@ -183,7 +183,7 @@ namespace OreOreLib
 
 
 		Set( std::initializer_list<T> ilist )
-			: m_pTable( static_cast<IndexType>( ilist.size() * HashConst::LoadFactor ) )
+			: m_pTable( static_cast<IndexType>( Ceil( ilist.size() / HashConst::MaxLoadFactor ) ) )
 			, m_HashFunc()
 			, m_numElements( 0 )
 		{
@@ -194,7 +194,7 @@ namespace OreOreLib
 
 		template < typename Iter >
 		Set( Iter first, Iter last )
-			: m_pTable( static_cast<IndexType>( (last - first) * HashConst::LoadFactor ) )
+			: m_pTable( static_cast<IndexType>( Ceil( (last - first) / HashConst::MaxLoadFactor ) ) )
 			, m_HashFunc()
 			, m_numElements( 0 )
 		{
@@ -303,7 +303,7 @@ namespace OreOreLib
 		void Put( const T& value )
 		{
 			// Rehash if load facter exceeds limit value
-			if( (float32)(m_numElements + 1) / m_pTable.Length<float32>() > HashConst::LoadFactorLimit )
+			if( (float32)(m_numElements + 1) / m_pTable.Length<float32>() > HashConst::MaxLoadFactor )
 				Rehash();
 
 			// Put value into m_pTable
@@ -327,10 +327,10 @@ namespace OreOreLib
 				else
 					prev->next = entry;
 			}
-			else
-			{
-				//entry->second = value;
-			}
+			//else
+			//{
+			//	//entry->second = value;
+			//}
 
 		}
 
@@ -436,11 +436,8 @@ namespace OreOreLib
 		void Rehash()
 		{
 			// Create new hash table
-			auto newLen = static_cast<IndexType>( ( m_numElements + 1 ) / HashConst::LoadFactor );
-			tcout << _T("Set::Rehash()... ") << m_pTable.Length<int>() << _T("->") << newLen << tendl;
-
-
-			MemoryBase<SetNode<T>*, IndexType>	newTable( newLen );
+			MemoryBase<SetNode<T>*, IndexType>	newTable( (m_numElements + 1) * 2 );
+			tcout << _T("Set::Rehash()... ") << m_pTable.Length() << _T("->") << newTable.Length() << tendl;
 
 			// transfer nodes from m_pTable to newTable
 			for( int i=0; i<m_pTable.Length<int>(); ++i )

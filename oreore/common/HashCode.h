@@ -25,8 +25,7 @@ namespace OreOreLib
 
 	namespace HashConst
 	{
-		const float32 LoadFactor		= 0.7f;
-		const float32 LoadFactorLimit	= 0.75f;
+		const float32 MaxLoadFactor		= 0.75f;
 
 		const uint64 DefaultHashSize	= 16;
 
