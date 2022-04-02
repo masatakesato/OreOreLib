@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testHashMap", "testHashMap\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testHashCode", "testHashCode\testHashCode.vcxproj", "{A71ACC28-687F-4D2B-BF0B-E3F351BD7CE1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testRehash", "testRehash\testRehash.vcxproj", "{D0F8D822-8F4E-40BA-8963-5C3F91B15D63}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testStaticHashMap", "testStaticHashMap\testStaticHashMap.vcxproj", "{11DFA179-5890-47F7-8425-4BA8A1254BEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +25,14 @@ Global
 		{A71ACC28-687F-4D2B-BF0B-E3F351BD7CE1}.Debug|x64.Build.0 = Debug|x64
 		{A71ACC28-687F-4D2B-BF0B-E3F351BD7CE1}.Release|x64.ActiveCfg = Release|x64
 		{A71ACC28-687F-4D2B-BF0B-E3F351BD7CE1}.Release|x64.Build.0 = Release|x64
+		{D0F8D822-8F4E-40BA-8963-5C3F91B15D63}.Debug|x64.ActiveCfg = Debug|x64
+		{D0F8D822-8F4E-40BA-8963-5C3F91B15D63}.Debug|x64.Build.0 = Debug|x64
+		{D0F8D822-8F4E-40BA-8963-5C3F91B15D63}.Release|x64.ActiveCfg = Release|x64
+		{D0F8D822-8F4E-40BA-8963-5C3F91B15D63}.Release|x64.Build.0 = Release|x64
+		{11DFA179-5890-47F7-8425-4BA8A1254BEB}.Debug|x64.ActiveCfg = Debug|x64
+		{11DFA179-5890-47F7-8425-4BA8A1254BEB}.Debug|x64.Build.0 = Debug|x64
+		{11DFA179-5890-47F7-8425-4BA8A1254BEB}.Release|x64.ActiveCfg = Release|x64
+		{11DFA179-5890-47F7-8425-4BA8A1254BEB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

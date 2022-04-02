@@ -29,22 +29,22 @@ int main()
 	//}
 
 
-	// Iterative move constructor test
-	{
-		Set<tstring> set1;
+	//// Iterative move constructor test
+	//{
+	//	Set<tstring> set1;
 
-		while( 1 )
-		{
-			Set<tstring> set_tmp; 
-			set_tmp.Put( _T("Value1") );
+	//	while( 1 )
+	//	{
+	//		Set<tstring> set_tmp; 
+	//		set_tmp.Put( _T("Value1") );
 
-			Set<tstring> set_tmp2;
-			set_tmp2.Put( _T("Value2") );	
+	//		Set<tstring> set_tmp2;
+	//		set_tmp2.Put( _T("Value2") );	
 
-			set1 = std::move(set_tmp);
-			set1 = std::move(set_tmp2);
-		}
-	}
+	//		set1 = std::move(set_tmp);
+	//		set1 = std::move(set_tmp2);
+	//	}
+	//}
 
 
 

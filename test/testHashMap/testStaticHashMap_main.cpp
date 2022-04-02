@@ -10,11 +10,13 @@ using namespace OreOreLib;
 
 int main()
 {
-	HashMap<tstring, int> hmap2;
+	const size_t hashSize = 10;
+
+	StaticHashMap<tstring, int, hashSize> hmap2;
 
 	//while(1)
 	{
-		HashMap<tstring, int> hmap;
+		StaticHashMap<tstring, int, hashSize> hmap;
 
 
 		hmap.Put( _T("Value1"), -6666 );
@@ -66,7 +68,7 @@ int main()
 //	Pair<float, float> a = { {0.5f, 0.5f} };
 
 //	std::initializer_list< int > aaa;
-	const HashMap< tstring, float, uint8 > hmap3 =
+	const StaticHashMap< tstring, float, hashSize, uint8 > hmap3 =
 	{
 		{ _T("aaa"), 0.1f },	//Pair<tstring, float>{ _T("aaa"), 0.1f },
 		{ _T("bbb"), -5.5f }	//Pair<tstring, float>{ _T("bbb"), -5.5f }

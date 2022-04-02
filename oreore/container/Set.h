@@ -75,7 +75,7 @@ namespace OreOreLib
 
 	//######################################################################//
 	//																		//
-	//							Iterator for Set							//
+	//							Iterator for SetBase						//
 	//																		//
 	//######################################################################//
 
@@ -102,7 +102,7 @@ namespace OreOreLib
 		{
 			if( pmap )
 			{
-				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length() )
+				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length<IndexType>() )
 				{
 					m_pCurrentNode = pmap->m_pTable[ m_TableIndex++ ];
 				}
@@ -128,7 +128,7 @@ namespace OreOreLib
 		{
 			m_pCurrentNode = m_pCurrentNode->next;
 
-			while( m_pCurrentNode==nullptr && m_TableIndex < m_pMap->m_pTable.Length() )
+			while( m_pCurrentNode==nullptr && m_TableIndex < m_pMap->m_pTable.Length<IndexType>() )
 				m_pCurrentNode = m_pMap->m_pTable[ m_TableIndex++ ];
 
 			return *this;
@@ -457,7 +457,6 @@ namespace OreOreLib
 		IndexType							m_numElements;
 
 
-
 		void Rehash()
 		{
 			// Create new hash table
@@ -473,7 +472,7 @@ namespace OreOreLib
 				{
 					SetNode<T>* prev = entry;
 					entry = entry->next;
-					if( TransferSetNode( prev, newTable ) == false )
+					if( TransferNode( prev, newTable ) == false )
 						SafeDelete( prev );
 				}
 
@@ -484,10 +483,10 @@ namespace OreOreLib
 		}
 
 
-		bool TransferSetNode( SetNode<T>* node, ArrayImpl<SetNode<T>*, IndexType>& pTable )
+		bool TransferNode( SetNode<T>* node, ArrayImpl<SetNode<T>*, IndexType>& pTable )
 		{
 			// Put value into pTable
-			IndexType hashValue = m_HashFunc.Get<IndexType>( node->value, pTable.Length<IndexType>() );
+			IndexType hashValue = m_HashFunc.Get<IndexType>( node->value, pTable.Length() );
 			SetNode<T>* prev = nullptr;
 			SetNode<T>* entry = pTable[ hashValue ];
 
@@ -666,9 +665,9 @@ namespace OreOreLib
 			{
 				Clear();
 
+				memcpy( m_pTable.begin(), obj.m_pTable.begin(), sizeof (SetNode<T>*) * HashSize );
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
-				memcpy( m_pTable.begin(), obj.m_pTable.begin(), sizeof (SetNode<T>*) * HashSize );
 
 				memset( obj.m_pTable.begin(), 0, sizeof (SetNode<T>*) * HashSize );
 				obj.m_numElements = 0;
@@ -800,7 +799,7 @@ namespace OreOreLib
 
 	private:
 
-		StaticArrayImpl< SetNode<T>*, HashSize, IndexType >	m_pTable;
+		StaticArrayImpl<SetNode<T>*, HashSize, IndexType>	m_pTable;
 		F													m_HashFunc;
 		IndexType											m_numElements;
 

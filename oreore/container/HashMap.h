@@ -4,7 +4,9 @@
 #include	<exception>
 
 #include	"../common/HashCode.h"
-#include	"../memory/Memory.h"
+
+#include	"Array.h"
+#include	"StaticArray.h"
 #include	"Pair.h"
 
 
@@ -52,11 +54,8 @@ namespace OreOreLib
 
 	// Static HashMap
 	template < typename K, typename V, sizeType HashSize, typename IndexType = MemSizeType, typename F = KeyHash<K> >
-	using StaticHashMap = SetBase< K, V, IndexType, F, HashSize >;
+	using StaticHashMap = HashMapBase< K, V, IndexType, F, HashSize >;
 
-
-TODO: まずはHashMapを実装して動かす.SetからRehash処理を移植する
-TODO: copy/move assignment operator に Clear();を追加してテストする
 
 
 
@@ -89,11 +88,11 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 
 
-		template < typename K, typename V, typename IndexType, typename F >
+		template < typename K, typename V, typename IndexType, typename F, sizeType HashSize >
 		friend class HashMapIterator;
 
-		template < typename K, typename V, typename IndexType, typename F >
-		friend class HashMap;
+		template < typename K, typename V, typename IndexType, typename F, sizeType HashSize >
+		friend class HashMapBase;
 
 	};
 
@@ -102,17 +101,17 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 	//######################################################################//
 	//																		//
-	//						Iterator for HashMap							//
+	//						Iterator for HashMapBase						//
 	//																		//
 	//######################################################################//
 
-	template< typename K, typename V, typename IndexType, typename F >
+	template< typename K, typename V, typename IndexType, typename F, sizeType HashSize >
 	class HashMapIterator
 	{
 	public:
 
 		// Default constructor
-		HashMapIterator( size_t tableSize )
+		HashMapIterator()
 			: m_pMap( nullptr )
 			, m_pCurrentNode( nullptr )
 			, m_TableIndex( 0 )
@@ -122,14 +121,14 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 
 		// Constructor
-		HashMapIterator( HashMap<K, V, IndexType, F>* pmap )
+		HashMapIterator( HashMapBase<K, V, IndexType, F, HashSize>* pmap )
 			: m_pMap( pmap )
 			, m_pCurrentNode( nullptr )
 			, m_TableIndex( 0 )
 		{
 			if( pmap )
 			{
-				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length() )
+				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length<IndexType>() )
 				{
 					m_pCurrentNode = pmap->m_pTable[ m_TableIndex++ ];
 				}
@@ -155,7 +154,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		{
 			m_pCurrentNode = m_pCurrentNode->next;
 
-			while( m_pCurrentNode==nullptr && m_TableIndex < m_pMap->m_pTable.Length() )
+			while( m_pCurrentNode==nullptr && m_TableIndex < m_pMap->m_pTable.Length<IndexType>() )
 				m_pCurrentNode = m_pMap->m_pTable[ m_TableIndex++ ];
 
 			return *this;
@@ -186,7 +185,6 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-
 		bool operator==( const HashMapIterator& it ) const
 		{
 			return m_pCurrentNode == it.m_pCurrentNode;
@@ -202,7 +200,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 	private:
 
-		HashMap<K, V, IndexType, F >*	m_pMap;
+		HashMapBase<K, V, IndexType, F, HashSize>*	m_pMap;
 		HashNode<K, V>*					m_pCurrentNode;
 		IndexType						m_TableIndex;
 
@@ -213,20 +211,19 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 	//######################################################################//
 	//																		//
-	//								HashMap									//
+	//						HashMap(Dynamic hash size)						//
 	//																		//
 	//######################################################################//
 
-	template < typename K, typename V, typename IndexType = MemSizeType, typename F = KeyHash<K> >
-	class HashMap
+	template < typename K, typename V, typename IndexType, typename F >
+	class HashMapBase< K, V, IndexType, F, detail::DynamicSize >
 	{
-		//using HashNodePtr = HashNode<K, V>*;
-		using Iterator = HashMapIterator<K, V, IndexType, F>;
+		using Iter = HashMapIterator< K, V, IndexType, F, detail::DynamicSize >;
 
 	public:
 
 		// Default constructor
-		HashMap( size_t hashSize=HashConst::DefaultHashSize )
+		HashMapBase( size_t hashSize=HashConst::DefaultHashSize )
 			: m_pTable( static_cast<IndexType>(hashSize) )
 			, m_HashFunc()
 			, m_numElements( 0 )
@@ -237,7 +234,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 		// Constructor
 		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same< Pair<K, V>, Args...>::value >* = nullptr >
-		//HashMap( Args const & ... args )
+		//HashMapBase( Args const & ... args )
 		//	: m_pTable()
 		//	, m_HashFunc()
 		//	, m_numElements( 0 )
@@ -246,27 +243,25 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		//}
 
 
-
-		HashMap( std::initializer_list< Pair<K, V> > list )
+		HashMapBase( std::initializer_list< Pair<K, V> > list )
 			: m_pTable( static_cast<IndexType>( list.size() ) )
 			, m_HashFunc()
-			, m_numElements( int(list.size()) )
+			, m_numElements( 0 )
 		{
-
 			for( const auto& pair : list )
 				Put( pair.first, pair.second );
 		}
 
 
 		// Destructor
-		~HashMap()
+		~HashMapBase()
 		{
 			Clear();
 		}
 
 
 		// Copy constructor
-		HashMap( const HashMap& obj )
+		HashMapBase( const HashMapBase& obj )
 			: m_pTable( obj.m_pTable.Length() )
 			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
@@ -295,8 +290,8 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 
 		// Move constructor
-		HashMap( HashMap&& obj )
-			: m_pTable( (MemoryBase<HashNode<K, V>*, IndexType> &&) obj.m_pTable )
+		HashMapBase( HashMapBase&& obj )
+			: m_pTable( (ArrayImpl<HashNode<K, V>*, IndexType>&&) obj.m_pTable )
 			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
 		{
@@ -305,10 +300,12 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 
 		// Copy Assignment opertor =
-		HashMap& operator=( const HashMap& obj )
+		HashMapBase& operator=( const HashMapBase& obj )
 		{
 			if( this != &obj )
 			{
+				Clear();
+
 				m_pTable.Init( obj.m_pTable.Length() );
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
@@ -338,13 +335,13 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 
 		// Move assignment opertor =
-		HashMap& operator=( HashMap&& obj )
+		HashMapBase& operator=( HashMapBase&& obj )
 		{
 			if( this != &obj )
 			{
 				Clear();
 
-				m_pTable		= (MemoryBase<HashNode<K, V>*, IndexType> &&) obj.m_pTable;
+				m_pTable		= (ArrayImpl<HashNode<K, V>*, IndexType>&&) obj.m_pTable;
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
 
@@ -355,7 +352,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-		// Subscription operator for read only.( called if HashMap is const )
+		// Subscription operator for read only.( called if HashMapBase is const )
 		inline const V& operator[]( const K& key ) const&
 		{
 			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
@@ -371,7 +368,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-		// Subscription operator for read-write.( called if HashMap is non-const )
+		// Subscription operator for read-write.( called if HashMapBase is non-const )
 		inline V& operator[]( const K& key ) &
 		{
 			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
@@ -401,7 +398,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-		// Subscription operator. ( called by following cases: "T a = HashMap<tstring, int, T>()[n]", "auto&& a = HashMap<tstring, int, T>()[n]" )
+		// Subscription operator. ( called by following cases: "T a = HashMapBase<tstring, int, T>()[n]", "auto&& a = HashMapBase<tstring, int, T>()[n]" )
 		inline V operator[]( const K& key ) const&&
 		{
 			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
@@ -417,8 +414,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-
-		// At method for non-const HashMap 
+		// At method for non-const HashMapBase 
 		V& At( const K& key )
 		{
 			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
@@ -434,8 +430,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-
-		// At method for const HashMap 
+		// At method for const HashMapBase 
 		const V& At( const K& key ) const
 		{
 			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
@@ -449,7 +444,6 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 
 			return entry->second;
 		}
-
 
 
 		bool Get( const K& key, V& value )
@@ -567,7 +561,7 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-		int Length() const
+		IndexType Length() const
 		{
 			return m_numElements;
 		}
@@ -579,29 +573,486 @@ TODO: copy/move assignment operator に Clear();を追加してテストする
 		}
 
 
-		Iterator begin() const
+		Iter begin() const
 		{
-			return Iterator( (HashMap*)this );
+			return Iter( (HashMapBase*)this );
 		}
 
 
-		Iterator end() const
+		Iter end() const
 		{
-			return Iterator( nullptr );
+			return Iter( nullptr );
 		}
 
 
 
 	private:
 
-		MemoryBase<HashNode<K, V>*, IndexType>	m_pTable;
+		ArrayImpl<HashNode<K, V>*, IndexType>	m_pTable;
 		F										m_HashFunc;
 		IndexType								m_numElements;
 
 
-		friend class Iterator;
+		void Rehash()
+		{
+			// Create new hash table
+			ArrayImpl<HashNode<K, V>*, IndexType>	newTable( (m_numElements + 1) * 2 );
+			tcout << _T("HashMapBase::Rehash()... ") << m_pTable.Length() << _T("->") << newTable.Length() << tendl;
+
+			// transfer nodes from m_pTable to newTable
+			for( int i=0; i<m_pTable.Length<int>(); ++i )
+			{
+				HashNode<K, V>* entry = m_pTable[i];
+
+				while( entry )
+				{
+					HashNode<K, V>* prev = entry;
+					entry = entry->next;
+					if( TransferNode( prev, newTable ) == false )
+						SafeDelete( prev );
+				}
+
+				m_pTable[i] = nullptr;
+			}
+
+			m_pTable = (ArrayImpl<HashNode<K, V>*, IndexType>&&)newTable;
+		}
+
+
+		bool TransferNode( HashNode<K, V>* node, ArrayImpl<HashNode<K, V>*, IndexType>& pTable )
+		{
+			// Rehash if load facter exceeds limit value
+			if( (float32)(m_numElements + 1) / m_pTable.Length<float32>() > HashConst::MaxLoadFactor )
+				Rehash();
+
+			// Put value into pTable
+			IndexType hashValue = m_HashFunc.Get<IndexType>( node->value, pTable.Length<IndexType>() );
+			HashNode<K, V>* prev = nullptr;
+			HashNode<K, V>* entry = pTable[ hashValue ];
+
+			// move to last element
+			while( entry != nullptr && entry->value != node->value )
+			{
+				prev = entry;
+				entry = entry->next;
+			}
+
+			if( entry == nullptr )
+			{
+				// disconnect node from current linklist
+				node->next = nullptr;
+
+				if( prev == nullptr )
+					pTable[ hashValue ] = node;
+				else
+					prev->next = node;
+
+				return true;
+			}
+
+			return false;
+		}
+
+
+		friend class Iter;
 
 	};
+
+
+
+
+	//######################################################################//
+	//																		//
+	//						HashMap( Static hash size )						//
+	//																		//
+	//######################################################################//
+
+	template < typename K, typename V, sizeType HashSize, typename IndexType, typename F >
+	class HashMapBase< K, V, IndexType, F, HashSize >
+	{
+		using Iter = HashMapIterator< K, V, IndexType, F, HashSize >;
+
+	public:
+
+		// Default constructor
+		HashMapBase()
+			: m_pTable()
+			, m_HashFunc()
+			, m_numElements( 0 )
+		{
+
+		}
+
+
+		// Constructor
+		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same< Pair<K, V>, Args...>::value >* = nullptr >
+		//HashMapBase( Args const & ... args )
+		//	: m_pTable()
+		//	, m_HashFunc()
+		//	, m_numElements( 0 )
+		//{
+
+		//}
+
+
+
+		HashMapBase( std::initializer_list< Pair<K, V> > list )
+			: m_pTable()
+			, m_HashFunc()
+			, m_numElements( 0 )
+		{
+			for( const auto& pair : list )
+				Put( pair.first, pair.second );
+		}
+
+
+		// Destructor
+		~HashMapBase()
+		{
+			Clear();
+		}
+
+
+		// Copy constructor
+		HashMapBase( const HashMapBase& obj )
+			: m_pTable()
+			, m_HashFunc( obj.m_HashFunc )
+			, m_numElements( obj.m_numElements )
+		{
+
+			for( int i=0; i<HashSize; ++i )
+			{
+				HashNode<K, V>* objentry = obj.m_pTable[i];
+				HashNode<K, V>* entry = m_pTable[i];
+
+				while( objentry )
+				{
+					HashNode<K, V>* newNode = new HashNode<K, V>( objentry->first, objentry->second );
+	
+					if( !entry )
+						m_pTable[i] = newNode;
+					else
+						entry->next = newNode;
+
+					entry = newNode;
+					objentry = objentry->next;
+				}
+			}
+
+		}
+
+
+		// Move constructor
+		HashMapBase( HashMapBase&& obj )
+			: m_HashFunc( obj.m_HashFunc )
+			, m_numElements( obj.m_numElements )
+		{
+			memcpy( m_pTable.begin(), obj.m_pTable.begin(), sizeof (HashNode<K,V>*) * HashSize );
+
+			memset( obj.m_pTable.begin(), 0, sizeof (HashNode<K,V>*) * HashSize );
+			obj.m_numElements = 0;
+		}
+
+
+		// Copy Assignment opertor =
+		HashMapBase& operator=( const HashMapBase& obj )
+		{
+			if( this != &obj )
+			{
+				Clear();
+
+				m_HashFunc		= obj.m_HashFunc;
+				m_numElements	= obj.m_numElements;
+
+				for( int i=0; i<HashSize; ++i )
+				{
+					HashNode<K, V>* objentry = obj.m_pTable[i];
+					HashNode<K, V>* entry = m_pTable[i];
+
+					while( objentry )
+					{
+						HashNode<K, V>* newNode = new HashNode<K, V>( objentry->first, objentry->second );
+	
+						if( !entry )
+							m_pTable[i] = newNode;
+						else
+							entry->next = newNode;
+
+						entry = newNode;
+						objentry = objentry->next;
+					}
+				}
+			}
+		
+			return *this;
+		}
+
+
+		// Move assignment opertor =
+		HashMapBase& operator=( HashMapBase&& obj )
+		{
+			if( this != &obj )
+			{
+				Clear();
+
+				memcpy( m_pTable.begin(), obj.m_pTable, sizeof (HashNode<K,V>*) * HashSize );
+				m_HashFunc		= obj.m_HashFunc;
+				m_numElements	= obj.m_numElements;
+
+				memset( obj.m_pTable.begin(), 0, sizeof (HashNode<K,V>*) * HashSize );
+				obj.m_numElements = 0;
+			}
+
+			return *this;
+		}
+
+
+		// Subscription operator for read only.( called if HashMapBase is const )
+		inline const V& operator[]( const K& key ) const&
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			while( entry && entry->first != key )
+				entry = entry->next;
+
+			if( entry==nullptr )
+				throw OutOfBoundsException();
+
+			return entry->second;
+		}
+
+
+		// Subscription operator for read-write.( called if HashMapBase is non-const )
+		inline V& operator[]( const K& key ) &
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+			HashNode<K, V>* prev = entry;
+
+			while( entry && entry->first != key )
+			{
+				prev = entry;
+				entry = entry->next;
+			}
+
+
+			// create new hasnode if key does not exist.
+			if( !entry )
+			{
+				++m_numElements;
+				entry = new HashNode<K, V>( key );
+
+				if( prev == nullptr )
+					m_pTable[ hashValue ] = entry;
+				else
+					prev->next = entry;
+			}
+			
+			return entry->second;
+		}
+
+
+		// Subscription operator. ( called by following cases: "T a = HashMapBase<tstring, int, T>()[n]", "auto&& a = HashMapBase<tstring, int, T>()[n]" )
+		inline V operator[]( const K& key ) const&&
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			while( entry && entry->first != key )
+				entry = entry->next;
+
+			if( entry==nullptr )
+				throw OutOfBoundsException();
+
+			return entry->second;
+		}
+
+
+		// At method for non-const HashMapBase 
+		V& At( const K& key )
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			while( entry && entry->first != key )
+				entry = entry->next;
+
+			if( entry==nullptr )
+				throw OutOfBoundsException();
+
+			return entry->second;
+		}
+
+
+		// At method for const HashMapBase 
+		const V& At( const K& key ) const
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			while( entry && entry->first != key )
+				entry = entry->next;
+
+			if( entry==nullptr )
+				throw OutOfBoundsException();
+
+			return entry->second;
+		}
+
+
+		bool Get( const K& key, V& value )
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			while( entry )
+			{
+				if( entry->first == key )
+				{
+					value = entry->second;
+					return true;
+				}
+
+				entry = entry->next;
+			}
+
+			return false;
+		}
+
+
+		void Put( const K& key, const V& value )
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* prev = nullptr;
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			while( entry != nullptr && entry->first != key )
+			{
+				prev = entry;
+				entry = entry->next;
+			}
+
+			if( entry == nullptr )
+			{
+				++m_numElements;
+				entry = new HashNode<K, V>( key, value );
+
+				if( prev == nullptr )
+					m_pTable[ hashValue ] = entry;
+				else
+					prev->next = entry;
+			}
+			else
+			{
+				entry->second = value;
+			}
+
+		}
+
+
+		void Remove( const K& key )
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* prev = nullptr;
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			while( entry != nullptr && entry->first != key )
+			{
+				prev = entry;
+				entry = entry->next;
+			}
+
+			if( entry == nullptr )
+			{
+				return;
+			}
+			else
+			{
+				if( prev == nullptr )
+					m_pTable[ hashValue ] = entry->next;
+				else
+					prev->next = entry->next;
+
+				SafeDelete( entry );
+				--m_numElements;
+			}
+
+		}
+
+
+		void Clear()
+		{
+			for( int i=0; i<HashSize; ++i )
+			{
+				HashNode<K, V>* entry = m_pTable[i];
+
+				while( entry )
+				{
+					HashNode<K, V>* prev = entry;
+					entry = entry->next;
+					SafeDelete( prev );
+				}
+
+				m_pTable[i] = nullptr;
+			}
+
+			m_numElements = 0;
+		}
+
+
+		bool Exists( const K& key ) const
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( key, m_pTable.Length() );
+			HashNode<K, V>* entry = m_pTable[ hashValue ];
+
+			for( auto entry = m_pTable[ hashValue ]; entry != nullptr; entry=entry->next )
+			{
+				if( entry->first == key )
+					return true;
+			}
+
+			return false;
+		}
+
+
+		IndexType Length() const
+		{
+			return m_numElements;
+		}
+
+
+		bool Empty() const
+		{
+			return m_numElements<=0;
+		}
+
+
+		Iter begin() const
+		{
+			return Iter( (HashMapBase*)this );
+		}
+
+
+		Iter end() const
+		{
+			return Iter( nullptr );
+		}
+
+
+
+	private:
+
+		StaticArrayImpl<HashNode<K, V>*, HashSize, IndexType>	m_pTable;
+		F														m_HashFunc;
+		IndexType												m_numElements;
+
+
+		friend class Iter;
+
+	};
+
+
 
 
 }// end of namespace

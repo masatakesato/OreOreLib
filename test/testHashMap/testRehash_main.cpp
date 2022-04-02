@@ -1,5 +1,5 @@
 ﻿#include	<oreore/common/TString.h>
-#include	<oreore/container/Set.h>
+#include	<oreore/container/HashMap.h>
 
 using namespace OreOreLib;
 
@@ -7,23 +7,23 @@ using namespace OreOreLib;
 
 int main()
 {
-	Set<int> set;
+	HashMap<tstring, int> hashMap;
 
 	while(1)
 	{
 		for( int i=0; i<24; ++i )
 		{
 			tcout << i << tendl;
-			set.Put( i );
+			hashMap.Put( to_tstring(i), i );
 		}
 
 
-		for( auto& val : set )
+		for( auto& val : hashMap )
 		{
-			tcout << val << _T(", Exists: ") << set.Exists( val ) << tendl;
+			tcout << val.first << _T(", Exists: ") << hashMap.Exists( val.first ) << tendl;
 		}
 
-		set.Clear();
+		hashMap.Clear();
 	}
 
 	return 0;
