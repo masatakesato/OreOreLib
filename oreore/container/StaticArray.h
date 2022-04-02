@@ -177,12 +177,6 @@ namespace OreOreLib
 		}
 
 
-		IndexType Length() const
-		{
-			return static_cast<IndexType>(Size);
-		}
-
-
 		inline void Swap( IndexType i, IndexType j )
 		{
 			assert( i>=0 && i<this->length && j>=0 && j<this->length );

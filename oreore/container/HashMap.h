@@ -795,7 +795,7 @@ namespace OreOreLib
 			{
 				Clear();
 
-				memcpy( m_pTable.begin(), obj.m_pTable, sizeof (HashNode<K,V>*) * HashSize );
+				memcpy( m_pTable.begin(), obj.m_pTable.begin(), sizeof (HashNode<K,V>*) * HashSize );
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
 

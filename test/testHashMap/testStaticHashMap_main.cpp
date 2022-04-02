@@ -14,7 +14,45 @@ int main()
 
 	StaticHashMap<tstring, int, hashSize> hmap2;
 
-	//while(1)
+
+	//// Iterative copy constructor test
+	//{
+	//	StaticHashMap<tstring, int, hashSize> hmap1;
+
+	//	while( 1 )
+	//	{
+	//		StaticHashMap<tstring, int, hashSize> hmap_tmp; 
+	//		hmap_tmp.Put( _T("Value1"), 1 );
+
+	//		StaticHashMap<tstring, int, hashSize> hmap_tmp2;
+	//		hmap_tmp2.Put( _T("Value2"), 2 );	
+
+	//		hmap1 = hmap_tmp;
+	//		hmap1 = hmap_tmp2;
+	//	}
+	//}
+
+
+	//// Iterative move constructor test
+	//{
+	//	StaticHashMap<tstring, int, hashSize> hmap1;
+
+	//	while( 1 )
+	//	{
+	//		StaticHashMap<tstring, int, hashSize> hmap_tmp; 
+	//		hmap_tmp.Put( _T("Value1"), 1 );
+
+	//		StaticHashMap<tstring, int, hashSize> hmap_tmp2;
+	//		hmap_tmp2.Put( _T("Value2"), 2 );	
+
+	//		hmap1 = std::move(hmap_tmp);
+	//		hmap1 = std::move(hmap_tmp2);
+	//	}
+	//}
+
+
+
+	while(1)
 	{
 		StaticHashMap<tstring, int, hashSize> hmap;
 
