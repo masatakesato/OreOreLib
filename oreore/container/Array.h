@@ -5,7 +5,6 @@
 #include	<limits>
 
 #include	"../common/TString.h"
-//#include	"../memory/Memory.h"
 #include	"../mathlib/Random.h"
 
 #include	"ArrayBase.h"

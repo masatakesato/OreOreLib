@@ -4,7 +4,9 @@
 #include	<exception>
 
 #include	"../common/HashCode.h"
-#include	"../memory/Memory.h"
+
+#include	"Array.h"
+#include	"StaticArray.h"
 
 
 
@@ -16,6 +18,20 @@
 
 namespace OreOreLib
 {
+	
+	template < typename T, typename IndexType, typename F, sizeType HashSize >	class SetBase;
+
+
+	template < typename T, typename IndexType = MemSizeType, typename F = KeyHash<T> >
+	using Set = SetBase< T, IndexType, F, detail::DynamicSize >;
+
+
+	template < typename T, sizeType HashSize, typename IndexType = MemSizeType, typename F = KeyHash<T> >
+	using StaticSet = SetBase< T, IndexType, F, HashSize >;
+
+
+
+
 
 	//######################################################################//
 	//																		//
@@ -39,11 +55,11 @@ namespace OreOreLib
 
 
 
-		template < typename T, typename IndexType, typename F >
+		template < typename T, typename IndexType, typename F, sizeType HashSize >
 		friend class SetIterator;
 
-		template < typename T, typename IndexType, typename F >
-		friend class Set;
+		template < typename T, typename IndexType, typename F, sizeType HashSize >
+		friend class SetBase;
 
 	};
 
@@ -56,7 +72,7 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template< typename T, typename IndexType, typename F >
+	template< typename T, typename IndexType, typename F, sizeType HashSize >
 	class SetIterator
 	{
 	public:
@@ -72,14 +88,14 @@ namespace OreOreLib
 
 
 		// Constructor
-		SetIterator( Set<T, IndexType, F >* pmap )
+		SetIterator( SetBase<T, IndexType, F, HashSize >* pmap )
 			: m_pMap( pmap )
 			, m_pCurrentNode( nullptr )
 			, m_TableIndex( 0 )			
 		{
 			if( pmap )
 			{
-				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length<IndexType>() )
+				while( m_pCurrentNode==nullptr && m_TableIndex < pmap->m_pTable.Length() )
 				{
 					m_pCurrentNode = pmap->m_pTable[ m_TableIndex++ ];
 				}
@@ -139,7 +155,7 @@ namespace OreOreLib
 
 	private:
 
-		Set<T, IndexType, F>*	m_pMap;
+		SetBase<T, IndexType, F, HashSize>*	m_pMap;
 		SetNode<T>*				m_pCurrentNode;
 		IndexType				m_TableIndex;
 
@@ -150,19 +166,19 @@ namespace OreOreLib
 
 	//######################################################################//
 	//																		//
-	//									Set									//
+	//						Set(Dynamic hash size)							//
 	//																		//
 	//######################################################################//
 
-	template < typename T, typename IndexType = MemSizeType, typename F = KeyHash<T> >
-	class Set
+	template < typename T, typename IndexType, typename F >
+	class SetBase< T, IndexType, F, detail::DynamicSize >
 	{
-		using Iter = SetIterator< T, IndexType, F >;
+		using Iter = SetIterator< T, IndexType, F, detail::DynamicSize >;
 
 	public:
 
 		// Default constructor
-		Set( size_t hashSize=HashConst::DefaultHashSize )
+		SetBase( size_t hashSize=HashConst::DefaultHashSize )
 			: m_pTable( static_cast<IndexType>(hashSize) )
 			, m_HashFunc()
 			, m_numElements( 0 )
@@ -173,7 +189,7 @@ namespace OreOreLib
 
 		// Constructor
 		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same< Pair<T>, Args...>::value >* = nullptr >
-		//Set( Args const & ... args )
+		//SetBase( Args const & ... args )
 		//	: m_pTable()
 		//	, m_HashFunc()
 		//	, m_numElements( 0 )
@@ -182,7 +198,7 @@ namespace OreOreLib
 		//}
 
 
-		Set( std::initializer_list<T> ilist )
+		SetBase( std::initializer_list<T> ilist )
 			: m_pTable( static_cast<IndexType>( Ceil( ilist.size() / HashConst::MaxLoadFactor ) ) )
 			, m_HashFunc()
 			, m_numElements( 0 )
@@ -193,7 +209,7 @@ namespace OreOreLib
 
 
 		template < typename Iter >
-		Set( Iter first, Iter last )
+		SetBase( Iter first, Iter last )
 			: m_pTable( static_cast<IndexType>( Ceil( (last - first) / HashConst::MaxLoadFactor ) ) )
 			, m_HashFunc()
 			, m_numElements( 0 )
@@ -204,14 +220,14 @@ namespace OreOreLib
 
 
 		// Destructor
-		~Set()
+		~SetBase()
 		{
 			Clear();
 		}
 
 
 		// Copy constructor
-		Set( const Set& obj )
+		SetBase( const SetBase& obj )
 			: m_pTable( obj.m_pTable.Length() )
 			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
@@ -240,8 +256,8 @@ namespace OreOreLib
 
 
 		// Move constructor
-		Set( Set&& obj )
-			: m_pTable( (MemoryBase<SetNode<T>*, IndexType>)obj.m_pTable )
+		SetBase( SetBase&& obj )
+			: m_pTable( (ArrayImpl<SetNode<T>*, IndexType>)obj.m_pTable )
 			, m_HashFunc( obj.m_HashFunc )
 			, m_numElements( obj.m_numElements )
 		{
@@ -250,10 +266,12 @@ namespace OreOreLib
 
 
 		// Copy Assignment opertor =
-		Set& operator=( const Set& obj )
+		SetBase& operator=( const SetBase& obj )
 		{
 			if( this != &obj )
 			{
+				Clear();
+
 				m_pTable.Init( obj.m_pTable.Length() );
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
@@ -283,13 +301,13 @@ namespace OreOreLib
 
 
 		// Move assignment opertor =
-		Set& operator=( Set&& obj )
+		SetBase& operator=( SetBase&& obj )
 		{
 			if( this != &obj )
 			{
 				Clear();
 
-				m_pTable		= (MemoryBase<SetNode<T>*, IndexType>&&)obj.m_pTable;
+				m_pTable		= (ArrayImpl<SetNode<T>*, IndexType>&&)obj.m_pTable;
 				m_HashFunc		= obj.m_HashFunc;
 				m_numElements	= obj.m_numElements;
 
@@ -400,7 +418,7 @@ namespace OreOreLib
 		}
 
 
-		int Length() const
+		IndexType Length() const
 		{
 			return m_numElements;
 		}
@@ -414,7 +432,7 @@ namespace OreOreLib
 
 		Iter begin() const
 		{
-			return Iter( (Set*)this );
+			return Iter( (SetBase*)this );
 		}
 
 
@@ -427,7 +445,7 @@ namespace OreOreLib
 
 	private:
 
-		MemoryBase<SetNode<T>*, IndexType>	m_pTable;
+		ArrayImpl<SetNode<T>*, IndexType>	m_pTable;
 		F									m_HashFunc;
 		IndexType							m_numElements;
 
@@ -436,8 +454,8 @@ namespace OreOreLib
 		void Rehash()
 		{
 			// Create new hash table
-			MemoryBase<SetNode<T>*, IndexType>	newTable( (m_numElements + 1) * 2 );
-			tcout << _T("Set::Rehash()... ") << m_pTable.Length() << _T("->") << newTable.Length() << tendl;
+			ArrayImpl<SetNode<T>*, IndexType>	newTable( (m_numElements + 1) * 2 );
+			tcout << _T("SetBase::Rehash()... ") << m_pTable.Length() << _T("->") << newTable.Length() << tendl;
 
 			// transfer nodes from m_pTable to newTable
 			for( int i=0; i<m_pTable.Length<int>(); ++i )
@@ -455,14 +473,14 @@ namespace OreOreLib
 				m_pTable[i] = nullptr;
 			}
 
-			m_pTable = (MemoryBase<SetNode<T>*, IndexType>&&)newTable;
+			m_pTable = (ArrayImpl<SetNode<T>*, IndexType>&&)newTable;
 		}
 
 
-		bool TransferSetNode( SetNode<T>* node, MemoryBase<SetNode<T>*, IndexType>& pTable )
+		bool TransferSetNode( SetNode<T>* node, ArrayImpl<SetNode<T>*, IndexType>& pTable )
 		{
 			// Put value into pTable
-			IndexType hashValue = m_HashFunc.Get<IndexType>( node->value, pTable.Length() );
+			IndexType hashValue = m_HashFunc.Get<IndexType>( node->value, pTable.Length<IndexType>() );
 			SetNode<T>* prev = nullptr;
 			SetNode<T>* entry = pTable[ hashValue ];
 
@@ -490,9 +508,294 @@ namespace OreOreLib
 		}
 
 
+		friend class Iter;
+
+	};
 
 
 
+
+	//######################################################################//
+	//																		//
+	//						Set(static hash size)							//
+	//																		//
+	//######################################################################//
+
+	template < typename T, sizeType HashSize, typename IndexType, typename F >
+	class SetBase< T, IndexType, F, HashSize >
+	{
+		using Iter = SetIterator< T, IndexType, F, HashSize >;
+
+	public:
+
+		// Default constructor
+		SetBase()
+			: m_pTable()
+			, m_HashFunc()
+			, m_numElements( 0 )
+		{
+
+		}
+
+
+		// Constructor
+		//template < typename ... Args, std::enable_if_t< TypeTraits::all_same< Pair<T>, Args...>::value >* = nullptr >
+		//SetBase( Args const & ... args )
+		//	: m_pTable()
+		//	, hashFunc()
+		//	, m_numElements( 0 )
+		//{
+
+		//}
+
+
+		SetBase( std::initializer_list<T> ilist )
+			: m_pTable()
+			, m_HashFunc()
+			, m_numElements( 0 )
+		{
+			for( const auto& val : ilist )
+				Put( val );
+		}
+
+
+		template < typename Iter >
+		SetBase( Iter first, Iter last )
+			: m_pTable()
+			, m_HashFunc()
+			, m_numElements( 0 )
+		{
+			for(; first != last; ++first )
+				Put( *first );
+		}
+
+
+		// Destructor
+		~SetBase()
+		{
+			Clear();
+		}
+
+
+		// Copy constructor
+		SetBase( const SetBase& obj )
+			: m_pTable()
+			, m_HashFunc( obj.m_HashFunc )
+			, m_numElements( obj.m_numElements )
+		{
+
+			for( int i=0; i<HashSize; ++i )
+			{
+				SetNode<T>* objentry = obj.m_pTable[i];
+				SetNode<T>* entry = m_pTable[i];
+
+				while( objentry )
+				{
+					SetNode<T>* newNode = new SetNode<T>( objentry->value );
+	
+					if( !entry )
+						m_pTable[i] = newNode;
+					else
+						entry->next = newNode;
+
+					entry = newNode;
+					objentry = objentry->next;
+				}
+			}
+
+		}
+
+
+		// Move constructor
+		SetBase( SetBase&& obj )
+			: m_HashFunc( obj.m_HashFunc )
+			, m_numElements( obj.m_numElements )
+		{
+			memcpy( m_pTable.begin(), obj.m_pTable.begin(), sizeof (SetNode<T>*) * HashSize );
+
+			memset( obj.m_pTable.begin(), 0, sizeof (SetNode<T>*) * HashSize );
+			obj.m_numElements = 0;
+		}
+
+
+		// Copy Assignment opertor =
+		SetBase& operator=( const SetBase& obj )
+		{
+			if( this != &obj )
+			{
+				Clear();
+
+				m_HashFunc		= obj.m_HashFunc;
+				m_numElements	= obj.m_numElements;
+
+				for( int i=0; i<HashSize; ++i )
+				{
+					SetNode<T>* objentry = obj.m_pTable[i];
+					SetNode<T>* entry = m_pTable[i];
+
+					while( objentry )
+					{
+						SetNode<T>* newNode = new SetNode<T>( objentry->value );
+	
+						if( !entry )
+							m_pTable[i] = newNode;
+						else
+							entry->next = newNode;
+
+						entry = newNode;
+						objentry = objentry->next;
+					}
+				}
+			}
+		
+			return *this;
+		}
+
+
+		// Move assignment opertor =
+		SetBase& operator=( SetBase&& obj )
+		{
+			if( this != &obj )
+			{
+				Clear();
+
+				m_HashFunc		= obj.m_HashFunc;
+				m_numElements	= obj.m_numElements;
+				memcpy( m_pTable.begin(), obj.m_pTable.begin(), sizeof (SetNode<T>*) * HashSize );
+
+				memset( obj.m_pTable.begin(), 0, sizeof (SetNode<T>*) * HashSize );
+				obj.m_numElements = 0;
+			}
+
+			return *this;
+		}
+
+
+		void Put( const T& value )
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( value, m_pTable.Length() );
+			SetNode<T>* prev = nullptr;
+			SetNode<T>* entry = m_pTable[ hashValue ];
+
+			while( entry != nullptr && entry->value != value )
+			{
+				prev = entry;
+				entry = entry->next;
+			}
+
+			if( entry == nullptr )
+			{
+				++m_numElements;
+				entry = new SetNode<T>( value );
+
+				if( prev == nullptr )
+					m_pTable[ hashValue ] = entry;
+				else
+					prev->next = entry;
+			}
+			//else
+			//{
+			//	//entry->second = value;
+			//}
+
+		}
+
+
+		void Remove( const T& value )
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( value, m_pTable.Length() );
+			SetNode<T>* prev = nullptr;
+			SetNode<T>* entry = m_pTable[ hashValue ];
+
+			while( entry != nullptr && entry->value != value )
+			{
+				prev = entry;
+				entry = entry->next;
+			}
+
+			if( entry == nullptr )
+			{
+				return;
+			}
+			else
+			{
+				if( prev == nullptr )
+					m_pTable[ hashValue ] = entry->next;
+				else
+					prev->next = entry->next;
+
+				SafeDelete( entry );
+				--m_numElements;
+			}
+
+		}
+
+
+		void Clear()
+		{
+			for( int i=0; i<HashSize; ++i )
+			{
+				SetNode<T>* entry = m_pTable[i];
+
+				while( entry )
+				{
+					SetNode<T>* prev = entry;
+					entry = entry->next;
+					SafeDelete( prev );
+				}
+
+				m_pTable[i] = nullptr;
+			}
+
+			m_numElements = 0;
+		}
+
+
+		bool Exists( const T& value ) const
+		{
+			IndexType hashValue = m_HashFunc.Get<IndexType>( value, m_pTable.Length() );
+			SetNode<T>* entry = m_pTable[ hashValue ];
+
+			for( auto entry = m_pTable[ hashValue ]; entry != nullptr; entry=entry->next )
+			{
+				if( entry->value == value )
+					return true;
+			}
+
+			return false;
+		}
+
+
+		IndexType Length() const
+		{
+			return m_numElements;
+		}
+
+
+		bool Empty() const
+		{
+			return m_numElements<=0;
+		}
+
+
+		Iter begin() const
+		{
+			return Iter( (SetBase*)this );
+		}
+
+
+		Iter end() const
+		{
+			return Iter( nullptr );
+		}
+
+
+
+	private:
+
+		StaticArrayImpl< SetNode<T>*, HashSize, IndexType >	m_pTable;
+		F													m_HashFunc;
+		IndexType											m_numElements;
 
 
 		friend class Iter;

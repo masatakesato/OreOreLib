@@ -18,8 +18,8 @@ namespace OreOreLib
 
 
 
-	template< typename T, sizeType Size, typename InexType >
-	class ArrayBase< T, Size, InexType, std::enable_if_t< Size!=detail::DynamicSize > > : public MemoryBase<T, InexType>
+	template< typename T, sizeType Size, typename IndexType >
+	class ArrayBase< T, Size, IndexType, std::enable_if_t< Size!=detail::DynamicSize > > : public MemoryBase<T, IndexType>
 	{
 	public:
 
@@ -36,7 +36,7 @@ namespace OreOreLib
 
 
 		// Constructor with external buffer
-		ArrayBase( InexType len, T* pdata )
+		ArrayBase( IndexType len, T* pdata )
 		{
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
@@ -75,7 +75,7 @@ namespace OreOreLib
 
 
 		// Constructor
-		ArrayBase( const MemoryBase<T, InexType> &obj )
+		ArrayBase( const MemoryBase<T, IndexType> &obj )
 		{
 			this->m_pData		= m_Data;
 			this->m_Length		= Size;
@@ -127,7 +127,7 @@ namespace OreOreLib
 			return *this;
 		}
 
-		inline ArrayBase& operator=( const MemoryBase<T, InexType>& obj )
+		inline ArrayBase& operator=( const MemoryBase<T, IndexType>& obj )
 		{
 			if( this != &obj )
 			{
@@ -177,13 +177,13 @@ namespace OreOreLib
 		}
 
 
-		InexType Length() const
+		IndexType Length() const
 		{
-			return Size;
+			return static_cast<IndexType>(Size);
 		}
 
 
-		inline void Swap( InexType i, InexType j )
+		inline void Swap( IndexType i, IndexType j )
 		{
 			assert( i>=0 && i<this->length && j>=0 && j<this->length );
 
@@ -199,7 +199,7 @@ namespace OreOreLib
 		{
 			tcout << typeid(*this).name() << _T(":\n" );
 
-			for( InexType i=0; i<Size; ++i )
+			for( IndexType i=0; i<Size; ++i )
 				tcout << _T("  [") << i << _T("]: ") << m_Data[i] << tendl;
 
 			tcout << tendl;
@@ -238,33 +238,33 @@ namespace OreOreLib
 	private:
 
 		// Delete unnecessary parent methods
-		void Init( InexType ) = delete;
-		void Init( InexType, const T& ) = delete;
+		void Init( IndexType ) = delete;
+		void Init( IndexType, const T& ) = delete;
 		template < typename ... Args >	void Init( Args const & ... args ) = delete;
 		void Release() = delete;
 		//void Clear() = delete;
-		bool Resize( InexType ) = delete;
-		bool Resize( InexType, const T& ) = delete;
-		bool Reserve( InexType ) = delete;
-		bool Extend( InexType ) = delete;
-		bool Shrink( InexType ) = delete;
-		InexType InsertBefore( InexType ) = delete;
-		InexType InsertBefore( InexType, const T& ) = delete;
-		InexType InsertBefore( InexType, T&& ) = delete;
-		InexType InsertAfter( InexType ) = delete;
-		InexType InsertAfter( InexType, const T& ) = delete;
-		InexType InsertAfter( InexType, T&& ) = delete;
+		bool Resize( IndexType ) = delete;
+		bool Resize( IndexType, const T& ) = delete;
+		bool Reserve( IndexType ) = delete;
+		bool Extend( IndexType ) = delete;
+		bool Shrink( IndexType ) = delete;
+		IndexType InsertBefore( IndexType ) = delete;
+		IndexType InsertBefore( IndexType, const T& ) = delete;
+		IndexType InsertBefore( IndexType, T&& ) = delete;
+		IndexType InsertAfter( IndexType ) = delete;
+		IndexType InsertAfter( IndexType, const T& ) = delete;
+		IndexType InsertAfter( IndexType, T&& ) = delete;
 
 		// Hide parent methods
-		using MemoryBase<T,InexType>::Init;
-		using MemoryBase<T,InexType>::Release;
-		//using MemoryBase<T,InexType>::Clear;
-		using MemoryBase<T,InexType>::Reserve;
-		using MemoryBase<T,InexType>::Resize;
-		using MemoryBase<T,InexType>::Extend;
-		using MemoryBase<T,InexType>::Shrink;
-		using MemoryBase<T,InexType>::InsertBefore;
-		using MemoryBase<T,InexType>::InsertAfter;
+		using MemoryBase<T,IndexType>::Init;
+		using MemoryBase<T,IndexType>::Release;
+		//using MemoryBase<T,IndexType>::Clear;
+		using MemoryBase<T,IndexType>::Reserve;
+		using MemoryBase<T,IndexType>::Resize;
+		using MemoryBase<T,IndexType>::Extend;
+		using MemoryBase<T,IndexType>::Shrink;
+		using MemoryBase<T,IndexType>::InsertBefore;
+		using MemoryBase<T,IndexType>::InsertAfter;
 
 	};
 

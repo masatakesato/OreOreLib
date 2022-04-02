@@ -8,19 +8,21 @@ using namespace OreOreLib;
 
 int main()
 {
-	Set<tstring/*, tableSize*/> set2;
+	const size_t hashSize = 10;
+
+	StaticSet<tstring, hashSize> set2;
 
 
 	//// Iterative copy constructor test
 	//{
-	//	Set<tstring> set1;
+	//	StaticSet<tstring, hashSize> set1;
 
 	//	while( 1 )
 	//	{
-	//		Set<tstring> set_tmp; 
+	//		StaticSet<tstring, hashSize> set_tmp; 
 	//		set_tmp.Put( _T("Value1") );
 
-	//		Set<tstring> set_tmp2;
+	//		StaticSet<tstring, hashSize> set_tmp2;
 	//		set_tmp2.Put( _T("Value2") );	
 
 	//		set1 = set_tmp;
@@ -31,14 +33,14 @@ int main()
 
 	// Iterative move constructor test
 	{
-		Set<tstring> set1;
+		StaticSet<tstring, hashSize> set1;
 
 		while( 1 )
 		{
-			Set<tstring> set_tmp; 
+			StaticSet<tstring, hashSize> set_tmp; 
 			set_tmp.Put( _T("Value1") );
 
-			Set<tstring> set_tmp2;
+			StaticSet<tstring, hashSize> set_tmp2;
 			set_tmp2.Put( _T("Value2") );	
 
 			set1 = std::move(set_tmp);
@@ -47,10 +49,9 @@ int main()
 	}
 
 
-
-	//while(1)
+	while(1)
 	{
-		Set<tstring/*, tableSize*/> set1;
+		StaticSet<tstring, hashSize> set1;
 
 
 		set1.Put( _T("Value1") );
@@ -92,7 +93,7 @@ int main()
 	tcout << tendl;
 
 	{
-		const Set< tstring/*, tableSize*/ > set3 = { _T("aaa"), _T("bbb"), _T("bbb") };
+		const StaticSet< tstring, hashSize > set3 = { _T("aaa"), _T("bbb"), _T("bbb") };
 
 		for( const auto& data : set3 )
 		{
@@ -105,7 +106,7 @@ int main()
 
 	{
 		float vals[] = { 0.5f, 0.6f, 0.6f };
-		const Set< float, uint64/*, tableSize*/ > set3( std::begin(vals), std::end(vals) );
+		const StaticSet< float, hashSize, uint64 > set3( std::begin(vals), std::end(vals) );
 
 		for( auto& data : set3 )
 		{
@@ -118,7 +119,7 @@ int main()
 	{
 		const StaticArray<const char*, 3> chararray = { "VK_KHR_swapchain", "VK_KHR_swapchain_", "VK_KHR_swapchain__" };
 
-		Set< std::string/*, tableSize*/ > set3( chararray.begin(), chararray.end() );
+		StaticSet< std::string, hashSize > set3( chararray.begin(), chararray.end() );
 
 //		set3.Put( "dsfds" );
 
