@@ -2,7 +2,7 @@
 
 #include	<oreore/common/TString.h>
 #include	<oreore/thread/IRunnable.h>
-#include	<oreore/thread/Thread.h>
+#include	<oreore/thread/WorkerThread.h>
 	
 
 
@@ -31,6 +31,7 @@ public:
 		m_val2--;
 		}
 
+		tcout << "wait for 2000 [ms]\n";
 		std::chrono::milliseconds dura( 2000 );
 		std::this_thread::sleep_for( dura );
 	}
@@ -51,19 +52,24 @@ int main()
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 
-	OreOreLib::Thread thread1;
+	OreOreLib::WorkerThread thread1;
 
 	int a = 0;
 	int b = 0;
 MyFunc* m = new MyFunc( a, b );
 
-	while(1)
+	//while(1)
 	{
-		thread1.Init( /*new MyFunc( a, b )*/m );
-		thread1.Start();
-		thread1.Stop();
-		tcout << a << tendl;
-		tcout << b << tendl;
+		
+
+	thread1.Init( /*new MyFunc( a, b )*/m );
+	thread1.Start();
+	thread1.Stop();
+	tcout << a << tendl;
+	tcout << b << tendl;
+
+
+
 	}
 
 	SafeDelete(m);

@@ -21,8 +21,8 @@ namespace OreOreLib
 	// Default consttuctor
 	Thread::Thread()
 		: m_pRunnable( nullptr )
-//		: m_Thread( 0 )
-//		, m_ThreadID( 0 )
+		, m_Thread()
+		, m_ThreadID()
 	{
 
 	}
@@ -32,7 +32,7 @@ namespace OreOreLib
 	// Destructor
 	Thread::~Thread()
 	{
-		m_Thread.join();
+		Release();
 	}
 
 
@@ -41,83 +41,84 @@ namespace OreOreLib
 	{
 		Release();
 
-		std::unique_lock<std::mutex> lock(m_Mutex);//m_Mutex.lock();
-
 		m_pRunnable		= runnable;
-		m_hPauseEvent	= false;
-		m_hEndEvent		= false;
-		m_Thread		= std::thread( &IRunnable::Run, m_pRunnable );
-
-//		m_Mutex.unlock();
 	}
 
 
 
 	void Thread::Release()
 	{
-		std::unique_lock<std::mutex> lock(m_Mutex);
+		//std::unique_lock<std::mutex> lock(m_Mutex);
 
-		if( m_Thread.joinable() )
+		if( IsRunning() )//if( m_Thread.joinable() )
 			m_Thread.join();
 
 		m_pRunnable = nullptr;
-
 	}
 
 
 
 
-	void Thread::Play()
+	void Thread::Start()
 	{
-		m_hPauseEvent = false;
-	}
+		// Initialize promise/future
+		m_Promise = std::promise<bool>();
+		m_Future = m_Promise.get_future();
 
+		//m_Thread = std::thread( &IRunnable::Run, m_pRunnable );
+		//m_hPauseEvent = false;
+		
+		// Execute
+		m_Thread = std::thread(
+			[&p=m_Promise, runnabe=m_pRunnable]
+			{
+				runnabe->Run();
+				p.set_value(true);//p.set_value_at_thread_exit(true);//
+				//std::cout << "thread function\n";
+			}
+		);
 
-	
-	void Thread::Pause()
-	{
-		m_hPauseEvent = true;
+		//tcout << "IsRunning: " << IsRunning() << tendl;
 	}
 
 
 	
 	void Thread::Stop()
 	{
-		m_hPauseEvent	= true;
-		m_hEndEvent		= true;
-		m_Thread.join();
+		//m_hPauseEvent	= true;
+		//m_hEndEvent		= true;
+
+		if( IsRunning() )//if( m_Thread.joinable() )//
+			m_Thread.join();
 	}
 
 
 
 	// スレッド処理実行可否の判定
-	bool Thread::IsActive()
+	bool Thread::IsRunning()
 	{
-//		auto l = Lock();
-//		return m_hEndEvent == false;
+		if( !m_Future.valid() )
+			return false;
 
-		return false;
-	}
+		#ifdef _DEBUG
 
-
-
-
-	void Thread::Work()
-	{
-		/*
-		while( 1 )
-		{
+			auto result = m_Future.wait_for( std::chrono::seconds(0) );
+			if( result == std::future_status::ready )
 			{
-				auto l = Lock();
-				m_CV.wait( l, [&]{ return m_hPauseEvent || m_hEndEvent; } );
+				tcout << _T("Thread finished\n;");
+				return false;
+			}
+			else
+			{
+				tcout << _T("Thread still running\n;");
+				return true;
 			}
 
-			if( m_hEndEvent )
-				break;
+		#else
 
-			// Do task
-		}
-		*/
+			return  m_Future.wait_for( std::chrono::seconds(0) ) != std::future_status::ready;
+
+		#endif
 	}
 
 
