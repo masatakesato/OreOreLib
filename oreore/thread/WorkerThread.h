@@ -9,6 +9,8 @@
 #include	"IRunnable.h"
 
 #include	"../common/Utility.h"
+#include	"../memory/SharedPtr.h"
+#include	"../container/RingQueue.h"
 
 
 
@@ -20,10 +22,16 @@ namespace OreOreLib
 
 	public:
 
-		WorkerThread();	// default constructor
+		WorkerThread();	// Default constructor
+		WorkerThread( int numThreads, int queueSize );	// Constructor
 		~WorkerThread();	// destructor
 
-		void Init( IRunnable* );
+		WorkerThread( const WorkerThread& ) = delete;
+		WorkerThread( WorkerThread&& ) = delete;
+		WorkerThread& operator=( const WorkerThread& ) = delete;
+		WorkerThread& operator=( WorkerThread&& ) = delete;
+
+		void Init( int numThreads, int queueSize );
 		void Release();
 
 		void Start();	// start/resume thread
@@ -35,17 +43,16 @@ namespace OreOreLib
 
 
 	private:
-
-		std::thread	m_Thread;	// thread object
-		std::thread::id	m_ThreadID;	// Thread ID
-
-		IRunnable*	m_pRunnable;
-
+TODO: RingQueueの機能改修が必要. 2022.04.08
+		Memory< std::thread >				m_Threads;
+		RingQueue< SharedPtr<IRunnable> >	m_Queue;
 
 		std::mutex	m_Mutex;
 		bool m_bPauseEvent;// Thread pause flag. false: operating, true: paused
 		bool m_bEndEvent;	// Thread end flab. false: operating, true: stopped
 		std::condition_variable	m_CV;
+
+
 
 
 		std::unique_lock<std::mutex> Lock()	{ return std::unique_lock<std::mutex>( m_Mutex ); }

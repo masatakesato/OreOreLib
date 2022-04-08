@@ -34,6 +34,8 @@ namespace OreOreLib
 		bool IsFull() const { return m_ActiveSize >= m_Queue.Length(); }
 		bool IsEmpty() const { return m_ActiveSize==0; }
 
+		operator bool() const { return m_Queue; }
+
 		void Display();
 
 

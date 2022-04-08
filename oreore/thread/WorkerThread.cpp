@@ -8,18 +8,21 @@
 namespace OreOreLib
 {
 
-	void ThreadFunc( int& num )
+
+	// Default consttuctor
+	WorkerThread::WorkerThread()
+		: m_bPauseEvent( true )
+		, m_bEndEvent( true )
 	{
-		tcout << "ThreadFunc " << num++ << tendl;
+
 	}
 
 
 
-	// Default consttuctor
-	WorkerThread::WorkerThread()
-		: m_pRunnable( nullptr )
-		, m_Thread()
-		, m_ThreadID()
+	// Constructor
+	WorkerThread::WorkerThread( int numThreads, int queueSize )
+		: m_Threads( numThreads )
+		, m_Queue( queueSize )
 		, m_bPauseEvent( true )
 		, m_bEndEvent( true )
 	{
@@ -31,39 +34,47 @@ namespace OreOreLib
 	// Destructor
 	WorkerThread::~WorkerThread()
 	{
-		m_Thread.join();
+		//m_Thread.join();
 	}
 
 
 
-	void WorkerThread::Init( IRunnable* runnable )
+	void WorkerThread::Init( int numThreads, int queueSize )
 	{
 		Release();
 
-		m_pRunnable		= runnable;
+		m_Threads.Init( numThreads );
+		m_Queue.Init( queueSize );
+		
+		m_bPauseEvent	= true;
+		m_bEndEvent		= true;
 	}
 
 
 
 	void WorkerThread::Release()
 	{
-		//std::unique_lock<std::mutex> lock(m_Mutex);
+		{
+			Lock();
+			m_bEndEvent = true;
+		}
 
-		if( m_Thread.joinable() )
-			m_Thread.join();
+		m_CV.notify_all();
 
-		m_pRunnable = nullptr;
-
+		for( auto& thread : m_Threads )
+			thread.join();
 	}
 
 
 
 	void WorkerThread::Start()
 	{
-		m_bEndEvent		= false;
-		m_bPauseEvent	= false;
+//		m_bEndEvent		= false;
+//		m_bPauseEvent	= false;
 
-		m_Thread = std::thread( &IRunnable::Run, m_pRunnable );
+
+		for( auto& thread : m_Threads )
+			thread = std::thread( &WorkerThread::Process, this );
 	}
 
 
@@ -79,7 +90,6 @@ namespace OreOreLib
 	{
 		m_bPauseEvent	= true;
 		m_bEndEvent		= true;
-		m_Thread.join();
 	}
 
 
@@ -97,20 +107,33 @@ namespace OreOreLib
 
 	void WorkerThread::Process()
 	{
-		while( 1 )
+		while( true )
 		{
-			{
-				auto l = Lock();
-				m_CV.wait( l, [&]{ return m_bPauseEvent || m_bEndEvent; } );
-			}
+			SharedPtr<IRunnable> runnable;
 
-			if( m_bEndEvent )
-				break;
+			// begin lock
+			{
+				auto lock = Lock();
+
+				m_CV.wait( lock, [&]{ return m_bEndEvent || m_Queue; } );// 終了フラグ検出 or キューに中身詰まるまで待機する
+
+				// 終了フラグかつキューが空ならスレッド終了する.
+				if( m_bEndEvent && !m_Queue )
+				{
+					return;
+				}
+				else// タスクに残っている処理を実行する
+				{
+					runnable = m_Queue.Dequeue();
+				}
+			}
+			// end lock
 
 			// Do task
-			if( m_pRunnable )
-				m_pRunnable->Run();
-		}
+			runnable->Run();
+
+		}// end of while
+
 	}
 
 
