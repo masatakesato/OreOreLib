@@ -27,8 +27,13 @@ namespace OreOreLib
 		void Extend( IndexType numelms );
 		bool Shrink( IndexType numelms );
 
-		void Enqueue( T elm );
-		T Dequeue();
+		//void Enqueue( T elm );
+		void Enqueue( const T& elm );
+		void Enqueue( T&& elm );
+
+		T Dequeue();// 要素をコピーして返す
+		void Dequeue( T& elm );// 要素を委譲して返す
+TODO:		T&& Dequeue();// これはアリ？
 
 		IndexType next( IndexType index ) const { return ( index + 1 ) % m_Queue.Length(); }
 		bool IsFull() const { return m_ActiveSize >= m_Queue.Length(); }
@@ -189,8 +194,27 @@ namespace OreOreLib
 
 
 
+//	template< typename T, typename IndexType >
+//	void RingQueue<T, IndexType>::Enqueue( T elm )
+//	{
+//		if( IsFull() )
+//		{
+//#ifdef _DEBUG
+//			tcout << "cannot enqueue. queue is full" << tendl;
+//#endif
+//			return;
+//		}
+//
+//		m_Queue[rear]	= elm;
+//		rear = next( rear );
+//
+//		m_ActiveSize++;
+//	}
+
+
+
 	template< typename T, typename IndexType >
-	void RingQueue<T, IndexType>::Enqueue( T elm )
+	void RingQueue<T, IndexType>::Enqueue( const T& elm )
 	{
 		if( IsFull() )
 		{
@@ -201,6 +225,25 @@ namespace OreOreLib
 		}
 
 		m_Queue[rear]	= elm;
+		rear = next( rear );
+
+		m_ActiveSize++;
+	}
+
+
+
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Enqueue( T&& elm )
+	{
+		if( IsFull() )
+		{
+#ifdef _DEBUG
+			tcout << "cannot enqueue. queue is full" << tendl;
+#endif
+			return;
+		}
+
+		m_Queue[rear]	= (T&&)elm;
 		rear = next( rear );
 
 		m_ActiveSize++;
@@ -226,6 +269,25 @@ namespace OreOreLib
 		m_ActiveSize--;
 
 		return elm;
+	}
+
+
+
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Dequeue( T& elm )
+	{
+
+		if( IsEmpty() )
+		{
+#ifdef _DEBUG
+			tcout << "cannot enqueue. queue is empty" << tendl;
+#endif
+			return;
+		}
+
+		elm		= (T&&)m_Queue[front];
+		front	= next( front );
+		m_ActiveSize--;
 	}
 
 
