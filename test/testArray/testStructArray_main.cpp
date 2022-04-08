@@ -89,11 +89,15 @@ int main()
 
 	Data d;
 
-	OreOreLib::Array<Data>	arr1(6, d);
-	arr1.Init(4, d);
-	arr1.Reserve(4);//Resize(4);//
-	arr1.Clear();
-	arr1.Release();
+	while(1)
+	{
+
+		OreOreLib::Array<Data>	arr1(6, d);
+		arr1.Init(4, d);
+		arr1.Reserve(4);//Resize(4);//
+		arr1.Clear();
+		arr1.Release();
+	}
 
 	//std::vector<Data> vecarr1;
 	//vecarr1.resize(6, d);

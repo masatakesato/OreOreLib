@@ -37,7 +37,7 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-
+	//while(1)
 	{
 		tcout << "//================== float 2d array test ===================//\n";
 
@@ -104,7 +104,7 @@ int main()
 	//	return 0;
 	//}
 
-	
+	//while(1)
 	{
 		tcout << "//================== string add test ===================//\n";
 
@@ -117,7 +117,7 @@ int main()
 			tcout << val << tendl;
 	}
 
-
+	//while(1)
 	{
 		tcout << "//================== string 2d array test ===================//\n";
 

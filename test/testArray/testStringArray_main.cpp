@@ -52,7 +52,7 @@ int main()
 	//}
 
 
-	while(1)
+	//while(1)
 	{
 		OreOreLib::Array<String>	arr1{ String(_T("a")),  String(_T("b")),  String(_T("c")) };
 
@@ -62,7 +62,13 @@ int main()
 		arr1.AddToTail( String(_T("ggg")) );
 		//arr1.AddToTail( aaa );
 		//arr1.InsertAfter( 1 );
+
+		for( auto& elm : arr1 )
+			tcout << elm.str << tendl;
+
 		arr1.Remove(1);
+
+		tcout << tendl;
 	}
 
 	return 0;

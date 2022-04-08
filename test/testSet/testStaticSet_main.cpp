@@ -31,22 +31,22 @@ int main()
 	//}
 
 
-	// Iterative move constructor test
-	{
-		StaticSet<tstring, hashSize> set1;
+	//// Iterative move constructor test
+	//{
+	//	StaticSet<tstring, hashSize> set1;
 
-		while( 1 )
-		{
-			StaticSet<tstring, hashSize> set_tmp; 
-			set_tmp.Put( _T("Value1") );
+	//	while( 1 )
+	//	{
+	//		StaticSet<tstring, hashSize> set_tmp; 
+	//		set_tmp.Put( _T("Value1") );
 
-			StaticSet<tstring, hashSize> set_tmp2;
-			set_tmp2.Put( _T("Value2") );	
+	//		StaticSet<tstring, hashSize> set_tmp2;
+	//		set_tmp2.Put( _T("Value2") );	
 
-			set1 = std::move(set_tmp);
-			set1 = std::move(set_tmp2);
-		}
-	}
+	//		set1 = std::move(set_tmp);
+	//		set1 = std::move(set_tmp2);
+	//	}
+	//}
 
 
 	while(1)

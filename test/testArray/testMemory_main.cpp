@@ -22,6 +22,7 @@ int main()
 
 	Memory<int> mem;
 
+	//while(1)
 	{
 		// Reserve
 		mem.Reserve(10);
@@ -44,12 +45,13 @@ int main()
 
 	tcout << tendl;
 
+	//while(1)
 	{
 		// Reserve
 		mem.Reserve(10);
 	
-		// Resize
-		mem.Resize( 4 );
+		// Extend using Reallocate
+		mem.Reallocate( mem.Capacity() + 4 );
 		tcout << mem[2] << tendl;
 
 		// Rereeize
@@ -62,16 +64,17 @@ int main()
 
 	tcout << tendl;
 
+	//while(1)
 	{
 		// Reserve
 		mem.Reserve(10);
 	
-		// Extend
-		mem.Extend( 4 );
+		// Extend using Reallocate
+		mem.Reallocate( mem.Capacity() + 4 );
 		tcout << mem[2] << tendl;
 
 		// ReExtend
-		mem.Extend( 100 );
+		mem.Reallocate( mem.Capacity() + 100 );
 		tcout << mem[2] << tendl;
 
 		// Release
@@ -80,16 +83,17 @@ int main()
 
 	tcout << tendl;
 
+	while(1)
 	{
 		// Reserve
 		mem.Reserve(10);
 	
-		// Shrink
-		mem.Shrink( 4 );
+		// Shrink using Reallocate
+		mem.Reallocate( mem.Capacity() - 4 );
 		tcout << mem[2] << tendl;
 
-		// ReShrink
-		mem.Shrink( 100 );
+		// ReShrink with wrong parameter. -> Max(0, mem.Capacity()-100) 
+		mem.Reallocate( /*mem.Capacity() -100*/ Max(0, mem.Capacity()-100)  );
 		tcout << mem[2] << tendl;
 
 		// Release

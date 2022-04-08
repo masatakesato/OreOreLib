@@ -76,7 +76,7 @@ struct Int
 
 	friend tostream& operator<<( tostream& stream, const Int& obj )
 	{
-		stream << *obj.pVal;
+		if( obj.pVal )	stream << *obj.pVal;
 		return stream;
 	}
 
@@ -92,104 +92,120 @@ int main()
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 
+	//Int* arr = (Int*)malloc( sizeof(Int) * 8 );
+
+	//for( int i=0; i<4; ++i )
+	//	new( &arr[i])Int(i);
+
+
+	//return 0;
+
+
 	RingQueue<Int> queue;
 
 	tcout << _T("//============== Extend/Shrink with rear < front case =============//\n");
 
-	tcout << _T("queue.Init(8);\n");
-	queue.Init(8);
-	tcout << tendl;
-
-	queue.Display();
-	tcout << tendl;
-
-	for( int i=0; i<7; ++i )
+	while(1)
 	{
-		tcout << _T("Enqueue: ") << i << tendl;
-		queue.Enqueue( Int(i) );
+		tcout << _T("queue.Init(8);\n");
+		queue.Init(8);
+		tcout << tendl;
+
+		queue.Display();
+		tcout << tendl;
+
+		for( int i=0; i<7; ++i )
+		{
+			tcout << _T("Enqueue: ") << i << tendl;
+			queue.Enqueue( /*Int(i)*/i );
+		}
+		tcout << tendl;
+
+		auto Val = Int(7);
+
+		queue.Enqueue( Val );
+
+
+		queue.Display();
+		tcout << tendl;
+
+		for( int i=0; i<4; ++i )
+		{
+			//auto val = queue.Dequeue();
+			Int val;
+			queue.Dequeue( val );
+			tcout << _T("Dequeue: ") << val << tendl;
+		}
+		tcout << tendl;
+
+		queue.Display();
+		tcout << tendl;
+
+
+		int v= -2;
+		tcout << _T("queue.Enqueue(-2);\n");
+		queue.Enqueue(v);
+		tcout << tendl;
+
+		tcout << _T("queue.Extend(6);\n");
+		queue.Extend(6);
+		tcout << tendl;
+
+		tcout << _T("queue.Enqueue(-9999);\n");
+		queue.Enqueue(-9999);
+		tcout << tendl;
+
+		queue.Display();
+		tcout << tendl;
+
+		tcout << _T("queue.Shrink(2);\n");
+		queue.Shrink(2);
+		tcout << tendl;
+
+		queue.Display();
+		tcout << tendl;
 	}
-	tcout << tendl;
-
-	auto Val = Int(12345678);
-
-	queue.Enqueue( Val );
 
 
-	queue.Display();
-	tcout << tendl;
+	tcout << _T("//============== Extend/Shrink with front < rear case =============//\n");
 
-	for( int i=0; i<4; ++i )
+	while(1)
 	{
-		auto val = queue.Dequeue();
-		tcout << _T("Dequeue: ") << val << tendl;
+		queue.Init(8);
+
+		for( int i=0; i<7; ++i )
+		{
+			tcout << _T("Enqueue: ") << i << tendl;
+			queue.Enqueue(i);
+		}
+
+		queue.Display();
+		tcout << tendl;
+
+
+		for( int i=0; i<3; ++i )
+		{
+			auto val = queue.Dequeue();
+			tcout << _T("Dequeue: ") << val << tendl;
+		}
+
+		tcout << _T("queue.Extend(6);\n");
+		queue.Extend(6);
+		tcout << tendl;
+
+		tcout << _T("queue.Enqueue(-9999);\n");
+		queue.Enqueue(-9999);
+		tcout << tendl;
+
+		queue.Display();
+		tcout << tendl;
+
+		queue.Shrink(2);
+		tcout << tendl;
+
+		queue.Display();
+		tcout << tendl;
 	}
-	tcout << tendl;
-
-	//queue.Display();
-	//tcout << tendl;
-
-
-	//tcout << _T("queue.Enqueue(-2);\n");
-	//queue.Enqueue(-2);
-	//tcout << tendl;
-
-	//tcout << _T("queue.Extend(6);\n");
-	//queue.Extend(6);
-	//tcout << tendl;
-
-	//tcout << _T("queue.Enqueue(-9999);\n");
-	//queue.Enqueue(-9999);
-	//tcout << tendl;
-
-	//queue.Display();
-	//tcout << tendl;
-
-	//tcout << _T("queue.Shrink(2);\n");
-	//queue.Shrink(2);
-	//tcout << tendl;
-
-	//queue.Display();
-	//tcout << tendl;
-
-
-
-	//tcout << _T("//============== Extend/Shrink with front < rear case =============//\n");
-
-	//queue.Init(8);
-
-	//for( int i=0; i<7; ++i )
-	//{
-	//	tcout << _T("Enqueue: ") << i << tendl;
-	//	queue.Enqueue(i);
-	//}
-
-	//queue.Display();
-	//tcout << tendl;
-
-
-	//for( int i=0; i<3; ++i )
-	//{
-	//	auto val = queue.Dequeue();
-	//	tcout << _T("Dequeue: ") << val << tendl;
-	//}
-
-	//tcout << _T("queue.Extend(6);\n");
-	//queue.Extend(6);
-	//tcout << tendl;
-
-	//tcout << _T("queue.Enqueue(-9999);\n");
-	//queue.Enqueue(-9999);
-	//tcout << tendl;
-
-	//queue.Display();
-	//tcout << tendl;
-
-	//queue.Shrink(2);
-	//tcout << tendl;
-
-	//queue.Display();
-	//tcout << tendl;
-
 
 	return 0;
 }

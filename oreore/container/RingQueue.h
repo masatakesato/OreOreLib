@@ -33,7 +33,9 @@ namespace OreOreLib
 
 		T Dequeue();// 要素をコピーして返す
 		void Dequeue( T& elm );// 要素を委譲して返す
-TODO:		T&& Dequeue();// これはアリ？
+
+		template < typename  ...Args >
+		void Emplace( Args&&... args );
 
 		IndexType next( IndexType index ) const { return ( index + 1 ) % m_Queue.Length(); }
 		bool IsFull() const { return m_ActiveSize >= m_Queue.Length(); }
@@ -119,18 +121,6 @@ TODO:		T&& Dequeue();// これはアリ？
 
 
 
-	template< typename T, typename IndexType >
-	void RingQueue<T, IndexType>::Extend( IndexType numelms )
-	{
-		m_Queue.Extend( numelms );
-
-		if( rear < front )
-		{
-			int32 newfront = front + static_cast<int32>( numelms );
-			memmove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) * sizeof(T) );
-			front = newfront;
-		}
-	}
 	/*
     こういう場合は
     |-----+++++++++++++++++++---------------|
@@ -146,8 +136,36 @@ TODO:		T&& Dequeue();// これはアリ？
     |++++++---------------------===============++++++++++++|
            ^rear=6                             ^front=42
 	*/
+	template< typename T, typename IndexType >
+	void RingQueue<T, IndexType>::Extend( IndexType numelms )
+	{
+		m_Queue.Reallocate( m_Queue.Length() + numelms );
+
+		if( rear < front )
+		{
+			int32 newfront = front + static_cast<int32>( numelms );
+			MemMove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) );//memmove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) * sizeof(T) );
+			front = newfront;
+		}
+	}
 
 
+
+	/*
+    こういう場合は、、、、
+    |-----+++++++++++++++++++---------------|
+          ^front=5           ^rear=24
+    こうする
+	|+++++++++++++++++++----------xxxxxxxxxx|
+     ^front=0           ^rear=19     elm=10
+
+    こういう場合は、、、、
+    |++++++---------------------++++++++++++|
+           ^rear=6              ^front=27
+    こうする
+	|++++++-----------++++++++++++xxxxxxxxxx|
+           ^rear=6    ^front=17      elm=10
+	*/
 	template< typename T, typename IndexType >
 	bool RingQueue<T, IndexType>::Shrink( IndexType numelms )
 	{
@@ -157,7 +175,7 @@ TODO:		T&& Dequeue();// これはアリ？
 		
 		if( front <= rear )
 		{
-			memmove( &m_Queue[0], &m_Queue[front], m_ActiveSize * sizeof(T) );// 使用中領域を配列先頭にスライドさせる
+			MemMove( &m_Queue[0], &m_Queue[front], m_ActiveSize );//memmove( &m_Queue[0], &m_Queue[front], m_ActiveSize * sizeof(T) );// 使用中領域を配列先頭にスライドさせる
 			// rear/frontのインデックスもスライドする
 			rear -= front;
 			front = 0;
@@ -165,51 +183,16 @@ TODO:		T&& Dequeue();// これはアリ？
 		else
 		{
 			int newfront = front - numelms;
-			memmove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) * sizeof(T) );
+			MemMove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) );//memmove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) * sizeof(T) );
 			front = newfront;
 		}
 
-		m_Queue.Shrink( numelms );
+		m_Queue.Reallocate( Max( m_Queue.Length() - numelms, 0 ) );
+		//m_Queue.Shrink( numelms );
 
 
 		return true;
 	}
-
-	/*
-    こういう場合は、、、、
-    |-----+++++++++++++++++++---------------|
-          ^front=5           ^rear=24
-    こうする
-	|+++++++++++++++++++----------xxxxxxxxxx|
-     ^front=0           ^rear=19
-
-    こういう場合は、、、、
-    |++++++---------------------++++++++++++|
-           ^rear=6              ^front=27
-    こうする
-	|++++++-----------++++++++++++xxxxxxxxxx|
-           ^rear=6    ^front=17
-	*/
-
-
-
-
-//	template< typename T, typename IndexType >
-//	void RingQueue<T, IndexType>::Enqueue( T elm )
-//	{
-//		if( IsFull() )
-//		{
-//#ifdef _DEBUG
-//			tcout << "cannot enqueue. queue is full" << tendl;
-//#endif
-//			return;
-//		}
-//
-//		m_Queue[rear]	= elm;
-//		rear = next( rear );
-//
-//		m_ActiveSize++;
-//	}
 
 
 
@@ -254,17 +237,15 @@ TODO:		T&& Dequeue();// これはアリ？
 	template< typename T, typename IndexType >
 	T RingQueue<T, IndexType>::Dequeue()
 	{
-		T elm = 0;
-
 		if( IsEmpty() )
 		{
 #ifdef _DEBUG
 			tcout << "cannot enqueue. queue is empty" << tendl;
 #endif
-			return elm;// INF
+			return T();//elm;// INF
 		}
 
-		elm		= m_Queue[front];
+		T elm	= (T&&)m_Queue[front];
 		front	= next( front );
 		m_ActiveSize--;
 
@@ -276,7 +257,6 @@ TODO:		T&& Dequeue();// これはアリ？
 	template< typename T, typename IndexType >
 	void RingQueue<T, IndexType>::Dequeue( T& elm )
 	{
-
 		if( IsEmpty() )
 		{
 #ifdef _DEBUG
@@ -288,6 +268,26 @@ TODO:		T&& Dequeue();// これはアリ？
 		elm		= (T&&)m_Queue[front];
 		front	= next( front );
 		m_ActiveSize--;
+	}
+
+
+
+	template< typename T, typename IndexType >
+	template < typename  ...Args >
+	void RingQueue<T, IndexType>::Emplace( Args&&... args )
+	{
+		if( IsFull() )
+		{
+#ifdef _DEBUG
+			tcout << "cannot enqueue. queue is full" << tendl;
+#endif
+			return;
+		}
+
+		m_Queue[rear]	= T(args...);//elm;
+		rear = next( rear );
+
+		m_ActiveSize++;
 	}
 
 

@@ -121,7 +121,7 @@ static int recieve_message( SOCKET sock, OreOreLib::MemoryBase<char, IndexType>&
 			if( data.Length() < msg_size )
 			{
 				//tcout << "Expanding memory..." << tendl;
-				data.Extend( msg_size - data.Length() );
+				data.Reallocate( msg_size );//data.Extend( msg_size - data.Length() );
 			}
 
 			//tcout << "recieving data..." << tendl;

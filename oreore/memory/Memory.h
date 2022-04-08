@@ -314,8 +314,6 @@ namespace OreOreLib
 		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
 	}
 
-
-//TODO: 重複要素のデストラクタ呼び出し必要
 	// Non-Trivial MemMove
 	template < class SrcIter, class DstIter >
 	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
@@ -330,7 +328,7 @@ namespace OreOreLib
 			// Placement new version
 // 未初期化知領域にデータを新規移動する場合がある
 // 既存領域データを削除した上書きする場合もある
-			//out->~DstIter();// Desctuct existing data
+			//if( out )	out->~DstIter();//out->~DstIter();// Destruct existing data
 			new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
 
 			// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
@@ -740,6 +738,7 @@ namespace OreOreLib
 
 			m_Capacity	= newlen;
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * m_Capacity ) );
+			memset( newdata, 0,  c_ElementSize * m_Capacity );
 
 			if( m_pData )
 			{
@@ -753,51 +752,62 @@ namespace OreOreLib
 		}
 
 
-		inline bool Resize( IndexType newlen )
+
+		inline bool Reallocate( IndexType newlen )
 		{
-			// Reallocate memory
-			auto oldlen = m_Length;
-			ReallocateBuffer( newlen );
-
-			// Initialize allocated elements using placement new default constructor
-			for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T();
-
-			return true;
+			return newlen>0 ? ReallocateBuffer( newlen ) : false;
 		}
 
 
-		inline bool Resize( IndexType newlen, const T& fill )
-		{
-			// Reallocate memory
-			auto oldlen = m_Length;
-			ReallocateBuffer( newlen );
-
-			// Initialize allocated elements using placement new copy constructor
-			for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T( fill );
-
-			return true;
-		}
 
 
-		inline bool Extend( IndexType numelms )
-		{
-			if( numelms==0 || numelms==~0u )	return false;
-			return Resize( m_Length + numelms );
-		}
-
-
-		inline bool Extend( IndexType numelms, const T& fill )
-		{
-			if( numelms==0 || numelms==~0u )	return false;
-			return Resize( m_Length + numelms, fill );
-		}
-
-
-		inline bool Shrink( IndexType numelms )
-		{
-			if( m_Length > numelms )	return ReallocateBuffer( m_Length - numelms );
-			return false;
-		}
+//// TODO: 追加されたメモリ領域は初期化する????
+//inline bool Resize( IndexType newlen, bool initialize )
+//{
+//	// Reallocate memory
+//	auto oldlen = m_Length;
+//	ReallocateBuffer( newlen );
+//
+//	// Initialize allocated elements using placement new default constructor
+//	if( initialize )
+//		for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T();
+//
+//	return true;
+//}
+//
+//
+//inline bool Resize( IndexType newlen, const T& fill )
+//{
+//	// Reallocate memory
+//	auto oldlen = m_Length;
+//	ReallocateBuffer( newlen );
+//
+//	// Initialize allocated elements using placement new copy constructor
+//	for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T( fill );
+//
+//	return true;
+//}
+//
+//
+//inline bool Extend( IndexType numelms, bool initialize )
+//{
+//	if( numelms==0 || numelms==~0u )	return false;
+//	return Resize( m_Length + numelms, initialize );
+//}
+//
+//
+//inline bool Extend( IndexType numelms, const T& fill )
+//{
+//	if( numelms==0 || numelms==~0u )	return false;
+//	return Resize( m_Length + numelms, fill );
+//}
+//
+//
+//inline bool Shrink( IndexType numelms )
+//{
+//	if( m_Length > numelms )	return ReallocateBuffer( m_Length - numelms );
+//	return false;
+//}
 
 
 		inline IndexType InsertBefore( IndexType elm )
@@ -806,6 +816,7 @@ namespace OreOreLib
 			ASSERT( elm < newlen );
 
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+			memset( newdata, 0,  c_ElementSize * newlen );
 
 			if( m_pData )
 			{
@@ -835,6 +846,7 @@ namespace OreOreLib
 			ASSERT( elm < newlen );
 
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+			memset( newdata, 0,  c_ElementSize * newlen );
 
 			if( m_pData )
 			{
@@ -864,6 +876,7 @@ namespace OreOreLib
 			ASSERT( elm < newlen );
 
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+			memset( newdata, 0,  c_ElementSize * newlen );
 
 			if( m_pData )
 			{
@@ -1023,6 +1036,7 @@ namespace OreOreLib
 		{
 			// Allocate memory
 			/*T* buffer*/m_pData = static_cast<T*>( ::operator new( c_ElementSize * len ) );
+			memset( m_pData, 0,  c_ElementSize * len );
 			
 			// Call default constructor
 			if( init )
@@ -1040,7 +1054,8 @@ namespace OreOreLib
 			if( m_pData==nullptr )
 				return;
 
-			for( auto iter=m_pData; iter!=m_pData+m_Length; ++iter )	iter->~T();
+			for( auto iter=m_pData; iter!=m_pData+m_Length; ++iter )
+				iter->~T();
 			::operator delete( m_pData );
 
 			m_pData = nullptr;
@@ -1057,6 +1072,7 @@ namespace OreOreLib
 			else if( newlen > m_Capacity )
 			{
 				T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+				memset( newdata, 0,  c_ElementSize * newlen );
 
 				if( m_pData )
 				{

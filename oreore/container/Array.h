@@ -22,52 +22,52 @@ namespace OreOreLib
 	//######################################################################//
 
 
-	template< typename T, typename InexType >
-	class ArrayBase< T, detail::DynamicSize, InexType > : public MemoryBase<T, InexType>
+	template< typename T, typename IndexType >
+	class ArrayBase< T, detail::DynamicSize, IndexType > : public MemoryBase<T, IndexType>
 	{
 	public:
 
 		// Default constructor
-		ArrayBase(): MemoryBase<T, InexType>() {}
+		ArrayBase(): MemoryBase<T, IndexType>() {}
 
 		// Constructor
-		ArrayBase( InexType len ) : MemoryBase<T, InexType>(len) {}
+		ArrayBase( IndexType len ) : MemoryBase<T, IndexType>(len) {}
 
 		// Constructor
 //		template < typename ... Args, std::enable_if_t< TypeTraits::all_same<T, Args...>::value>* = nullptr >
-//		ArrayBase( Args const & ... args ) : MemoryBase<T, InexType>( args ...) {}
+//		ArrayBase( Args const & ... args ) : MemoryBase<T, IndexType>( args ...) {}
 
 		// Constructor with initializer list
-		ArrayBase( std::initializer_list<T> ilist ) : MemoryBase<T, InexType>( ilist ) {}
+		ArrayBase( std::initializer_list<T> ilist ) : MemoryBase<T, IndexType>( ilist ) {}
 
 		// Constructor with default value
-		ArrayBase( InexType len, const T& fill ): MemoryBase<T, InexType>( len, fill ) {}
+		ArrayBase( IndexType len, const T& fill ): MemoryBase<T, IndexType>( len, fill ) {}
 
 		// Constructor using MemoryBase
-		ArrayBase( const MemoryBase<T, InexType>& obj ) : MemoryBase<T, InexType>( obj ) {}
+		ArrayBase( const MemoryBase<T, IndexType>& obj ) : MemoryBase<T, IndexType>( obj ) {}
 
 		// Constructor using iterator
 		template < class Iter >
-		ArrayBase( Iter first, Iter last ) : MemoryBase<T, InexType>( first, last ) {}
+		ArrayBase( Iter first, Iter last ) : MemoryBase<T, IndexType>( first, last ) {}
 
 		// Copy constructor
-		ArrayBase( const ArrayBase& obj ) : MemoryBase<T, InexType>( (const MemoryBase<T, InexType>&)obj ) {}
+		ArrayBase( const ArrayBase& obj ) : MemoryBase<T, IndexType>( (const MemoryBase<T, IndexType>&)obj ) {}
 
 		// Move constructor
-		ArrayBase( ArrayBase&& obj ) : MemoryBase<T, InexType>( (MemoryBase<T, InexType>&&)obj ) {}
+		ArrayBase( ArrayBase&& obj ) : MemoryBase<T, IndexType>( (MemoryBase<T, IndexType>&&)obj ) {}
 
 
 		// Copy Assignment opertor =
 		inline ArrayBase& operator=( const ArrayBase& obj )
 		{
-			MemoryBase<T, InexType>::operator=( obj );
+			MemoryBase<T, IndexType>::operator=( obj );
 			return *this;
 		}
 
 
-		inline ArrayBase& operator=( const MemoryBase<T, InexType>& obj )
+		inline ArrayBase& operator=( const MemoryBase<T, IndexType>& obj )
 		{
-			MemoryBase<T, InexType>::operator=( obj );
+			MemoryBase<T, IndexType>::operator=( obj );
 			return *this;
 		}
 
@@ -75,48 +75,111 @@ namespace OreOreLib
 		// Move assignment opertor =
 		inline ArrayBase& operator=( ArrayBase&& obj )
 		{
-			MemoryBase<T, InexType>::operator=( (ArrayBase&&)obj );
+			MemoryBase<T, IndexType>::operator=( (ArrayBase&&)obj );
 			return *this;
 		}
 
 
-		inline InexType AddToFront()
+
+
+
+		// TODO: 追加されたメモリ領域は初期化する????
+		inline bool Resize( IndexType newlen )
+		{
+			// Reallocate memory
+			auto oldlen = this->m_Length;
+
+			if( !this->Reallocate( newlen ) )
+				return false;
+
+			// Initialize allocated elements using placement new default constructor
+			for( auto i=oldlen; i<newlen; ++i )	new ( this->m_pData + i ) T();
+
+			return true;
+		}
+
+
+		inline bool Resize( IndexType newlen, const T& fill )
+		{
+			// Reallocate memory
+			auto oldlen = this->m_Length;
+
+			if( !this->Reallocate( newlen ) )
+				return false;
+
+			// Initialize allocated elements using placement new copy constructor
+			for( auto i=oldlen; i<newlen; ++i )	new ( this->m_pData + i ) T( fill );
+
+			return true;
+		}
+
+
+		inline bool Extend( IndexType numelms )
+		{
+			if( numelms==0 || numelms==~0u )	return false;
+			return Resize( this->m_Length + numelms );
+		}
+
+
+		inline bool Extend( IndexType numelms, const T& fill )
+		{
+			if( numelms==0 || numelms==~0u )	return false;
+			return Resize( this->m_Length + numelms, fill );
+		}
+
+
+		inline bool Shrink( IndexType numelms )
+		{
+			if( this->m_Length > numelms )
+				return this->Reallocate( this->m_Length - numelms );
+
+			return false;
+		}
+
+
+
+
+
+
+
+
+		inline IndexType AddToFront()
 		{
 			return this->InsertBefore( 0 );
 		}
 
 
-		inline InexType AddToFront( const T& src )
+		inline IndexType AddToFront( const T& src )
 		{
 			return this->InsertBefore( 0, src );
 		}
 
 
-		inline InexType AddToFront( T&& src )
+		inline IndexType AddToFront( T&& src )
 		{
 			return this->InsertBefore( 0, (T&&)src );
 		}
 
 
-		inline InexType AddToTail()
+		inline IndexType AddToTail()
 		{
 			return this->InsertBefore( this->m_Length );
 		}
 
 
-		inline InexType AddToTail( const T& src )
+		inline IndexType AddToTail( const T& src )
 		{
 			return this->InsertBefore( this->m_Length, src );
 		}
 
 
-		inline InexType AddToTail( T&& src )
+		inline IndexType AddToTail( T&& src )
 		{
 			return this->InsertBefore( this->m_Length, (T&&)src );
 		}
 
 
-		inline void FastRemove( InexType elm )// 削除対象の要素を配列最後尾要素で上書きする & メモリ確保サイズ自体は変更せずlenghデクリメントする
+		inline void FastRemove( IndexType elm )// 削除対象の要素を配列最後尾要素で上書きする & メモリ確保サイズ自体は変更せずlenghデクリメントする
 		{
 			ASSERT( elm<this->m_Length );
 
@@ -146,7 +209,7 @@ namespace OreOreLib
 		//}
 
 		
-		inline void Remove( InexType elm )
+		inline void Remove( IndexType elm )
 		{
 			ASSERT( elm < this->m_Length );
 
@@ -173,7 +236,7 @@ namespace OreOreLib
 		//}
 
 
-		inline void Swap( InexType i, InexType j )
+		inline void Swap( IndexType i, IndexType j )
 		{
 			ASSERT( i<this->m_Length && j<this->m_Length );
 
@@ -189,7 +252,7 @@ namespace OreOreLib
 		{
 			tcout << typeid(*this).name() << _T("[ ") << this->m_Length << _T(" ]:\n" );
 
-			for( InexType i=0; i<this->m_Length; ++i )
+			for( IndexType i=0; i<this->m_Length; ++i )
 				tcout << _T("  [") << i << _T("]: ") << this->m_pData[i] << tendl;
 
 			tcout << tendl;
@@ -199,7 +262,7 @@ namespace OreOreLib
 
 	private:
 
-		inline void ShiftElementsRight( InexType elm, InexType num=1 )
+		inline void ShiftElementsRight( IndexType elm, IndexType num=1 )
 		{
 			if( this->m_Length <= ( elm + num ) || num == 0 )
 				return;
@@ -217,12 +280,12 @@ namespace OreOreLib
 			}
 
 			// destruct empty elements
-			for( InexType i=0; i<num; ++i )
+			for( IndexType i=0; i<num; ++i )
 				(this->m_pData + elm + i)->~T();
 		}
 
 
-		inline void ShiftElementsLeft( InexType elm, InexType num=1 )
+		inline void ShiftElementsLeft( IndexType elm, IndexType num=1 )
 		{
 			if( elm < num || num == 0 )
 				return;
@@ -256,8 +319,8 @@ namespace OreOreLib
 	//																		//
 	//######################################################################//
 
-	template < typename T, typename InexType >
-	inline void Shuffle( ArrayImpl<T, InexType>& arr )
+	template < typename T, typename IndexType >
+	inline void Shuffle( ArrayImpl<T, IndexType>& arr )
 	{
 		for( sizeType i=0; i<arr.Length(); ++i )
 		{
