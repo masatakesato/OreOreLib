@@ -123,17 +123,17 @@ namespace OreOreLib
 
 
 	/*
-    こういう場合は
+    If( front < rear ):
     |-----+++++++++++++++++++---------------|
           ^front=5           ^rear=24
-	こうする
+	Just extend array without changing front/rear position
     |-----+++++++++++++++++++---------------===============|
           ^front=5           ^rear=24
 
-    こういう場合は
+    ElseIf( rear < front ):
     |++++++---------------------++++++++++++|
            ^rear=6              ^front=27
-    こうする
+    Right shift [ front : m_Length ] elements
     |++++++---------------------===============++++++++++++|
            ^rear=6                             ^front=42
 	*/
@@ -144,17 +144,9 @@ namespace OreOreLib
 
 		if( rear < front )
 		{
-			IndexType newfront = front + numelms;
-
-			// front から (m_ActiveSize - rear) 個を、newfront以降へ再配置する
-			// front < newfront なので、右シフト
 			m_Queue.RightShiftElements( front, m_ActiveSize - rear, numelms );
 
-
-			// ここもメモリリーク発生. そもそも右シフト用途にMemMove使うの危険.
-			//MemMove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) );
-
-			front = newfront;
+			front += numelms;
 		}
 	}
 
@@ -184,48 +176,16 @@ namespace OreOreLib
 		
 		if( front <= rear )
 		{
-			// メモリリーク発生. NG
-			//if( front > 0 )
-			//MemMove( &m_Queue[0], &m_Queue[front], m_ActiveSize );// 使用中領域を配列先頭にスライドさせる
-
-
-			// Move Assignment Operator版. OK
-			//for( int i=0; i<m_ActiveSize; ++i )
-			//	m_Queue[i] = (T&&)m_Queue[front + i];
-
-			// コピー先要素デストラクタ先行呼び出し + MemMove等価処理. OK
-			//for( auto i=0; i<m_ActiveSize; ++i )
-			//{
-			//	m_Queue[i].~T();
-			//	new ( &m_Queue[i] ) T( (T&&)m_Queue[front + i] );
-			//}
-
-
 			m_Queue.LeftShiftElements( front, m_ActiveSize, front );
 
-
-			// rear/frontのインデックスもスライドする
 			rear -= front;
 			front = 0;
 		}
 		else
 		{
-			int newfront = front - numelms;
-
-			// メモリリーク発生. NG
-			//MemMove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) );
-
-			// コピー先要素デストラクタ先行呼び出し + MemMove等価処理.
-			//for( auto i=0; i<(m_Queue.Length()-front); ++i )
-			//{
-			//	m_Queue[newfront + i].~T();
-			//	new ( &m_Queue[newfront + i] ) T( (T&&)m_Queue[front + i] );
-			//}
-
 			m_Queue.LeftShiftElements( front, m_Queue.Length()-front, numelms );
 
-
-			front = newfront;
+			front -= numelms;
 		}
 
 		m_Queue.Resize( new_length );

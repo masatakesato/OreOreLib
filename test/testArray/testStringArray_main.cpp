@@ -52,24 +52,52 @@ int main()
 	//}
 
 
-	while(1)
-	{
-		OreOreLib::Array<String>	arr1{ String(_T("a")),  String(_T("b")),  String(_T("c")) };
+	//while(1)
+	//{
+	//	OreOreLib::Array<String>	arr1{ String(_T("a")),  String(_T("b")),  String(_T("c")) };
 
-		String aaa{_T("sgsgs")};
-		arr1.InsertBefore( 0, aaa );
-		arr1.AddToFront( String(_T("fff")) );
-		arr1.AddToTail( String(_T("ggg")) );
-		//arr1.AddToTail( aaa );
-		//arr1.InsertAfter( 1 );
+	//	String aaa{_T("sgsgs")};
+	//	arr1.InsertBefore( 0, aaa );
+	//	arr1.AddToFront( String(_T("fff")) );
+	//	arr1.AddToTail( String(_T("ggg")) );
+	//	//arr1.AddToTail( aaa );
+	//	//arr1.InsertAfter( 1 );
+
+	//	for( auto& elm : arr1 )
+	//		tcout << elm.str << tendl;
+
+	//	arr1.Remove(1);
+
+	//	tcout << tendl;
+	//}
+
+ 
+	//while(1)
+	{
+		OreOreLib::Array<String>	arr1;
+
+		arr1.Reserve( 6 );
+		
+		arr1.AddToFront( String(_T("a")) );
+		arr1.AddToFront( String(_T("b")) );
+		arr1.AddToFront( String(_T("c")) );
+		arr1.AddToFront( String(_T("d")) );
+		arr1.AddToFront( String(_T("e")) );
+		arr1.AddToFront( String(_T("f")) );
+		arr1.Remove(0);
+
+		arr1.AddToFront( String(_T("g")) );
+		arr1.AddToFront( String(_T("h")) );
 
 		for( auto& elm : arr1 )
 			tcout << elm.str << tendl;
 
-		arr1.Remove(1);
+		//arr1.Remove(1);
 
 		tcout << tendl;
 	}
+
+
 
 	return 0;
 

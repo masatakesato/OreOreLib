@@ -1056,18 +1056,33 @@ namespace OreOreLib
 		}
 
 
-//TODO: m_Capacityが充分な場合はメモリ再確保しないようにする
-
 		// Create new memory space in the middle of m_pData. Allocated new space is UNINITIALIZED.
 		inline bool AllocateInsertionSpace( IndexType elm, IndexType numelms=1 )
 		{
 			IndexType newlen = m_Length + numelms;
 			ASSERT( elm < newlen );
 
-//if( newlen <= m_Capacity )
-//	RightShiftElements
+			//=============== Consume reserved area if available =============//
+			if( newlen <= m_Capacity )
+			{
+				auto nummoveelms = m_Length - elm;
+
+				// m_pData[ m_Length, newlen-1] の、シフト足のはみ出た要素だけ初期化する
+				if( nummoveelms > 0 )
+					for( auto iter=m_pData+m_Length; iter!=m_pData+newlen; ++iter )	new ( iter ) T();
+
+				// Update m_Length/m_AllocSize
+				m_Length	= newlen;
+				m_AllocSize	= c_ElementSize * m_Length;
+
+				// Finally right shift elements and create insertion space.
+				RightShiftElements( elm, nummoveelms, numelms );
+
+				return true;
+			}
 
 
+			//=============== Allocate new memory otherwise =================//
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
 			if( !newdata )
 				return false;

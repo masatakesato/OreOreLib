@@ -175,7 +175,7 @@ int main()
 
 	tcout << _T("//============== Extend/Shrink with front < rear case =============//\n");
 
-	while(1)
+	//while(1)
 	{
 		queue.Init(8);
 
