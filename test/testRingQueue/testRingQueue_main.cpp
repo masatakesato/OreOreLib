@@ -71,43 +71,42 @@ int main()
 
 	tcout << _T("//============== Extend/Shrink with front < rear case =============//\n");
 
-	//while(1)
+	while(1)
 	{
+		queue.Init(8);
 
-	queue.Init(8);
+		for( int i=0; i<7; ++i )
+		{
+			tcout << _T("Enqueue: ") << i << tendl;
+			queue.Enqueue(i);
+		}
 
-	for( int i=0; i<7; ++i )
-	{
-		tcout << _T("Enqueue: ") << i << tendl;
-		queue.Enqueue(i);
-	}
-
-	queue.Display();
-	tcout << tendl;
+		queue.Display();
+		tcout << tendl;
 
 
-	for( int i=0; i<3; ++i )
-	{
-		auto val = queue.Dequeue();
-		tcout << _T("Dequeue: ") << val << tendl;
-	}
+		for( int i=0; i<3; ++i )
+		{
+			auto val = queue.Dequeue();
+			tcout << _T("Dequeue: ") << val << tendl;
+		}
 
-	tcout << _T("queue.Extend(6);\n");
-	queue.Extend(6);
-	tcout << tendl;
+		tcout << _T("queue.Extend(6);\n");
+		queue.Extend(6);
+		tcout << tendl;
 
-	tcout << _T("queue.Enqueue(-9999);\n");
-	queue.Enqueue(-9999);
-	tcout << tendl;
+		tcout << _T("queue.Enqueue(-9999);\n");
+		queue.Enqueue(-9999);
+		tcout << tendl;
 
-	queue.Display();
-	tcout << tendl;
+		queue.Display();
+		tcout << tendl;
 
-	queue.Shrink(2);
-	tcout << tendl;
+		queue.Shrink(2);
+		tcout << tendl;
 
-	queue.Display();
-	tcout << tendl;
+		queue.Display();
+		tcout << tendl;
 
 	}
 

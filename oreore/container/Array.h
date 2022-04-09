@@ -81,66 +81,30 @@ namespace OreOreLib
 
 
 
-
-
-		// TODO: 追加されたメモリ領域は初期化する????
-		inline bool Resize( IndexType newlen )
-		{
-			// Reallocate memory
-			auto oldlen = this->m_Length;
-
-			if( !this->Reallocate( newlen ) )
-				return false;
-
-			// Initialize allocated elements using placement new default constructor
-			for( auto i=oldlen; i<newlen; ++i )	new ( this->m_pData + i ) T();
-
-			return true;
-		}
-
-
-		inline bool Resize( IndexType newlen, const T& fill )
-		{
-			// Reallocate memory
-			auto oldlen = this->m_Length;
-
-			if( !this->Reallocate( newlen ) )
-				return false;
-
-			// Initialize allocated elements using placement new copy constructor
-			for( auto i=oldlen; i<newlen; ++i )	new ( this->m_pData + i ) T( fill );
-
-			return true;
-		}
-
-
 		inline bool Extend( IndexType numelms )
 		{
-			if( numelms==0 || numelms==~0u )	return false;
-			return Resize( this->m_Length + numelms );
+			//if( numelms==0 || numelms==~0u )	return false;
+			return this->Resize( this->m_Length + numelms );//return Resize( this->m_Length + numelms );
 		}
 
 
 		inline bool Extend( IndexType numelms, const T& fill )
 		{
-			if( numelms==0 || numelms==~0u )	return false;
-			return Resize( this->m_Length + numelms, fill );
+			//if( numelms==0 || numelms==~0u )	return false;
+			return !this->Resize( this->m_Length + numelms, fill );//return Resize( this->m_Length + numelms, fill );
 		}
 
 
 		inline bool Shrink( IndexType numelms )
 		{
-			if( this->m_Length > numelms )
-				return this->Reallocate( this->m_Length - numelms );
+			if( numelms >= this->m_Length )		return false;
+			return this->Resize( this->m_Length - numelms );
 
-			return false;
+			//if( this->m_Length > numelms )
+			//	return this->Resize( this->m_Length - numelms );
+
+			//return false;
 		}
-
-
-
-
-
-
 
 
 		inline IndexType AddToFront()

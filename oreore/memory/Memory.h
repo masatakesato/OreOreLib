@@ -262,7 +262,7 @@ namespace OreOreLib
 		while( begin != end )
 		{
 			// Placement new version
-			//out->~DstIter();// Desctuct existing data from destination memory
+			//out->~DstIter();// Destruct existing data from destination memory
 			new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
 
 			// Copy assignment operator version
@@ -286,7 +286,7 @@ namespace OreOreLib
 	//	while( begin != end )
 	//	{
 	//		// Placement new version
-	//		//out->~Iter();// Desctuct existing data from destination memory
+	//		//out->~Iter();// Destruct existing data from destination memory
 	//		new ( out ) Iter( *begin );// Call copy constructor
 	//
 	//		// Copy assignment operator version
@@ -328,7 +328,7 @@ namespace OreOreLib
 			// Placement new version
 // 未初期化知領域にデータを新規移動する場合がある
 // 既存領域データを削除した上書きする場合もある
-			//if( out )	out->~DstIter();//out->~DstIter();// Destruct existing data
+			//out->~DstIter();// Destruct existing data
 			new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
 
 			// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
@@ -738,7 +738,6 @@ namespace OreOreLib
 
 			m_Capacity	= newlen;
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * m_Capacity ) );
-			memset( newdata, 0,  c_ElementSize * m_Capacity );
 
 			if( m_pData )
 			{
@@ -752,89 +751,26 @@ namespace OreOreLib
 		}
 
 
-
-		inline bool Reallocate( IndexType newlen )
+		inline bool Resize( IndexType newlen )
 		{
-			return newlen>0 ? ReallocateBuffer( newlen ) : false;
+			if( newlen==0 || newlen==~0u )	return false;
+			return ReallocateBuffer( newlen );
 		}
 
 
-
-
-//// TODO: 追加されたメモリ領域は初期化する????
-//inline bool Resize( IndexType newlen, bool initialize )
-//{
-//	// Reallocate memory
-//	auto oldlen = m_Length;
-//	ReallocateBuffer( newlen );
-//
-//	// Initialize allocated elements using placement new default constructor
-//	if( initialize )
-//		for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T();
-//
-//	return true;
-//}
-//
-//
-//inline bool Resize( IndexType newlen, const T& fill )
-//{
-//	// Reallocate memory
-//	auto oldlen = m_Length;
-//	ReallocateBuffer( newlen );
-//
-//	// Initialize allocated elements using placement new copy constructor
-//	for( auto i=oldlen; i<newlen; ++i )	new ( m_pData + i ) T( fill );
-//
-//	return true;
-//}
-//
-//
-//inline bool Extend( IndexType numelms, bool initialize )
-//{
-//	if( numelms==0 || numelms==~0u )	return false;
-//	return Resize( m_Length + numelms, initialize );
-//}
-//
-//
-//inline bool Extend( IndexType numelms, const T& fill )
-//{
-//	if( numelms==0 || numelms==~0u )	return false;
-//	return Resize( m_Length + numelms, fill );
-//}
-//
-//
-//inline bool Shrink( IndexType numelms )
-//{
-//	if( m_Length > numelms )	return ReallocateBuffer( m_Length - numelms );
-//	return false;
-//}
+		inline bool Resize( IndexType newlen, const T& fill )
+		{
+			if( newlen==0 || newlen==~0u )	return false;
+			return ReallocateBuffer( newlen, &fill );
+		}
 
 
 		inline IndexType InsertBefore( IndexType elm )
 		{
-			IndexType newlen = m_Length + 1;
-			ASSERT( elm < newlen );
-
-			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
-			memset( newdata, 0,  c_ElementSize * newlen );
-
-			if( m_pData )
-			{
-				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
-				MemMove( &newdata[0], &m_pData[0], elm );
-				// Move m_pData[ elm+1 : m_Length-1 ]
-				MemMove( &newdata[ elm+1 ], &m_pData[elm], m_Length - elm );
-
-				DeallocateBuffer();
-			}
+			AllocateInsertionSpace( elm );
 
 			// Init newdata[ elm ]
-			T* val = new ( &newdata[elm] ) T();//newdata[elm] = T();//
-
-			m_Capacity	= newlen;
-			m_pData		= newdata;
-			m_Length	= newlen;
-			m_AllocSize	= c_ElementSize * m_Length;
+			T* val = new ( &m_pData[elm] ) T();//newdata[elm] = T();//
 
 			return elm;
 		}
@@ -842,29 +778,10 @@ namespace OreOreLib
 
 		inline IndexType InsertBefore( IndexType elm, const T& src )
 		{
-			IndexType newlen = m_Length + 1;
-			ASSERT( elm < newlen );
+			AllocateInsertionSpace( elm );
 
-			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
-			memset( newdata, 0,  c_ElementSize * newlen );
-
-			if( m_pData )
-			{
-				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
-				MemMove( &newdata[0], &m_pData[0], elm );
-				// Move m_pData[ elm+1 : m_Length-1 ]
-				MemMove( &newdata[ elm+1 ], &m_pData[elm], m_Length - elm );
-
-				DeallocateBuffer();
-			}
-
-			// Move src to newdata[ elm ]
-			T* val = new ( &newdata[elm] ) T(src);//newdata[elm] = src;//
-
-			m_Capacity	= newlen;
-			m_pData		= newdata;
-			m_Length	= newlen;
-			m_AllocSize	= c_ElementSize * m_Length;
+			// Copy src to newdata[ elm ]
+			T* val = new ( &m_pData[elm] ) T(src);//newdata[elm] = src;//
 
 			return elm;
 		}
@@ -872,29 +789,10 @@ namespace OreOreLib
 
 		inline IndexType InsertBefore( IndexType elm, T&& src )
 		{
-			IndexType newlen = m_Length + 1;
-			ASSERT( elm < newlen );
-
-			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
-			memset( newdata, 0,  c_ElementSize * newlen );
-
-			if( m_pData )
-			{
-				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
-				MemMove( &newdata[0], &m_pData[0], elm );
-				// Move m_pData[ elm+1 : m_Length-1 ]
-				MemMove( &newdata[ elm+1 ], &m_pData[elm], m_Length - elm );
-
-				DeallocateBuffer();
-			}
+			AllocateInsertionSpace( elm );
 
 			// Move src to newdata[ elm ]
-			T* val = new ( &newdata[elm] ) T( (T&&)src );//newdata[elm] = (T&&)src;//
-
-			m_Capacity	= newlen;
-			m_pData		= newdata;
-			m_Length	= newlen;
-			m_AllocSize	= c_ElementSize * m_Length;
+			T* val = new ( &m_pData[elm] ) T( (T&&)src );//newdata[elm] = (T&&)src;//
 
 			return elm;
 		}
@@ -1036,7 +934,7 @@ namespace OreOreLib
 		{
 			// Allocate memory
 			/*T* buffer*/m_pData = static_cast<T*>( ::operator new( c_ElementSize * len ) );
-			memset( m_pData, 0,  c_ElementSize * len );
+			//memset( m_pData, 0,  c_ElementSize * len );
 			
 			// Call default constructor
 			if( init )
@@ -1062,17 +960,18 @@ namespace OreOreLib
 		}
 
 
-		inline bool ReallocateBuffer( IndexType newlen )
+		inline bool ReallocateBuffer( IndexType newlen, const T* fill=nullptr )
 		{
-			if( newlen < m_Length )
-			{
-				for( auto iter=m_pData+newlen; iter!=m_pData+m_Capacity; ++iter )
-					iter->~T();
-			}
-			else if( newlen > m_Capacity )
+			//   m_Length    m_Capacity   newlen
+			// -----*------------|----------x
+			if( newlen > m_Capacity )
 			{
 				T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
-				memset( newdata, 0,  c_ElementSize * newlen );
+				//memset( newdata, 0,  c_ElementSize * newlen );
+				for( auto i=m_Length; i<newlen; ++i )
+					fill ?
+					new ( newdata + i ) T( *fill ) :
+					new ( newdata + i ) T();
 
 				if( m_pData )
 				{
@@ -1083,8 +982,23 @@ namespace OreOreLib
 				m_pData		= newdata;
 			}
 
-			//for( IndexType i=m_Length; i<newlen; ++i )
-			//	new ( m_pData+i ) T();
+			//   m_Length    newlen     m_Capacity
+			// -----*-----------x------------|
+			else if( newlen > m_Length )
+			{
+				for( auto iter=m_pData+m_Length; iter!=m_pData+newlen; ++iter )
+					fill ?
+					new ( iter ) T( *fill ) :
+					new ( iter ) T();
+			}
+
+			//    newlen    m_Length    m_Capacity
+			// -----x-----------*------------|
+			else if( newlen < m_Length )
+			{
+				for( auto iter=m_pData+newlen; iter!=m_pData+m_Length; ++iter )
+					iter->~T();
+			}
 
 			m_Length	= newlen;
 			m_AllocSize	= c_ElementSize * m_Length;
@@ -1092,6 +1006,34 @@ namespace OreOreLib
 			return true;
 		}
 
+
+		// Create new memory space in the middle of m_pData. Allocated new space is UNINITIALIZED.
+		inline bool AllocateInsertionSpace( IndexType elm, IndexType numelms=1 )
+		{
+			IndexType newlen = m_Length + numelms;
+			ASSERT( elm < newlen );
+
+			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+			if( !newdata )
+				return false;
+
+			if( m_pData )
+			{
+				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
+				MemMove( &newdata[ 0 ], &m_pData[ 0 ], elm );
+				// Move m_pData[ elm : m_Length-1 ] to newdata[ elm + numelms : ... ]
+				MemMove( &newdata[ elm + numelms ], &m_pData[ elm ], m_Length - elm );
+
+				DeallocateBuffer();
+			}
+
+			m_Capacity	= newlen;
+			m_pData		= newdata;
+			m_Length	= newlen;
+			m_AllocSize	= c_ElementSize * m_Length;
+
+			return true;
+		}
 
 
 	};

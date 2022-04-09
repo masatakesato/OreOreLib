@@ -129,7 +129,8 @@ int main()
 	}
 
 	tcout << tendl;
-	
+
+	//while(1)
 	{
 		std::chrono::system_clock::time_point  start, end; // 型は auto で可
 		start = std::chrono::system_clock::now(); // 計測開始時間

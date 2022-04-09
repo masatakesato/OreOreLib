@@ -84,7 +84,9 @@
     <ClCompile Include="..\..\..\test\testRingQueue\testRingQueue_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\oreore\container\Array.h" />
     <ClInclude Include="..\..\..\oreore\container\RingQueue.h" />
+    <ClInclude Include="..\..\..\oreore\memory\Memory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

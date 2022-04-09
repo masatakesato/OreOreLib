@@ -266,10 +266,7 @@ namespace OreOreLib
 
 		using MemoryBase<T, IndexType>::Init;
 		using MemoryBase<T, IndexType>::Reserve;
-		using MemoryBase<T, IndexType>::Reallocate;
-		//using MemoryBase<T, IndexType>::Resize;
-		//using MemoryBase<T, IndexType>::Extend;
-		//using MemoryBase<T, IndexType>::Shrink;
+		using MemoryBase<T, IndexType>::Resize;
 		using MemoryBase<T, IndexType>::operator[];
 		//using MemoryBase<T, IndexType>::begin;
 		//using MemoryBase<T, IndexType>::end;

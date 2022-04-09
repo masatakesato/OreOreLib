@@ -239,11 +239,7 @@ namespace OreOreLib
 		//void Clear() = delete;
 
 		bool Reserve( IndexType ) = delete;
-bool Reallocate( IndexType ) = delete;
-//bool Resize( IndexType ) = delete;
-//bool Resize( IndexType, const T& ) = delete;
-//bool Extend( IndexType ) = delete;
-//bool Shrink( IndexType ) = delete;
+		bool Resize( IndexType ) = delete;
 		IndexType InsertBefore( IndexType ) = delete;
 		IndexType InsertBefore( IndexType, const T& ) = delete;
 		IndexType InsertBefore( IndexType, T&& ) = delete;
@@ -256,10 +252,7 @@ bool Reallocate( IndexType ) = delete;
 		using MemoryBase<T,IndexType>::Release;
 		//using MemoryBase<T,IndexType>::Clear;
 		using MemoryBase<T,IndexType>::Reserve;
-using MemoryBase<T, IndexType>::Reallocate;
-//using MemoryBase<T,IndexType>::Resize;
-//using MemoryBase<T,IndexType>::Extend;
-//using MemoryBase<T,IndexType>::Shrink;
+		using MemoryBase<T, IndexType>::Resize;
 		using MemoryBase<T,IndexType>::InsertBefore;
 		using MemoryBase<T,IndexType>::InsertAfter;
 

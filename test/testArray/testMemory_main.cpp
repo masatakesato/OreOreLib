@@ -50,8 +50,8 @@ int main()
 		// Reserve
 		mem.Reserve(10);
 	
-		// Extend using Reallocate
-		mem.Reallocate( mem.Capacity() + 4 );
+		// Extend using Resize
+		mem.Resize( mem.Capacity() + 4 );
 		tcout << mem[2] << tendl;
 
 		// Rereeize
@@ -69,12 +69,12 @@ int main()
 		// Reserve
 		mem.Reserve(10);
 	
-		// Extend using Reallocate
-		mem.Reallocate( mem.Capacity() + 4 );
+		// Extend using Resize
+		mem.Resize( mem.Capacity() + 4 );
 		tcout << mem[2] << tendl;
 
 		// ReExtend
-		mem.Reallocate( mem.Capacity() + 100 );
+		mem.Resize( mem.Capacity() + 100 );
 		tcout << mem[2] << tendl;
 
 		// Release
@@ -83,17 +83,17 @@ int main()
 
 	tcout << tendl;
 
-	while(1)
+	//while(1)
 	{
 		// Reserve
 		mem.Reserve(10);
 	
-		// Shrink using Reallocate
-		mem.Reallocate( mem.Capacity() - 4 );
+		// Shrink using Resize
+		mem.Resize( mem.Capacity() - 4 );
 		tcout << mem[2] << tendl;
 
 		// ReShrink with wrong parameter. -> Max(0, mem.Capacity()-100) 
-		mem.Reallocate( /*mem.Capacity() -100*/ Max(0, mem.Capacity()-100)  );
+		mem.Resize( /*mem.Capacity() -100*/ Max(0, mem.Capacity()-100)  );
 		tcout << mem[2] << tendl;
 
 		// Release

@@ -58,10 +58,11 @@ using fSArray16 = OreOreLib::StaticArray<float, 16>;
 
 struct Val
 {
-	Val() : value(nullptr)
+	Val() : value( new float(0) )
 	{
-	tcout << "Val()\n";
+		tcout << "Val()\n";
 	}
+
 	Val( float val )
 		: value( new float(val) )
 	{
@@ -99,7 +100,7 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	//while(1)
+	while(1)
 	{
 
 //		Val a(0.5f);

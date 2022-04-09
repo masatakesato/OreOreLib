@@ -29,5 +29,8 @@
     <ClInclude Include="..\..\..\oreore\container\ArrayView.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\oreore\memory\Memory.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

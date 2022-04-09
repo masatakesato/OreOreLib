@@ -43,9 +43,11 @@ namespace OreOreLib
 
 
 	private:
-TODO: RingQueueの機能改修が必要. 2022.04.08
+
 		Memory< std::thread >				m_Threads;
 		RingQueue< SharedPtr<IRunnable> >	m_Queue;
+		Dequeueする時に変数返せないの? -> インスタンス作るからコンストラクタ無駄に走ってめんどい -> 参照渡してムーブするDequeueはOK
+		-> RingQueueでクラス使うとバグる -> メモリ領域のデストラクタちゃんと呼んでない
 
 		std::mutex	m_Mutex;
 		bool m_bPauseEvent;// Thread pause flag. false: operating, true: paused

@@ -107,7 +107,7 @@ namespace OreOreLib
 	template< typename T,  typename  IndexType >
 	void PriorityQueue<T, IndexType>::Extend( IndexType numelms )
 	{
-		m_HeapArray.Reallocate( m_HeapArray.Length() + numelms );
+		m_HeapArray.Resize( m_HeapArray.Length() + numelms );
 	}
 
 
@@ -119,7 +119,7 @@ namespace OreOreLib
 		if( new_length < m_ActiveSize )// 縮小可能な下限値を割り込んだ場合は中止.
 			return false;
 
-		m_HeapArray.Reallocate( Max( m_HeapArray.Length() - numelms, 0 ) );
+		m_HeapArray.Resize( new_length );
 
 		return true;
 	}

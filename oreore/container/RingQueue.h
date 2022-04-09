@@ -49,7 +49,7 @@ namespace OreOreLib
 	private:
 		
 		IndexType					m_ActiveSize;
-		MemoryBase<T, IndexType>	m_Queue;
+		MemoryBase<T, IndexType>	m_Queue;//ArrayImpl<T, IndexType>		m_Queue;//
 		IndexType					front;// キュー先頭のオブジェクトが入っている要素のインデックス
 		IndexType					rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
 
@@ -139,12 +139,12 @@ namespace OreOreLib
 	template< typename T, typename IndexType >
 	void RingQueue<T, IndexType>::Extend( IndexType numelms )
 	{
-		m_Queue.Reallocate( m_Queue.Length() + numelms );
+		m_Queue.Resize( m_Queue.Length() + numelms );
 
 		if( rear < front )
 		{
 			int32 newfront = front + static_cast<int32>( numelms );
-			MemMove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) );//memmove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) * sizeof(T) );
+			MemMove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) );
 			front = newfront;
 		}
 	}
@@ -175,7 +175,7 @@ namespace OreOreLib
 		
 		if( front <= rear )
 		{
-			MemMove( &m_Queue[0], &m_Queue[front], m_ActiveSize );//memmove( &m_Queue[0], &m_Queue[front], m_ActiveSize * sizeof(T) );// 使用中領域を配列先頭にスライドさせる
+			MemMove( &m_Queue[0], &m_Queue[front], m_ActiveSize );// 使用中領域を配列先頭にスライドさせる
 			// rear/frontのインデックスもスライドする
 			rear -= front;
 			front = 0;
@@ -183,12 +183,11 @@ namespace OreOreLib
 		else
 		{
 			int newfront = front - numelms;
-			MemMove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) );//memmove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) * sizeof(T) );
+			MemMove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) );
 			front = newfront;
 		}
 
-		m_Queue.Reallocate( Max( m_Queue.Length() - numelms, 0 ) );
-		//m_Queue.Shrink( numelms );
+		m_Queue.Resize( new_length );
 
 
 		return true;
