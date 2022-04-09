@@ -816,6 +816,55 @@ namespace OreOreLib
 		}
 
 
+		inline void LeftShiftElements( IndexType idx, IndexType numelms, IndexType shift )
+		{
+			if( idx < shift || shift == 0 )
+				return;
+
+			T* pSrc = m_pData + idx;// 移動元要素イテレータ.
+			T* pDst = pSrc - shift;// 移動先要素イテレータ
+
+			while( pSrc <= m_pData + Min( idx + numelms - 1 + shift, m_Length - 1 ) )//end() )
+			{
+				pDst->~T();// destruct dst data first 
+				new ( pDst ) T( (T&&)( *pSrc ) );// then move src data
+
+				++pDst;
+				++pSrc;
+			}
+
+			// destruct empty elements
+			for( IndexType i=0; i<shift; ++i )
+				(pDst++)->~T();
+		}
+
+
+		inline void RightShiftElements( IndexType idx, IndexType numelms, IndexType shift )
+		{
+			if( m_Length <= ( idx + shift ) || shift == 0 )
+				return;
+
+			T* pDst = m_pData + Min( idx + numelms - 1 + shift, m_Length - 1 );// 移動先要素イテレータ. m_Lengthからはみ出ないようにする
+			T* pSrc = pDst - shift;// 移動元イテレータ
+
+			while( pSrc >= m_pData + idx )// Start shift from the last element
+			{
+				pDst->~T();// destruct dst data first 
+				new ( pDst ) T( (T&&)( *pSrc ) );// then move src data
+
+				--pDst;
+				--pSrc;
+			}
+
+			//tcout << pDst << tendl;
+			//tcout << m_pData + idx + shift - 1 << tendl;
+
+			// destruct empty elements
+			for( IndexType i=0; i<shift; ++i )
+				(pDst--)->~T();//(m_pData + idx + i)->~T();
+		}
+
+
 		inline void CopyFrom( const MemoryBase& src )
 		{
 			MemCopy( m_pData, src.m_pData, Min(m_Length, src.m_Length) );
@@ -1007,11 +1056,17 @@ namespace OreOreLib
 		}
 
 
+//TODO: m_Capacityが充分な場合はメモリ再確保しないようにする
+
 		// Create new memory space in the middle of m_pData. Allocated new space is UNINITIALIZED.
 		inline bool AllocateInsertionSpace( IndexType elm, IndexType numelms=1 )
 		{
 			IndexType newlen = m_Length + numelms;
 			ASSERT( elm < newlen );
+
+//if( newlen <= m_Capacity )
+//	RightShiftElements
+
 
 			T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
 			if( !newdata )

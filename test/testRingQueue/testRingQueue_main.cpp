@@ -49,8 +49,14 @@ int main()
 		queue.Enqueue(-2);
 		tcout << tendl;
 
+		queue.Display();
+		tcout << tendl;
+
 		tcout << _T("queue.Extend(6);\n");
 		queue.Extend(6);
+		tcout << tendl;
+
+		queue.Display();
 		tcout << tendl;
 
 		tcout << _T("queue.Enqueue(-9999);\n");
@@ -68,10 +74,11 @@ int main()
 		tcout << tendl;
 	}
 
+	//return 0;
 
 	tcout << _T("//============== Extend/Shrink with front < rear case =============//\n");
 
-	while(1)
+	//while(1)
 	{
 		queue.Init(8);
 
@@ -80,6 +87,7 @@ int main()
 			tcout << _T("Enqueue: ") << i << tendl;
 			queue.Enqueue(i);
 		}
+		tcout << tendl;
 
 		queue.Display();
 		tcout << tendl;
@@ -90,9 +98,16 @@ int main()
 			auto val = queue.Dequeue();
 			tcout << _T("Dequeue: ") << val << tendl;
 		}
+		tcout << tendl;
+
+		queue.Display();
+		tcout << tendl;
 
 		tcout << _T("queue.Extend(6);\n");
 		queue.Extend(6);
+		tcout << tendl;
+
+		queue.Display();
 		tcout << tendl;
 
 		tcout << _T("queue.Enqueue(-9999);\n");

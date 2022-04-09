@@ -3,6 +3,7 @@
 
 
 #include	"../common/TString.h"
+#include	"Array.h"
 #include	"../memory/Memory.h"
 
 
@@ -49,7 +50,7 @@ namespace OreOreLib
 	private:
 		
 		IndexType					m_ActiveSize;
-		MemoryBase<T, IndexType>	m_Queue;//ArrayImpl<T, IndexType>		m_Queue;//
+		ArrayImpl<T, IndexType>		m_Queue;//MemoryBase<T, IndexType>	m_Queue;//
 		IndexType					front;// キュー先頭のオブジェクトが入っている要素のインデックス
 		IndexType					rear;// キュー最後尾の、オブジェクトを登録可能な空要素のインデックス
 
@@ -143,8 +144,16 @@ namespace OreOreLib
 
 		if( rear < front )
 		{
-			int32 newfront = front + static_cast<int32>( numelms );
-			MemMove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) );
+			IndexType newfront = front + numelms;
+
+			// front から (m_ActiveSize - rear) 個を、newfront以降へ再配置する
+			// front < newfront なので、右シフト
+			m_Queue.RightShiftElements( front, m_ActiveSize - rear, numelms );
+
+
+			// ここもメモリリーク発生. そもそも右シフト用途にMemMove使うの危険.
+			//MemMove( &m_Queue[newfront], &m_Queue[front], (m_ActiveSize - rear) );
+
 			front = newfront;
 		}
 	}
@@ -152,19 +161,19 @@ namespace OreOreLib
 
 
 	/*
-    こういう場合は、、、、
+    If( front < rear ):
     |-----+++++++++++++++++++---------------|
           ^front=5           ^rear=24
-    こうする
+    Left shift [ front, rear ]
 	|+++++++++++++++++++----------xxxxxxxxxx|
-     ^front=0           ^rear=19     elm=10
+     ^front=0           ^rear=19   numelms=10
 
-    こういう場合は、、、、
+    Else If( rear < front ):
     |++++++---------------------++++++++++++|
            ^rear=6              ^front=27
-    こうする
+    Left shift [front : -1]
 	|++++++-----------++++++++++++xxxxxxxxxx|
-           ^rear=6    ^front=17      elm=10
+           ^rear=6    ^front=17    numelms=10
 	*/
 	template< typename T, typename IndexType >
 	bool RingQueue<T, IndexType>::Shrink( IndexType numelms )
@@ -175,7 +184,26 @@ namespace OreOreLib
 		
 		if( front <= rear )
 		{
-			MemMove( &m_Queue[0], &m_Queue[front], m_ActiveSize );// 使用中領域を配列先頭にスライドさせる
+			// メモリリーク発生. NG
+			//if( front > 0 )
+			//MemMove( &m_Queue[0], &m_Queue[front], m_ActiveSize );// 使用中領域を配列先頭にスライドさせる
+
+
+			// Move Assignment Operator版. OK
+			//for( int i=0; i<m_ActiveSize; ++i )
+			//	m_Queue[i] = (T&&)m_Queue[front + i];
+
+			// コピー先要素デストラクタ先行呼び出し + MemMove等価処理. OK
+			//for( auto i=0; i<m_ActiveSize; ++i )
+			//{
+			//	m_Queue[i].~T();
+			//	new ( &m_Queue[i] ) T( (T&&)m_Queue[front + i] );
+			//}
+
+
+			m_Queue.LeftShiftElements( front, m_ActiveSize, front );
+
+
 			// rear/frontのインデックスもスライドする
 			rear -= front;
 			front = 0;
@@ -183,7 +211,20 @@ namespace OreOreLib
 		else
 		{
 			int newfront = front - numelms;
-			MemMove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) );
+
+			// メモリリーク発生. NG
+			//MemMove( &m_Queue[newfront], &m_Queue[front], (m_Queue.Length()-front) );
+
+			// コピー先要素デストラクタ先行呼び出し + MemMove等価処理.
+			//for( auto i=0; i<(m_Queue.Length()-front); ++i )
+			//{
+			//	m_Queue[newfront + i].~T();
+			//	new ( &m_Queue[newfront + i] ) T( (T&&)m_Queue[front + i] );
+			//}
+
+			m_Queue.LeftShiftElements( front, m_Queue.Length()-front, numelms );
+
+
 			front = newfront;
 		}
 

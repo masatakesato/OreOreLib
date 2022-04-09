@@ -5,68 +5,79 @@
 using namespace OreOreLib;
 
 
-struct Int
+struct Struct
 {
-	Int()
+	Struct()
 		: pVal( new int() )
 	{
-		tcout << _T("Int::Int()...\n");	
+		tcout << _T("Struct::Struct()...\n");	
 	}
 
 
-	Int( int i )
+	Struct( int i, const tstring& s )
 		: pVal( new int(i) )
+		, str( s )
 	{
-		tcout << _T("Int::Int( int i )...\n");	
+		tcout << _T("Struct::Struct( int i )...\n");	
 	}
 
 
-	~Int()
+	~Struct()
 	{
-		tcout << _T("Int::~Int()...\n");	
+		tcout << _T("Struct::~Struct()...\n");	
 		SafeDelete( pVal );
+		//str.clear();
+		//str.shrink_to_fit();
+		str.~tstring();
 	}
 
 
-	Int( const Int& obj )
+	Struct( const Struct& obj )
 		: pVal( new int(*obj.pVal) )
+		//, str( obj.str )
 	{
-		tcout << _T("Int::Int( const Int& obj )...\n");
+		tcout << _T("Struct::Struct( const Struct& obj )...\n");
 	}
 
 
-	Int( Int&& obj )
+	Struct( Struct&& obj )
 		: pVal( obj.pVal )
+		, str( (tstring&&)obj.str )
 	{
-		tcout << _T("Int::Int( Int&& obj )...\n");
+		tcout << _T("Struct::Struct( Struct&& obj )...\n");
+
 		obj.pVal = nullptr;
+		//obj.str.~tstring();// stringクラスはムーブコンストラクタ持ってないから、明示的に削除する必要がある
 	}
 
 
-	Int& operator=( const Int& obj )
+	Struct& operator=( const Struct& obj )
 	{
-		tcout << _T("Int::Int& operator=( const Int& obj )...\n");
+		tcout << _T("Struct::Struct& operator=( const Struct& obj )...\n");
 		if( this != &obj )
 		{
 			SafeDelete( pVal );
 
 			pVal = new int( *obj.pVal );
+			str = obj.str;
 		}
 
 		return *this;
 	}
 
 
-	Int& operator=( Int&& obj )
+	Struct& operator=( Struct&& obj )
 	{
-		tcout << _T("Int::Int& operator=( Int&& obj )...\n");
+		tcout << _T("Struct::Struct& operator=( Struct&& obj )...\n");
 		if( this != &obj )
 		{
 			SafeDelete( pVal );
 
 			pVal = obj.pVal;
+			str = obj.str;
 
 			obj.pVal = nullptr;
+			//obj.str.~tstring();// stringクラスはムーブコンストラクタ持ってないから、明示的に削除する必要がある
 		}
 
 		return *this;
@@ -74,15 +85,17 @@ struct Int
 
 
 
-	friend tostream& operator<<( tostream& stream, const Int& obj )
+	friend tostream& operator<<( tostream& stream, const Struct& obj )
 	{
 		if( obj.pVal )	stream << *obj.pVal;
+		stream << ", " << obj.str.c_str();
 		return stream;
 	}
 
 
 
 	int* pVal;
+	tstring str;
 };
 
 
@@ -92,11 +105,11 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	RingQueue<Int> queue;
+	RingQueue<Struct> queue;
 
 	tcout << _T("//============== Extend/Shrink with rear < front case =============//\n");
 
-	while(1)
+	//while(1)
 	{
 		tcout << _T("queue.Init(8);\n");
 		queue.Init(8);
@@ -108,11 +121,11 @@ int main()
 		for( int i=0; i<7; ++i )
 		{
 			tcout << _T("Enqueue: ") << i << tendl;
-			queue.Enqueue( /*Int(i)*/i );
+			queue.Emplace( /*Struct(i)*/i, to_tstring(i).c_str() );
 		}
 		tcout << tendl;
 
-		auto Val = Int(7);
+		auto Val = Struct( 7, _T("7") );
 		queue.Enqueue( Val );
 
 		queue.Display();
@@ -121,7 +134,7 @@ int main()
 		for( int i=0; i<4; ++i )
 		{
 			//auto val = queue.Dequeue();
-			Int val;
+			Struct val;
 			queue.Dequeue( val );
 			tcout << _T("Dequeue: ") << val << tendl;
 		}
@@ -132,7 +145,7 @@ int main()
 
 		int v= -2;
 		tcout << _T("queue.Enqueue(-2);\n");
-		queue.Enqueue(v);
+		queue.Emplace( v, _T("-2") );
 		tcout << tendl;
 
 		queue.Display();
@@ -146,7 +159,7 @@ int main()
 		tcout << tendl;
 
 		tcout << _T("queue.Enqueue(-9999);\n");
-		queue.Enqueue(-9999);
+		queue.Emplace( -9999, _T("-9999") );
 		tcout << tendl;
 
 		queue.Display();
@@ -160,7 +173,6 @@ int main()
 		tcout << tendl;
 	}
 
-
 	tcout << _T("//============== Extend/Shrink with front < rear case =============//\n");
 
 	while(1)
@@ -170,7 +182,8 @@ int main()
 		for( int i=0; i<7; ++i )
 		{
 			tcout << _T("Enqueue: ") << i << tendl;
-			queue.Enqueue(i);
+			auto str = _T("Enqueue: ") + to_tstring(i);
+			queue.Emplace(i, str.c_str() );
 		}
 		tcout << tendl;
 
@@ -195,9 +208,10 @@ int main()
 		tcout << tendl;
 
 		tcout << _T("queue.Enqueue(-9999);\n");
-		queue.Enqueue(-9999);
+		auto str = _T("Enqueue: ") + to_tstring(-9999);
+		queue.Emplace( -9999, str.c_str() );
 		tcout << tendl;
-
+		
 		queue.Display();
 		tcout << tendl;
 
