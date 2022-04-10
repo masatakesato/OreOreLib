@@ -1,21 +1,103 @@
 ﻿#ifndef MEMORY_OPERATIONS_H
 #define	MEMORY_OPERATIONS_H
 
-//#include	<algorithm>
+//#include	<type_traits>
 
 #include	"../common/Utility.h"
-#include	"../meta/TypeTraits.h"
-#include	"../mathlib/MathLib.h"
-#include	"../algorithm/Algorithm.h"
 
 
 
 namespace OreOreLib
 {
 
+
 	//##############################################################################################//
 	//																								//
-	//											MemCopy												//
+	//										Helper functions										//
+	//																								//
+	//##############################################################################################//
+
+	namespace detail
+	{
+
+		template < class F, class SrcIter, class DstIter >
+		void ForwardIteration( F&& func, DstIter* pDst, const SrcIter* pSrc, sizeType size )
+		{
+			SrcIter* begin = (SrcIter*)pSrc;
+			const SrcIter* end = pSrc + size;
+			DstIter* out = pDst;
+
+			while( begin != end )
+			{
+				func( out, begin );
+				++begin; ++out;
+			}
+		}
+
+
+
+		template < class F, class SrcIter, class DstIter >
+		void BackwardIteration( F&& func, DstIter* pDst, const SrcIter* pSrc, sizeType size )
+		{
+			SrcIter* begin = (SrcIter*)pSrc + size - 1;
+			const SrcIter* end = pSrc - 1;
+			DstIter* out = pDst + size - 1;
+
+			while( begin != end )
+			{
+				func( out, begin );
+				--begin; --out;
+			}
+		}
+
+
+		
+		template < class SrcIter, class DstIter >
+		const auto CopyOp = []( DstIter* dst, SrcIter* src )
+		{
+			//tcout << "CopyOp()...\n";
+			dst->~DstIter();// Destruct existing data from destination memory
+			new ( dst ) DstIter( *(DstIter*)src );// Call copy constructor
+
+			// Copy assignment operator version
+			//*dst = *(DstIter*)src;
+		};
+
+
+		template < class SrcIter, class DstIter >
+		const auto UninitializedCopyOp = []( DstIter* dst, SrcIter* src )
+		{
+			//tcout << "UninitializedCopyOp()...\n";
+			new ( dst ) DstIter( *(DstIter*)src );// Overwite existing memory with placement new
+		};
+
+
+		template < class SrcIter, class DstIter >
+		const auto MigrateOp = []( DstIter* dst, SrcIter* src )
+		{
+			//tcout << "MigrateOp()...\n";
+			dst->~DstIter();// Destruct existing data from dst
+			new ( dst ) DstIter( (DstIter&&)( *src ) );// Overwite existing memory with placement new
+			src->~SrcIter();// Destruct src
+		};
+
+
+		template < class SrcIter, class DstIter >
+		const auto UninitializedMigrateOp = []( DstIter* dst, SrcIter* src )
+		{
+			//tcout << "UninitializedMigrateOp()...\n";
+			new ( dst ) DstIter( (DstIter&&)( *src ) );// Overwite existing memory with placement new
+			src->~SrcIter();// Destruct src
+		};
+
+
+	}// end of namespace detail
+
+
+
+	//##############################################################################################//
+	//																								//
+	//							Copy / UninitializedCopy (memcpy equivalent)						//
 	//																								//
 	//##############################################################################################//
 
@@ -24,9 +106,8 @@ namespace OreOreLib
 	// If using Visual c++, folowing command must be added for __cplusplus macro activation.
 	//   /Zc:__cplusplus
 
-	// Memory Copy
 	template < class SrcIter, class DstIter >
-	DstIter* MemCopy( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	DstIter* Copy( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -34,29 +115,15 @@ namespace OreOreLib
 		}
 		else
 		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while( begin != end )
-			{
-				// Placement new version
-				out->~DstIter();// Desctuct existing data from destination memory
-				new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-
-				++begin; ++out;
-			}
-			
-			return out;
+			detail::ForwardIteration( detail::CopyOp<SrcIter, DstIter>, pDst, pSrc, size );			
+			return pDst;
 		}
 	}
 
-	// Uninitialized Memory Copy
+
+
 	template < class SrcIter, class DstIter >
-	DstIter* Uninitialized_MemCopy( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	DstIter* UninitializedCopy( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -64,22 +131,8 @@ namespace OreOreLib
 		}
 		else
 		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while( begin != end )
-			{
-				// Placement new version
-				new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-
-				++begin; ++out;
-			}
-			
-			return out;
+			detail::ForwardIteration( detail::UninitializedCopyOp<SrcIter, DstIter>, pDst, pSrc, size );			
+			return pDst;
 		}
 	}
 
@@ -87,71 +140,38 @@ namespace OreOreLib
 
 #else	// Below C++14
 
-	// Trivial Memcpy
+	//======================== Trivial ======================//
+
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemCopy( Iter* pDst, const Iter* pSrc, sizeType size )
+	Copy( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
 	}
 
-	// Uninitialized Trivial Memcpy( same as MemCpy )
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	Uninitialized_MemCopy( Iter* pDst, const Iter* pSrc, sizeType size )
+	UninitializedCopy( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
 	}
 
 
+	//====================== Non-Trivial ====================//
 
-	// Non-Trivial Memcpy
 	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	MemCopy( DstIter* pDst, const SrcIter* pSrc, sizeType size )
+	DstIter* Copy( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
 	{
-		SrcIter* begin = (SrcIter*)pSrc;
-		const SrcIter* end = pSrc + size;
-		DstIter* out = pDst;
-
-		while( begin != end )
-		{
-			// Placement new version
-			out->~DstIter();// Destruct existing data from destination memory
-			new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-
-			// Copy assignment operator version
-			//*out = *(DstIter*)begin;
-
-			++begin; ++out;// expecting copy assignment operator implementation
-		}
-		
-		return out;
+		detail::ForwardIteration( detail::CopyOp<SrcIter, DstIter>, pDst, pSrc, size );
+		return pDst;
 	}
 
-	// Non-Trivial Uninitialized Memcpy
 	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	Uninitialized_MemCopy( DstIter* pDst, const SrcIter* pSrc, sizeType size )
+	DstIter* UninitializedCopy( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
 	{
-		SrcIter* begin = (SrcIter*)pSrc;
-		const SrcIter* end = pSrc + size;
-		DstIter* out = pDst;
-
-		while( begin != end )
-		{
-			// Placement new version
-			new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-
-			// Copy assignment operator version
-			//*out = *(DstIter*)begin;
-
-			++begin; ++out;// expecting copy assignment operator implementation
-		}
-		
-		return out;
+		detail::ForwardIteration( detail::UninitializedCopyOp<SrcIter, DstIter>, pDst, pSrc, size );
+		return pDst;
 	}
-
 
 
 
@@ -162,15 +182,14 @@ namespace OreOreLib
 
 	//##############################################################################################//
 	//																								//
-	//								MemMove / Uninitialized_MemMove									//
+	//						SafeCopy / Uninitialized_SafeCopy (memmove equivalent)					//
 	//																								//
 	//##############################################################################################//
 
 #if __cplusplus >= 201703L	// Above C++17
 
-	// Memory Move
 	template < class SrcIter, class DstIter >
-	DstIter* MemMove( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	DstIter* SafeCopy( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -178,29 +197,23 @@ namespace OreOreLib
 		}
 		else
 		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while(begin != end)
+			if( pSrc < pDst )// Copy from the last element
 			{
-				// Placement new version
-				out->~DstIter();// Desctuct existing data from destination memory
-				new ( out ) DstIter( (DstIter&&)( *begin ) );// Call move constructor
-				
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-				
-				++begin; ++out;
+				detail::BackwardIteration( detail::CopyOp<SrcIter, DstIter>, pDst, pSrc, size );
+			}
+			else if( pSrc > pDst )// Copy from the first element
+			{
+				detail::ForwardIteration( detail::CopyOp<SrcIter, DstIter>, pDst, pSrc, size );
 			}
 
-			return out;
+			return pDst;
 		}
 	}
 
-	// Uninitialized Memory Move
+
+
 	template < class SrcIter, class DstIter >
-	DstIter* Uninitialized_MemMove( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	DstIter* UninitializedSafeCopy( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -208,22 +221,16 @@ namespace OreOreLib
 		}
 		else
 		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while(begin != end)
+			if( pSrc < pDst )// Copy from the last element
 			{
-				// Placement new version
-				new ( out ) DstIter( (DstIter&&)( *begin ) );// Call move constructor
-				
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-				
-				++begin; ++out;
+				detail::BackwardIteration( detail::UninitializedCopyOp<SrcIter, DstIter>, pDst, pSrc, size );
+			}
+			else if( pSrc > pDst )// Copy from the first element
+			{
+				detail::ForwardIteration( detail::UninitializedCopyOp<SrcIter, DstIter>, pDst, pSrc, size );
 			}
 
-			return out;
+			return pDst;
 		}
 	}
 
@@ -231,145 +238,141 @@ namespace OreOreLib
 
 #else	// Below C++14
 
-	// Trivial MemMove
+	//======================== Trivial ======================//
+
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemMove( Iter* pDst, const Iter* pSrc, sizeType size )
+	SafeCopy( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
 	}
 
-	// Trivial Uninitialized MemMove(same as MemMove)
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	Uninitialized_MemMove( Iter* pDst, const Iter* pSrc, sizeType size )
+	UninitializedSafeCopy( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
 	}
 
 
+	//====================== Non-Trivial ====================//
 
-template < class SrcIter, class DstIter >
-void ForwardMemScanProcess( DstIter* pDst, const SrcIter* pSrc, sizeType size )
-{
-	SrcIter* begin = (SrcIter*)pSrc;
-	const SrcIter* end = pSrc + size;
-	DstIter* out = pDst;
-
-	while( begin != end )
-	{
-		// DoSomething
-
-		++begin; ++out;
-	}
-}
-
-
-template < class SrcIter, class DstIter >
-void BackwardMemScanProcess( DstIter* pDst, const SrcIter* pSrc, sizeType size )
-{
-	SrcIter* begin = (SrcIter*)pSrc + size - 1;
-	const SrcIter* end = pSrc - 1;
-	DstIter* out = pDst + size - 1;
-
-	while( begin != end )
-	{
-		// DoSomething
-
-		--begin; --out;
-	}
-}
-
-//TODO: テスト
-/*
-template<typename F>
-int function(F foo, int a) {
-    return foo(a);
-}
-
-int test(int a) {
-    return a;
-}
-
-int main()
-{
-    // function will work out the template types
-    // based on the parameters.
-    function(test, 1);
-    function([](int a) -> int { return a; }, 1);
-}
-
-
-*/
-
-
-
-	// Non-Trivial MemMove
 	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	MemMove( DstIter* pDst, const SrcIter* pSrc, sizeType size )
+	DstIter* SafeCopy( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
 	{
 		if( pSrc < pDst )// Copy from the last element
 		{
-			SrcIter* begin = (SrcIter*)pSrc + size - 1;
-			const SrcIter* end = pSrc - 1;
-			DstIter* out = pDst + size - 1;
-
-			while( begin != end )
-			{
-				// Placement new version
-				out->~DstIter();// Destruct existing data
-				new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
-
-				// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
-				//*out = *(DstIter*)begin;
-
-				--begin; --out;
-			}
+			detail::BackwardIteration( detail::CopyOp<SrcIter, DstIter>, pDst, pSrc, size );
 		}
 		else if( pSrc > pDst )// Copy from the first element
 		{
-			SrcIter* begin = (SrcIter*)pSrc;
-			const SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while( begin != end )
-			{
-				// Placement new version
-				out->~DstIter();// Destruct existing data
-				new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
-
-				// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
-				//*out = *(DstIter*)begin;
-
-				++begin; ++out;
-			}
+			detail::ForwardIteration( detail::CopyOp<SrcIter, DstIter>, pDst, pSrc, size );
 		}
-		
-		//return out;
+
+		return pDst;
 	}
 
-	// Non-Trivial Uninitialized MemMove
 	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	Uninitialized_MemMove( DstIter* pDst, const SrcIter* pSrc, sizeType size )
+	DstIter* UninitializedSafeCopy( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
 	{
-		SrcIter* begin = (SrcIter*)pSrc;
-		const SrcIter* end = pSrc + size;
-		DstIter* out = pDst;
-
-		while( begin != end )
+		if( pSrc < pDst )// Copy from the last element
 		{
-			// Placement new version
-			new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
-
-			// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
-			//*out = *(DstIter*)begin;
-
-			++begin; ++out;
+			detail::BackwardIteration( detail::UninitializedCopyOp<SrcIter, DstIter>, pDst, pSrc, size );
 		}
-		
-		return out;
+		else if( pSrc > pDst )// Copy from the first element
+		{
+			detail::ForwardIteration( detail::UninitializedCopyOp<SrcIter, DstIter>, pDst, pSrc, size );
+		}
+
+		return pDst;
+	}
+
+
+
+#endif
+
+
+
+	//##############################################################################################//
+	//																								//
+	//								Migrate / UninitializedMigrate									//
+	//																								//
+	//##############################################################################################//
+
+#if __cplusplus >= 201703L	// Above C++17
+
+	template < class SrcIter, class DstIter >
+	DstIter* Migrate( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	{
+		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
+		{
+			auto result = (DstIter*)memmove( pDst, pSrc, sizeof DstIter * size );
+			memset( pSrc, 0, sizeof SrcIter * size );
+			return result;
+		}
+		else
+		{
+			detail::ForwardIteration( detail::MigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+			return pDst;
+		}
+	}
+
+
+
+	template < class SrcIter, class DstIter >
+	DstIter* UninitializedMigrate( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	{
+		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
+		{
+			auto result = (DstIter*)memmove( pDst, pSrc, sizeof DstIter * size );
+			memset( pSrc, 0, sizeof SrcIter * size );
+			return result;
+		}
+		else
+		{
+			detail::ForwardIteration( detail::UninitializedMigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+			return pDst;
+		}
+	}
+
+
+#else	// Below C++14
+	
+	//======================== Trivial ======================//
+
+	template < class Iter >
+	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
+	Migrate( Iter* pDst, const Iter* pSrc, sizeType size )
+	{
+		auto result = (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
+		memset( pSrc, 0, sizeof Iter * size );
+		return result;
+	}
+
+	template < class Iter >
+	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
+	UninitializedMigrate( Iter* pDst, const Iter* pSrc, sizeType size )
+	{
+		auto result = (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
+		memset( pSrc, 0, sizeof Iter * size );
+		return result;
+	}
+
+
+	//====================== Non-Trivial ====================//
+
+	template < class SrcIter, class DstIter >
+	DstIter* Migrate( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
+	{
+		detail::ForwardIteration( detail::MigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+		return pDst;
+	}
+	
+	template < class SrcIter, class DstIter >
+	DstIter* UninitializedMigrate( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
+	{
+		detail::ForwardIteration( detail::UninitializedMigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+		return pDst;
 	}
 
 
@@ -381,15 +384,14 @@ int main()
 
 	//##############################################################################################//
 	//																								//
-	//											MemMigrate											//
+	//							SafeMigrate / UninitializedSafeMigrate								//
 	//																								//
 	//##############################################################################################//
 
 #if __cplusplus >= 201703L	// Above C++17
 
-	// Memory Migrate
 	template < class SrcIter, class DstIter >
-	DstIter* MemMigrate( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	DstIter* SafeMigrate( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -399,30 +401,23 @@ int main()
 		}
 		else
 		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while(begin != end)
+			if( pSrc < pDst )// Migrate from the last element
 			{
-				// Placement new version
-				out->~DstIter();// Desctuct existing data from destination memory
-				new ( out ) DstIter( (DstIter&&)( *begin ) );// Call move constructor
-				begin->~SrcIter();// Cleanup source
-
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-				
-				++begin; ++out;
+				detail::BackwardIteration( detail::MigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+			}
+			else if( pSrc > pDst )// Migrate from the first element
+			{
+				detail::ForwardIteration( detail::MigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
 			}
 
-			return out;
+			return pDst;
 		}
 	}
 
-	// Uninitialized Memory Migrate
+
+
 	template < class SrcIter, class DstIter >
-	DstIter* Uninitialized_MemMigrate( DstIter* pDst, SrcIter* pSrc, sizeType size )
+	DstIter* UninitializedSafeMigrate( DstIter* pDst, SrcIter* pSrc, sizeType size )
 	{
 		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
 		{
@@ -432,43 +427,36 @@ int main()
 		}
 		else
 		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while(begin != end)
+			if( pSrc < pDst )// Migrate from the last element
 			{
-				// Placement new version
-				new ( out ) DstIter( (DstIter&&)( *begin ) );// Call move constructor
-				begin->~SrcIter();// Cleanup source
-
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-				
-				++begin; ++out;
+				detail::BackwardIteration( detail::UninitializedMigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+			}
+			else if( pSrc > pDst )// Migrate from the first element
+			{
+				detail::ForwardIteration( detail::UninitializedMigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
 			}
 
-			return out;
+			return pDst;
 		}
 	}
 
 
 #else	// Below C++14
 	
-	// Trivial MemMigrate
+	//======================== Trivial ======================//
+
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemMigrate( Iter* pDst, const Iter* pSrc, sizeType size )
+	SafeMigrate( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		auto result = (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
 		memset( pSrc, 0, sizeof Iter * size );
 		return result;
 	}
 
-	// Trivial Uninitialized MemMigrate( same as MemMigrate )
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	Uninitialized_MemMigrate( Iter* pDst, const Iter* pSrc, sizeType size )
+	UninitializedSafeMigrate( Iter* pDst, const Iter* pSrc, sizeType size )
 	{
 		auto result = (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
 		memset( pSrc, 0, sizeof Iter * size );
@@ -476,54 +464,36 @@ int main()
 	}
 
 
+	//====================== Non-Trivial ====================//
 
-	// Non-Trivial MemMigrate
 	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	MemMigrate( DstIter* pDst, const SrcIter* pSrc, sizeType size )
+	DstIter* SafeMigrate( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
 	{
-		SrcIter* begin = (SrcIter*)pSrc;
-		const SrcIter* end = pSrc + size;
-		DstIter* out = pDst;
-
-		while( begin != end )
+		if( pSrc < pDst )// Migrate from the last element
 		{
-			// Placement new version
-			out->~DstIter();// Destruct existing data
-			new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
-			begin->~SrcIter();// Cleanup source
-
-			// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
-			//*out = *(DstIter*)begin;
-
-			++begin; ++out;
+			detail::BackwardIteration( detail::MigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
 		}
-		
-		return out;
+		else if( pSrc > pDst )// Migrate from the first element
+		{
+			detail::ForwardIteration( detail::MigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+		}
+
+		return pDst;
 	}
 	
-	// Non-Trivial Uninitialized MemMigrate
 	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	Uninitialized_MemMigrate( DstIter* pDst, const SrcIter* pSrc, sizeType size )
+	DstIter* UninitializedSafeMigrate( DstIter* pDst, const SrcIter* pSrc, sizeType size ) 
 	{
-		SrcIter* begin = (SrcIter*)pSrc;
-		const SrcIter* end = pSrc + size;
-		DstIter* out = pDst;
-
-		while( begin != end )
+		if( pSrc < pDst )// Migrate from the last element
 		{
-			// Placement new version
-			new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
-			begin->~SrcIter();// Cleanup source
-
-			// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
-			//*out = *(DstIter*)begin;
-
-			++begin; ++out;
+			detail::BackwardIteration( detail::UninitializedMigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
 		}
-		
-		return out;
+		else if( pSrc > pDst )// Migrate from the first element
+		{
+			detail::ForwardIteration( detail::UninitializedMigrateOp<SrcIter, DstIter>, pDst, pSrc, size );
+		}
+
+		return pDst;
 	}
 
 
@@ -568,7 +538,8 @@ int main()
 
 #else	// Below C++14
 
-	// Trivial MemClear
+	//====================== Non-Trivial ====================//
+
 	template < class Iter >
 	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
 	MemClear( Iter* pDst, sizeType size )
@@ -577,8 +548,8 @@ int main()
 	}
 
 
+	//====================== Non-Trivial ====================//
 
-	// Non-Trivial MemClear
 	template < class Iter >
 	std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
 	MemClear( Iter* pDst, sizeType size )
