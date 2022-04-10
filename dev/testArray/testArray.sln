@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testStringArray", "testStri
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testMemoryVectorBehavior", "testMemoryVectorBehavior\testMemoryVectorBehavior.vcxproj", "{DFED5AEF-A4EC-4A48-A761-F9480A804C85}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testMemoryOperations", "testMemoryOperations\testMemoryOperations.vcxproj", "{82FEBE94-0A5E-41C6-9C94-0F39BC1BAC20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -57,6 +59,10 @@ Global
 		{DFED5AEF-A4EC-4A48-A761-F9480A804C85}.Debug|x64.Build.0 = Debug|x64
 		{DFED5AEF-A4EC-4A48-A761-F9480A804C85}.Release|x64.ActiveCfg = Release|x64
 		{DFED5AEF-A4EC-4A48-A761-F9480A804C85}.Release|x64.Build.0 = Release|x64
+		{82FEBE94-0A5E-41C6-9C94-0F39BC1BAC20}.Debug|x64.ActiveCfg = Debug|x64
+		{82FEBE94-0A5E-41C6-9C94-0F39BC1BAC20}.Debug|x64.Build.0 = Debug|x64
+		{82FEBE94-0A5E-41C6-9C94-0F39BC1BAC20}.Release|x64.ActiveCfg = Release|x64
+		{82FEBE94-0A5E-41C6-9C94-0F39BC1BAC20}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
