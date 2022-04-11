@@ -178,7 +178,7 @@ namespace OreOreLib
 			ASSERT( elm < this->m_Length );
 
 			if( this->m_Length > 1 )
-				ShiftElementsLeft( elm + 1 );
+				this->LeftShiftElements( elm+1, this->m_Length-elm-1, 1 );
 			else
 				this->m_pData[elm].~T();
 
@@ -220,55 +220,6 @@ namespace OreOreLib
 				tcout << _T("  [") << i << _T("]: ") << this->m_pData[i] << tendl;
 
 			tcout << tendl;
-		}
-
-
-
-	private:
-
-		inline void ShiftElementsRight( IndexType elm, IndexType num=1 )
-		{
-			if( this->m_Length <= ( elm + num ) || num == 0 )
-				return;
-
-			T* pDst = this->m_pData + this->m_Length - 1;
-			T* pSrc = pDst - num;
-
-			while( pSrc >= this->m_pData + elm )
-			{
-				pDst->~T();// destruct dst data first 
-				new ( pDst ) T( (T&&)( *pSrc ) );// then move src data
-
-				--pDst;
-				--pSrc;
-			}
-
-			// destruct empty elements
-			for( IndexType i=0; i<num; ++i )
-				(this->m_pData + elm + i)->~T();
-		}
-
-
-		inline void ShiftElementsLeft( IndexType elm, IndexType num=1 )
-		{
-			if( elm < num || num == 0 )
-				return;
-
-			T* pSrc = this->m_pData + Max( num, elm );
-			T* pDst = pSrc - num;
-
-			while( pSrc < this->end() )
-			{
-				pDst->~T();// destruct dst data first 
-				new ( pDst ) T( (T&&)( *pSrc ) );// then move src data
-
-				++pDst;
-				++pSrc;
-			}
-
-			// destruct empty elements
-			while( pDst != this->end() )
-				(pDst++)->~T();
 		}
 
 

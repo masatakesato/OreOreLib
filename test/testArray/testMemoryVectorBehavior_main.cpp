@@ -85,7 +85,7 @@ int main()
 		tcout << _T("vec.Resize(4);...\n");
 		vec.Resize(4);
 
-		tcout << _T("vec.Resize(8);...\n");
+		tcout << _T("vec.Resize(8, 999);...\n");
 		vec.Resize(8, 999);
 
 		tcout << _T("vec.Resize(6);...\n");

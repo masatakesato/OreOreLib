@@ -65,14 +65,14 @@ namespace OreOreLib
 		// Copy constructor
 		NDArrayBase( const NDArrayBase& obj )
 		{
-			MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			Mem::Copy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
 		// Move constructor.
 		NDArrayBase( NDArrayBase&& obj )
 		{
-			MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			Mem::Copy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
@@ -81,7 +81,7 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+				Mem::Copy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 			}
 			return *this;
 		}
@@ -90,7 +90,7 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+				Mem::Copy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 			}
 
 			return *this;
@@ -102,7 +102,7 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				MemCopy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+				Mem::Copy( this->m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 			}
 
 			return *this;

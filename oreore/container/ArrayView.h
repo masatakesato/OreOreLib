@@ -84,7 +84,7 @@ namespace OreOreLib
 
 		void Init( std::initializer_list<T> ilist )
 		{
-			MemCopy( this->begin(), ilist.begin(), Min( ilist.size(), this->m_Length ) );
+			Mem::Copy( this->begin(), ilist.begin(), Min( ilist.size(), this->m_Length ) );
 		}
 
 

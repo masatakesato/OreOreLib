@@ -31,7 +31,7 @@ namespace OreOreLib
 			this->m_AllocSize	= sizeof(T) * Size;
 			this->m_Capacity	= Size;
 
-			memset( m_Data, 0, sizeof(T) * Size );
+			Mem::UninitializedInit( m_Data, Size );
 		}
 
 
@@ -43,8 +43,7 @@ namespace OreOreLib
 			this->m_AllocSize	= sizeof(T) * Size;
 			this->m_Capacity	= Size;
 
-			memset( m_Data, 0, sizeof(T) * Size );
-			MemCopy( m_Data, pdata, len );
+			Mem::UninitializedCopy( m_Data, pdata, len );
 		}
 
 
@@ -82,7 +81,7 @@ namespace OreOreLib
 			this->m_AllocSize	= sizeof(T) * Size;
 			this->m_Capacity	= Size;
 
-			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			Mem::UninitializedCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
@@ -101,7 +100,7 @@ namespace OreOreLib
 			this->m_AllocSize	= sizeof(T) * Size;
 			this->m_Capacity	= Size;
 
-			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			Mem::UninitializedCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
@@ -113,7 +112,7 @@ namespace OreOreLib
 			this->m_AllocSize	= sizeof(T) * Size;
 			this->m_Capacity	= Size;
 
-			MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+			Mem::UninitializedCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 		}
 
 
@@ -122,7 +121,7 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+				Mem::Copy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 			}
 			return *this;
 		}
@@ -131,7 +130,7 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+				Mem::Copy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 			}
 
 			return *this;
@@ -143,7 +142,7 @@ namespace OreOreLib
 		{
 			if( this != &obj )
 			{
-				MemCopy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
+				Mem::Copy( m_Data, obj.begin(), Min( this->m_Length, obj.Length() ) );
 			}
 
 			return *this;

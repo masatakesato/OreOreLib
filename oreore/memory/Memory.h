@@ -7,6 +7,7 @@
 #include	"../meta/TypeTraits.h"
 #include	"../mathlib/MathLib.h"
 #include	"../algorithm/Algorithm.h"
+#include	"MemoryOperations.h"
 
 
 
@@ -43,7 +44,7 @@ namespace OreOreLib
 
 	//##############################################################################################################//
 	//																												//
-	//											MemoryBase class declaration											//
+	//											MemoryBase class declaration										//
 	//																												//
 	//##############################################################################################################//
 
@@ -60,347 +61,6 @@ namespace OreOreLib
 
 	template < typename T >
 	using Memory = MemoryBase< T, MemSizeType >;
-
-
-
-
-
-	#if __cplusplus >= 201703L
-	// If using Visual c++, folowing command must be added for __cplusplus macro activation.
-	//   /Zc:__cplusplus
-
-	//##############################################################################################################//
-	//																												//
-	//											MemCopy (above C++17)												//
-	//																												//
-	//##############################################################################################################//
-
-	// Memory Copy
-	template < class SrcIter, class DstIter >
-	DstIter* MemCopy( DstIter* pDst, SrcIter* pSrc, sizeType size )
-	{
-		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
-		{
-			return (DstIter*)memcpy( pDst, pSrc, sizeof DstIter * size );
-		}
-		else
-		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while( begin != end )
-			{
-				// Placement new version
-				//out->~DstIter();// Desctuct existing data from destination memory
-				new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-
-				++begin; ++out;
-			}
-			
-			return out;
-		}
-	}
-
-	//// Memory Copy
-	//template < class Iter >
-	//Iter* MemCopy( Iter* pDst, Iter* pSrc, sizeType size )
-	//{
-	//	if constexpr ( std::is_trivially_copyable_v<Iter> )
-	//	{
-	//		return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
-	//	}
-	//	else
-	//	{
-	//		Iter* begin = pSrc;
-	//		Iter* end = pSrc + size;
-	//		Iter* out = pDst;
-
-	//		while( begin != end )
-	//		{
-	//			// Placement new version
-	//			out->~Iter();// Desctuct existing data from destination memory
-	//			new ( out ) Iter( *begin );// Call copy constructor
-	//
-	//			// Copy assignment operator version
-	//			*out = *begin;
-	//			++begin; ++out;
-	//		}
-	//
-	//		return out;
-	//	}
-	//}
-
-
-
-	//##############################################################################################################//
-	//																												//
-	//											MemMove (above C++17)												//
-	//																												//
-	//##############################################################################################################//
-
-	// Memory Move
-	template < class SrcIter, class DstIter >
-	DstIter* MemMove( DstIter* pDst, SrcIter* pSrc, sizeType size )
-	{
-		if constexpr ( std::is_same_v<SrcIter, DstIter> && std::is_trivially_copyable_v<SrcIter> )
-		{
-			return (DstIter*)memmove( pDst, pSrc, sizeof DstIter * size );
-		}
-		else
-		{
-			SrcIter* begin = pSrc;
-			SrcIter* end = pSrc + size;
-			DstIter* out = pDst;
-
-			while(begin != end)
-			{
-				// Placement new version
-				//out->~DstIter();// Desctuct existing data from destination memory
-				new ( out ) DstIter( (DstIter&&)( *begin ) );// Call move constructor
-				
-				// Copy assignment operator version
-				//*out = *(DstIter*)begin;
-				
-				++begin; ++out;
-			}
-
-			return out;
-		}
-	}
-
-	//// Memory Move
-	//template < class Iter >
-	//Iter* MemMove( Iter* pDst, Iter* pSrc, sizeType size )
-	//{
-	//	if constexpr ( std::is_trivially_copyable_v<Iter> )
-	//	{
-	//		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
-	//	}
-	//	else
-	//	{
-	//		Iter* begin = pSrc;
-	//		Iter* end = pSrc + size;
-	//		Iter* out = pDst;
-
-	//		while(begin != end)
-	//		{
-	//			// Placement new version
-	//			//out->~Iter();// Desctuct existing data from destination memory
-	//			new ( out ) Iter( (Iter&&)( *begin ) );// Call move constructor
-	//
-	//			// Copy assignment operator version
-	//			*out = *begin;
-	//
-	//			++begin; ++out;
-	//		}
-
-	//		return out;
-	//	}
-	//}
-
-
-	//##############################################################################################################//
-	//																												//
-	//											MemClear (above C++17)												//
-	//																												//
-	//##############################################################################################################//
-
-	// Memory Clear
-	template < class Iter >
-	Iter* MemClear( Iter* pDst, sizeType size )
-	{
-		if constexpr ( std::is_trivially_copyable_v<Iter> )
-		{
-			return (Iter*)memset( pDst, 0, sizeof Iter * size );
-		}
-		else
-		{
-			Iter* begin = pDst;
-			const Iter* end = pDst + size;
-
-			while( begin != end )
-			{
-				begin->~Iter();// Desctuct existing data
-				++begin;
-			}
-		
-			return pDst;
-		}
-	}
-
-
-
-	#else
-	
-
-	//##############################################################################################################//
-	//																												//
-	//											MemCopy (below C++14)												//
-	//																												//
-	//##############################################################################################################//
-
-	// Trivial Memcpy
-	template < class Iter >
-	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemCopy( Iter* pDst, const Iter* pSrc, sizeType size )
-	{
-		return (Iter*)memcpy( pDst, pSrc, sizeof Iter * size );
-	}
-
-	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	MemCopy( DstIter* pDst, const SrcIter* pSrc, sizeType size )
-	{
-		SrcIter* begin = (SrcIter*)pSrc;
-		const SrcIter* end = pSrc + size;
-		DstIter* out = pDst;
-
-		while( begin != end )
-		{
-			// Placement new version
-			//out->~DstIter();// Destruct existing data from destination memory
-			new ( out ) DstIter( *(DstIter*)begin );// Call copy constructor
-
-			// Copy assignment operator version
-			//*out = *(DstIter*)begin;
-
-			++begin; ++out;// expecting copy assignment operator implementation
-		}
-		
-		return out;
-	}
-
-	//// Single type Non-Trivial Memcpy( single template type )
-	//template < class Iter >
-	//std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
-	//MemCopy( Iter* pDst, const Iter* pSrc, sizeType size )
-	//{
-	//	Iter* begin = (Iter*)pSrc;
-	//	const Iter* end = pSrc + size;
-	//	Iter* out = pDst;
-
-	//	while( begin != end )
-	//	{
-	//		// Placement new version
-	//		//out->~Iter();// Destruct existing data from destination memory
-	//		new ( out ) Iter( *begin );// Call copy constructor
-	//
-	//		// Copy assignment operator version
-	//		//*out = *begin;
-	//
-	//		++begin; ++out;
-	//	}
-	//
-	//	return out;
-	//}
-
-
-
-	//##############################################################################################################//
-	//																												//
-	//											MemMove (below C++14)												//
-	//																												//
-	//##############################################################################################################//
-
-	// Trivial MemMove
-	template < class Iter >
-	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemMove( Iter* pDst, const Iter* pSrc, sizeType size )
-	{
-		return (Iter*)memmove( pDst, pSrc, sizeof Iter * size );
-	}
-
-	// Non-Trivial MemMove
-	template < class SrcIter, class DstIter >
-	std::enable_if_t< (!std::is_same_v<SrcIter, DstIter> && std::is_convertible_v<SrcIter, DstIter>) || !std::is_trivially_copyable_v<SrcIter> || !std::is_trivially_copyable_v<DstIter>, DstIter* >
-	MemMove( DstIter* pDst, const SrcIter* pSrc, sizeType size )
-	{
-		SrcIter* begin = (SrcIter*)pSrc;
-		const SrcIter* end = pSrc + size;
-		DstIter* out = pDst;
-
-		while( begin != end )
-		{
-			// Placement new version
-// 未初期化知領域にデータを新規移動する場合がある
-// 既存領域データを削除した上書きする場合もある
-			//out->~DstIter();// Destruct existing data
-			new ( out ) DstIter( (DstIter&&)( *begin ) );// Overwite existing memory with placement new
-
-			// Copy assignment operator version. cannot deal with dynamic memory object( e.g., string )
-			//*out = *(DstIter*)begin;
-
-			++begin; ++out;
-		}
-		
-		return out;
-	}
-
-	//// Non-Trivial MemMove( single template type )
-	//template < class Iter >
-	//std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
-	//MemMove( Iter* pDst, const Iter* pSrc, sizeType size )
-	//{
-	//	Iter* begin = (Iter*)pSrc;
-	//	const Iter* end = pSrc + size;
-	//	Iter* out = pDst;
-
-	//	while( begin != end )
-	//	{
-	//		// Placement new version
-	//		//out->~Iter();// Desctuct existing data from destination memory
-	//		new ( out ) Iter( (Iter&&)( *begin ) );// Call move constructor
-	//
-	//		// Copy assignment operator version
-	//		*out = *begin;
-	//
-	//		++begin; ++out;
-	//	}
-	//
-	//	return out;
-	//}
-
-
-
-	//##############################################################################################################//
-	//																												//
-	//											MemClear (below C++14)												//
-	//																												//
-	//##############################################################################################################//
-
-	// Trivial MemClear
-	template < class Iter >
-	std::enable_if_t< std::is_trivially_copyable_v<Iter>, Iter* >
-	MemClear( Iter* pDst, sizeType size )
-	{
-		return (Iter*)memset( pDst, 0, sizeof Iter * size );
-	}
-
-	// Non-Trivial MemClear
-	template < class Iter >
-	std::enable_if_t< !std::is_trivially_copyable_v<Iter>, Iter* >
-	MemClear( Iter* pDst, sizeType size )
-	{
-		Iter* begin = pDst;
-		const Iter* end = pDst + size;
-
-		while( begin != end )
-		{
-			begin->~Iter();// Desctuct existing data
-			++begin;
-		}
-	
-		return pDst;
-	}
-
-
-
-	#endif//__cplusplus
-
 
 
 
@@ -432,9 +92,11 @@ namespace OreOreLib
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
-			, m_pData( AllocateBuffer(len, true) )
+			, m_pData( AllocateBuffer( len, false ) )
 		{
 			//tcout << _T("MemoryBase constructor(dynamic allocation)...\n");
+			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
+				new ( iter ) T();
 		}
 
 		
@@ -443,7 +105,7 @@ namespace OreOreLib
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
-			, m_pData( AllocateBuffer(len) )
+			, m_pData( AllocateBuffer( len, false ) )
 		{
 			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
 				new ( iter ) T( fill );
@@ -456,28 +118,21 @@ namespace OreOreLib
 			: m_Length( sizeof ...(Args) )
 			, m_AllocSize( sizeof ...(Args) * sizeof(T) )
 			, m_Capacity( sizeof ...(Args) )
-			, m_pData( AllocateBuffer( static_cast<IndexType>( sizeof ...(Args) ) )  )
+			, m_pData( AllocateBuffer( static_cast<IndexType>( sizeof ...(Args) ), false )  )
 		{
 			auto ilist = std::initializer_list<T>{ args... };
-			MemCopy( begin(), ilist.begin(), m_Length );
-
-			//auto p = m_pData;
-			//for( const auto& val : std::initializer_list<T>{args...} )
-			//	*(p++) = val;
+			Mem::UninitializedCopy( begin(), ilist.begin(), m_Length );
 		}
+
 
 		// Constructor with initializer_list
 		MemoryBase( std::initializer_list<T> ilist )
 			: m_Length( static_cast<IndexType>( ilist.size() ) )
 			, m_AllocSize( static_cast<IndexType>( ilist.size() * sizeof(T) ) )
 			, m_Capacity( m_Length )
-			, m_pData( AllocateBuffer( m_Length ) )
+			, m_pData( AllocateBuffer( m_Length, false ) )
 		{
-			MemCopy( begin(), ilist.begin(), m_Length );
-			
-			//auto p = m_pData;
-			//for( const auto& val : ilist )
-			//	*(p++) = val;
+			Mem::UninitializedCopy( begin(), ilist.begin(), m_Length );
 		}
 
 
@@ -487,9 +142,9 @@ namespace OreOreLib
 			: m_Length( static_cast<IndexType>( last - first ) )
 			, m_AllocSize( m_Length * sizeof(T) )
 			, m_Capacity( m_Length )
-			, m_pData( AllocateBuffer( m_Length ) )
+			, m_pData( AllocateBuffer( m_Length, false ) )
 		{
-			MemCopy( begin(), first, m_Length );
+			Mem::UninitializedCopy( begin(), first, m_Length );
 		}
 
 
@@ -512,7 +167,7 @@ namespace OreOreLib
 			if( obj.m_pData )
 			{
 				AllocateBuffer( m_Capacity );
-				MemCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
+				Mem::UninitializedCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 			}
 		}
 
@@ -547,8 +202,8 @@ namespace OreOreLib
 				
 				if( obj.m_pData )
 				{
-					AllocateBuffer( m_Capacity );
-					MemCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
+					AllocateBuffer( m_Capacity, false );
+					Mem::UninitializedCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 				}
 			}
 
@@ -622,33 +277,48 @@ namespace OreOreLib
 		}
 
 
-
 		void Init( IndexType len )
 		{
-			if( len > m_Capacity )
-			{
-				DeallocateBuffer();
-				m_Capacity	= len;
-				AllocateBuffer( m_Capacity, true );
-			}
-
-			m_Length = len;
-			m_AllocSize	= c_ElementSize * len;
-		}
-
-
-		void Init( IndexType len, const T& fill )
-		{
+			// len > m_Capacity
 			if( len > m_Capacity )
 			{
 				DeallocateBuffer();
 				m_Capacity	= len;
 				AllocateBuffer( m_Capacity, false );
 			}
+			else
+			{
+				Mem::Clear( m_pData, m_Length );// delete existing data
+			}
 
+			// Update m_Length and m_AllocSize
 			m_Length = len;
 			m_AllocSize	= c_ElementSize * len;
 
+			// Initialize
+			Mem::UninitializedInit( m_pData, len );
+		}
+
+
+		void Init( IndexType len, const T& fill )
+		{
+			// len > m_Capacity
+			if( len > m_Capacity )
+			{
+				DeallocateBuffer();
+				m_Capacity	= len;
+				AllocateBuffer( m_Capacity, false );
+			}
+			else
+			{
+				Mem::Clear( m_pData, m_Length );
+			}
+
+			// Update m_Length and m_AllocSize
+			m_Length = len;
+			m_AllocSize	= c_ElementSize * len;
+
+			// Fill
 			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
 				new ( iter ) T( fill );
 		}
@@ -664,11 +334,17 @@ namespace OreOreLib
 				m_Capacity	= len;
 				AllocateBuffer( m_Capacity, false );
 			}
+			else
+			{
+				Mem::Clear( m_pData, m_Length );
+			}
 
+			// Update m_Length and m_AllocSize
 			m_Length = len;
 			m_AllocSize	= c_ElementSize * len;
 
-			MemCopy( begin(), ilist.begin(), ilist.size() );
+			// Copy data
+			Mem::UninitializedCopy( begin(), ilist.begin(), ilist.size() );
 		}
 
 
@@ -684,11 +360,17 @@ namespace OreOreLib
 				m_Capacity	= len;
 				AllocateBuffer( m_Capacity, false );
 			}
+			else
+			{
+				Mem::Clear( m_pData, m_Length );
+			}
 
+			// Update m_Length and m_AllocSize
 			m_Length = len;
 			m_AllocSize	= c_ElementSize * len;
 
-			MemCopy( begin(), first, m_Length );
+			// Copy data
+			Mem::UninitializedCopy( begin(), first, m_Length );
 		}
 
 
@@ -703,14 +385,14 @@ namespace OreOreLib
 
 		void Clear()
 		{
-			MemClear( m_pData, m_Length );
+			Mem::Clear( m_pData, m_Length );
 		}
 
 
 		void SetValues( uint8* pdata, IndexType len )
 		{
 			ASSERT( pdata );
-			MemCopy( m_pData, (T*)pdata, Min( m_Length, len ) );
+			Mem::Copy( m_pData, (T*)pdata, Min( m_Length, len ) );
 		}
 
 
@@ -719,7 +401,7 @@ namespace OreOreLib
 		SetValues( const Args& ... args )
 		{
 			auto values = { (T)args... };
-			MemCopy( m_pData, values.begin(), Min( m_Length, (IndexType)values.size() ) );
+			Mem::Copy( m_pData, values.begin(), Min( m_Length, (IndexType)values.size() ) );
 		}
 
 
@@ -727,7 +409,7 @@ namespace OreOreLib
 		std::enable_if_t< std::is_convertible_v<Type, T>/*  std::is_same_v<Type, T>*/, void >
 		SetValues( std::initializer_list<Type> ilist )
 		{
-			MemCopy( m_pData, ilist.begin(), Min( m_Length, (IndexType)ilist.size() ) );
+			Mem::Copy( m_pData, ilist.begin(), Min( m_Length, (IndexType)ilist.size() ) );
 		}
 
 
@@ -741,7 +423,7 @@ namespace OreOreLib
 
 			if( m_pData )
 			{
-				MemMove( newdata, m_pData, m_Length );
+				Mem::UninitializedMigrate( newdata, m_pData, m_Length );
 				DeallocateBuffer();
 			}
 
@@ -754,14 +436,32 @@ namespace OreOreLib
 		inline bool Resize( IndexType newlen )
 		{
 			if( newlen==0 || newlen==~0u )	return false;
-			return ReallocateBuffer( newlen );
+
+			auto oldlen = m_Length;
+			if( !ReallocateBuffer( newlen ) )
+				return false;
+
+			// placement new uninitialized elements
+			for( auto i=oldlen; i<newlen; ++i )
+				new ( m_pData + i ) T();
+
+			return true;
 		}
 
 
 		inline bool Resize( IndexType newlen, const T& fill )
 		{
 			if( newlen==0 || newlen==~0u )	return false;
-			return ReallocateBuffer( newlen, &fill );
+
+			auto oldlen = m_Length;
+			if( !ReallocateBuffer( newlen ) )
+				return false;
+
+			// Fill uninitialized elements using placement new copy constructor
+			for( auto i=oldlen; i<newlen; ++i )
+				new ( m_pData + i ) T( fill );
+
+			return true;
 		}
 
 
@@ -867,13 +567,13 @@ namespace OreOreLib
 
 		inline void CopyFrom( const MemoryBase& src )
 		{
-			MemCopy( m_pData, src.m_pData, Min(m_Length, src.m_Length) );
+			Mem::Copy( m_pData, src.m_pData, Min(m_Length, src.m_Length) );
 		}
 
 
 		inline void CopyTo( MemoryBase& dst ) const
 		{
-			MemCopy( dst.m_pData, m_pData, Min(m_Length, dst.m_Length) );
+			Mem::Copy( dst.m_pData, m_pData, Min(m_Length, dst.m_Length) );
 		}
 
 
@@ -983,7 +683,6 @@ namespace OreOreLib
 		{
 			// Allocate memory
 			/*T* buffer*/m_pData = static_cast<T*>( ::operator new( c_ElementSize * len ) );
-			//memset( m_pData, 0,  c_ElementSize * len );
 			
 			// Call default constructor
 			if( init )
@@ -1009,51 +708,140 @@ namespace OreOreLib
 		}
 
 
-		inline bool ReallocateBuffer( IndexType newlen, const T* fill=nullptr )
+		inline bool ReallocateBuffer( IndexType newlen )
 		{
 			//   m_Length    m_Capacity   newlen
 			// -----*------------|----------x
 			if( newlen > m_Capacity )
 			{
 				T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
-				//memset( newdata, 0,  c_ElementSize * newlen );
-				for( auto i=m_Length; i<newlen; ++i )
-					fill ?
-					new ( newdata + i ) T( *fill ) :
-					new ( newdata + i ) T();
-
+				if( !newdata )	return false;
+				
 				if( m_pData )
 				{
-					MemMove( newdata, m_pData, Min(m_Length, newlen) );
+					Mem::UninitializedMigrate( newdata, m_pData, Min(m_Length, newlen) );
 					DeallocateBuffer();
 				}
 				m_Capacity	= newlen;
 				m_pData		= newdata;
 			}
 
-			//   m_Length    newlen     m_Capacity
-			// -----*-----------x------------|
-			else if( newlen > m_Length )
-			{
-				for( auto iter=m_pData+m_Length; iter!=m_pData+newlen; ++iter )
-					fill ?
-					new ( iter ) T( *fill ) :
-					new ( iter ) T();
-			}
 
+			// Delete elements [ newlen, m_Length -1 ]
 			//    newlen    m_Length    m_Capacity
 			// -----x-----------*------------|
-			else if( newlen < m_Length )
-			{
-				for( auto iter=m_pData+newlen; iter!=m_pData+m_Length; ++iter )
-					iter->~T();
-			}
+			for( auto iter=m_pData+newlen; iter<m_pData+m_Length; ++iter )
+				iter->~T();
 
+			// Update m_Length and m_AllocSize
 			m_Length	= newlen;
-			m_AllocSize	= c_ElementSize * m_Length;
+			m_AllocSize	= c_ElementSize * newlen;
 
 			return true;
 		}
+
+
+
+//		template < typename TYPE=T >
+//		std::enable_if_t< std::is_copy_constructible_v<TYPE> || std::is_copy_assignable_v<TYPE>, bool >
+//		inline ReallocateBuffer( IndexType newlen, bool init, const T* fill=nullptr )
+		//inline bool ReallocateBuffer( IndexType newlen, bool init, const T* fill=nullptr )
+		//{
+		//	//   m_Length    m_Capacity   newlen
+		//	// -----*------------|----------x
+		//	if( newlen > m_Capacity )
+		//	{
+		//		T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+		//		
+		//		if( init )
+		//		for( auto i=m_Length; i<newlen; ++i )
+		//			fill ?
+		//			new ( newdata + i ) T( *fill ) :
+		//			new ( newdata + i ) T();
+
+		//		if( m_pData )
+		//		{
+		//			Mem::UninitializedMigrate( newdata, m_pData, Min(m_Length, newlen) );
+		//			DeallocateBuffer();
+		//		}
+		//		m_Capacity	= newlen;
+		//		m_pData		= newdata;
+		//	}
+
+		//	//   m_Length    newlen     m_Capacity
+		//	// -----*-----------x------------|
+		//	else if( newlen > m_Length )
+		//	{
+		//		if( init )
+		//		for( auto iter=m_pData+m_Length; iter!=m_pData+newlen; ++iter )
+		//			fill ?
+		//			new ( iter ) T( *fill ) :
+		//			new ( iter ) T();
+		//	}
+
+		//	//    newlen    m_Length    m_Capacity
+		//	// -----x-----------*------------|
+		//	else if( newlen < m_Length )
+		//	{
+		//		for( auto iter=m_pData+newlen; iter!=m_pData+m_Length; ++iter )
+		//			iter->~T();
+		//	}
+
+		//	m_Length	= newlen;
+		//	m_AllocSize	= c_ElementSize * m_Length;
+
+		//	return true;
+		//}
+
+
+//TODO: fillなしでメモリ初期化する関数だけ独立させておく.
+//		template < typename TYPE=T >
+//		std::enable_if_t< (!std::is_copy_constructible_v<TYPE> && !std::is_copy_assignable_v<TYPE>), bool >
+//		inline ReallocateBuffer( IndexType newlen, bool init )
+//		//inline bool ReallocateBuffer( IndexType newlen, bool init )
+//		{
+//			//   m_Length    m_Capacity   newlen
+//			// -----*------------|----------x
+//			if( newlen > m_Capacity )
+//			{
+//				T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+//				
+//				if( init )
+//				for( auto i=m_Length; i<newlen; ++i )
+//					new ( newdata + i ) T();
+//
+//				if( m_pData )
+//				{
+//					Mem::UninitializedMigrate( newdata, m_pData, Min(m_Length, newlen) );
+////ムーブコンストラクタがない -> 代わりにコピーコンストラクタに切り替える -> コピーコンストラクタもないぞ！！！ -> コンパイルできません
+//					DeallocateBuffer();
+//				}
+//				m_Capacity	= newlen;
+//				m_pData		= newdata;
+//			}
+//
+//			//   m_Length    newlen     m_Capacity
+//			// -----*-----------x------------|
+//			else if( newlen > m_Length )
+//			{
+//				if( init )
+//				for( auto iter=m_pData+m_Length; iter!=m_pData+newlen; ++iter )
+//					new ( iter ) T();
+//			}
+//
+//			//    newlen    m_Length    m_Capacity
+//			// -----x-----------*------------|
+//			else if( newlen < m_Length )
+//			{
+//				for( auto iter=m_pData+newlen; iter!=m_pData+m_Length; ++iter )
+//					iter->~T();
+//			}
+//
+//			m_Length	= newlen;
+//			m_AllocSize	= c_ElementSize * m_Length;
+//
+//			return true;
+//		}
 
 
 		// Create new memory space in the middle of m_pData. Allocated new space is UNINITIALIZED.
@@ -1090,9 +878,9 @@ namespace OreOreLib
 			if( m_pData )
 			{
 				// Move m_pData[ 0 : elm-1 ] to newdata[ 0 : elm-1 ]
-				MemMove( &newdata[ 0 ], &m_pData[ 0 ], elm );
+				Mem::UninitializedMigrate( &newdata[ 0 ], &m_pData[ 0 ], elm );
 				// Move m_pData[ elm : m_Length-1 ] to newdata[ elm + numelms : ... ]
-				MemMove( &newdata[ elm + numelms ], &m_pData[ elm ], m_Length - elm );
+				Mem::UninitializedMigrate( &newdata[ elm + numelms ], &m_pData[ elm ], m_Length - elm );
 
 				DeallocateBuffer();
 			}
@@ -1116,7 +904,6 @@ namespace OreOreLib
 	//												Helper funcitions												//
 	//																												//
 	//##############################################################################################################//
-
 
 	template < typename T, typename IndexType >
 	inline IndexType Find( const MemoryBase<T, IndexType>& arr, const T& item )

@@ -148,7 +148,7 @@ int main()
 
 
 		// こっちはOK？ -> メモリリーク発生する -> デストラクタ呼び出し追加した.
-		//OreOreLib::MemCopy( dst, src, 3 );
+		//OreOreLib::Mem::Copy( dst, src, 3 );
 
 //		*src[2].value = -666.6f;
 
@@ -199,7 +199,7 @@ int main()
 	//arr2_1.SetValues( 0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111 );
 	arr2_1.SetValues( {0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111} );
 
-	for( int i=0; i<arr2_1.Length(); ++i )
+	for( auto i=0; i<arr2_1.Length(); ++i )
 		tcout << arr2_1[i] << tendl;
 
 //	arr2_1.AddToFront();
@@ -230,7 +230,7 @@ int main()
 	view2.Display();
 
 	tcout << _T( "//============ Invert signs =============//\n" );
-	for( int i=0; i<view2.Length(); ++i )	view2[i] *= -100;
+	for( auto i=0; i<view2.Length(); ++i )	view2[i] *= -100;
 	view2.Display();
 
 	tcout << _T( "//============ view[0] = view[2] =============//\n" );

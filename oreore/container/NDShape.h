@@ -75,8 +75,8 @@ namespace OreOreLib
 		// Copy constructor
 		NDShape( const NDShape& obj )
 		{
-			MemCopy( m_Shape, obj.m_Shape, N );
-			MemCopy( m_Strides, obj.m_Strides, N );
+			Mem::UninitializedCopy( m_Shape, obj.m_Shape, N );
+			Mem::UninitializedCopy( m_Strides, obj.m_Strides, N );
 		}
 
 
@@ -108,7 +108,7 @@ namespace OreOreLib
 		std::enable_if_t< std::is_convertible<T, InexType>::value, void >
 		Init( const T indexND[] ) 
 		{
-			MemCopy( m_Shape, indexND, N );
+			Mem::UninitializedCopy( m_Shape, indexND, N );
 			InitStrides();
 		}
 

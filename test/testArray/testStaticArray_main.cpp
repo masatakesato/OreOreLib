@@ -21,6 +21,8 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
+	fSArray arr_;
+
 
 	fSArray	arr1 = { 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f, 13.f, 14.f, 15.f };
 
@@ -57,10 +59,10 @@ int main()
 	std::vector<fSArray> vec_farray;
 	vec_farray.push_back( arr1_3 );// copy constructor
 
-	for( int i=0; i<arr1_3.Length(); ++i )
+	for( int i=0; i<arr1_3.Length<int>(); ++i )
 		arr1_3[i] = 33;
 
-	for( int i=0; i<vec_farray[0].Length(); ++i )
+	for( int i=0; i<vec_farray[0].Length<int>(); ++i )
 		vec_farray[0][i] = 55;
 
 	tcout << _T("//---------- vec_farray[0] ----------//\n");
@@ -73,7 +75,7 @@ int main()
 	tcout << _T("//================ vec_farray.push_back( fArray() );  ====================//\n");
 	vec_farray.push_back( fSArray() );// move constructor(all vector elements are reallocated using move constructor )
 
-	for( int i=0; i<vec_farray[0].Length(); ++i )
+	for( int i=0; i<vec_farray[0].Length<int>(); ++i )
 		vec_farray[1][i] = -7777;
 
 	tcout << _T("//---------- vec_farray[1] ----------//\n");
@@ -97,7 +99,7 @@ int main()
 	view2.Display();
 
 	tcout << _T( "//============ Invert signs =============//\n" );
-	for( int i=0; i<view2.Length(); ++i )	view2[i] *= -100;
+	for( int i=0; i<view2.Length<int>(); ++i )	view2[i] *= -100;
 	view2.Display();
 
 	tcout << _T( "//============ view[0] = view[2] =============//\n" );
@@ -114,7 +116,7 @@ int main()
 	view3.Display();
 
 	tcout << _T( "//============ Scale by 0.001 =============//\n" );
-	for( int i=0; i<view3.Length(); ++i )	view3[i] *= 0.001f;
+	for( int i=0; i<view3.Length<int>(); ++i )	view3[i] *= 0.001f;
 	view3.Display();
 
 	tcout << _T( "//============ view3[0] = view3[2] =============//\n" );

@@ -50,8 +50,8 @@ int main()
 		tcout << _T("//============ Copy / UninitializedCopy ============//\n");
 		std::string src[4]{"0", "1", "2", "3"}, dst[4];
 
-		Copy( &dst[0], &src[0], 4 );
-		//UninitializedCopy( &dst[0], &src[0], 4 );
+		Mem::Copy( &dst[0], &src[0], 4 );
+		//Mem::UninitializedCopy( &dst[0], &src[0], 4 );
 
 		for( auto& val : dst )
 			tcout << val.c_str() << tendl;
@@ -70,7 +70,7 @@ int main()
 			tcout << val.c_str() << tendl;
 
 		//SafeCopy( &src[1], &src[0], 3 );
-		UninitializedSafeCopy( &src[1], &src[0], 3 );
+		Mem::UninitializedSafeCopy( &src[1], &src[0], 3 );
 
 		tcout << _T("-------------------------\n");
 
@@ -95,8 +95,8 @@ int main()
 		for( auto& val : dst )
 			tcout << val.c_str() << tendl;
 
-		//Migrate( &dst[0], &src[0], 4 );
-		UninitializedMigrate( &dst[0], &src[0], 4 );
+		//Mem::Migrate( &dst[0], &src[0], 4 );
+		Mem::UninitializedMigrate( &dst[0], &src[0], 4 );
 
 		tcout << _T("-------------------------\n");
 
@@ -121,8 +121,8 @@ int main()
 		for( auto& val : src )
 			tcout << val.c_str() << tendl;
 
-		SafeMigrate( &src[1], &src[0], 3 );
-		//UninitializedSafeMigrate( &src[1], &src[0], 3 );
+		Mem::SafeMigrate( &src[1], &src[0], 3 );
+		//Mem::UninitializedSafeMigrate( &src[1], &src[0], 3 );
 
 		tcout << _T("-------------------------\n");
 
