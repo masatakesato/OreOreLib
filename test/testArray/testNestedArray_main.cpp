@@ -70,9 +70,9 @@ int main()
 		array2d[3].AddToTail( float(val++) );
 
 
-		for( int i=0; i<array2d.Length(); ++i )
+		for( int i=0; i<array2d.Length<int>(); ++i )
 		{
-			for( int j=0; j<array2d[i].Length(); ++j )
+			for( int j=0; j<array2d[i].Length<int>(); ++j )
 			{
 				tcout << array2d[i][j] << ", ";
 			}
@@ -147,10 +147,10 @@ int main()
 		array2d[3].AddToTail( to_tstring(val++) );
 
 
-		for( int i=0; i<array2d.Length(); ++i )
+		for( int i=0; i<array2d.Length<int>(); ++i )
 		{
 			auto& arr = array2d[i];
-			for( int j=0; j<arr.Length(); ++j )
+			for( int j=0; j<arr.Length<int>(); ++j )
 			{
 				tcout << arr[j].c_str() << ", ";
 			}

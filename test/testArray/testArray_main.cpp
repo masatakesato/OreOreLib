@@ -100,7 +100,7 @@ int main()
 {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	while(1)
+	//while(1)
 	{
 
 //		Val a(0.5f);
@@ -199,7 +199,7 @@ int main()
 	//arr2_1.SetValues( 0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111 );
 	arr2_1.SetValues( {0, 1, 10, 11, 100, 101, 110, 111, 1000, 1001, 1010, 1011, 1100, 1101, 1110, 1111} );
 
-	for( auto i=0; i<arr2_1.Length(); ++i )
+	for( int i=0; i<arr2_1.Length<int>(); ++i )
 		tcout << arr2_1[i] << tendl;
 
 //	arr2_1.AddToFront();
@@ -230,7 +230,7 @@ int main()
 	view2.Display();
 
 	tcout << _T( "//============ Invert signs =============//\n" );
-	for( auto i=0; i<view2.Length(); ++i )	view2[i] *= -100;
+	for( int i=0; i<view2.Length<int>(); ++i )	view2[i] *= -100;
 	view2.Display();
 
 	tcout << _T( "//============ view[0] = view[2] =============//\n" );

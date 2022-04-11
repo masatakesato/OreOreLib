@@ -92,7 +92,7 @@ namespace OreOreLib
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
-			, m_pData( AllocateBuffer( len, false ) )
+			, m_pData( AllocateBuffer( len ) )
 		{
 			//tcout << _T("MemoryBase constructor(dynamic allocation)...\n");
 			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
@@ -105,7 +105,7 @@ namespace OreOreLib
 			: m_Length( len )
 			, m_AllocSize( len * c_ElementSize )
 			, m_Capacity( len )
-			, m_pData( AllocateBuffer( len, false ) )
+			, m_pData( AllocateBuffer( len ) )
 		{
 			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
 				new ( iter ) T( fill );
@@ -118,7 +118,7 @@ namespace OreOreLib
 			: m_Length( sizeof ...(Args) )
 			, m_AllocSize( sizeof ...(Args) * sizeof(T) )
 			, m_Capacity( sizeof ...(Args) )
-			, m_pData( AllocateBuffer( static_cast<IndexType>( sizeof ...(Args) ), false )  )
+			, m_pData( AllocateBuffer( static_cast<IndexType>( sizeof ...(Args) ) )  )
 		{
 			auto ilist = std::initializer_list<T>{ args... };
 			Mem::UninitializedCopy( begin(), ilist.begin(), m_Length );
@@ -130,7 +130,7 @@ namespace OreOreLib
 			: m_Length( static_cast<IndexType>( ilist.size() ) )
 			, m_AllocSize( static_cast<IndexType>( ilist.size() * sizeof(T) ) )
 			, m_Capacity( m_Length )
-			, m_pData( AllocateBuffer( m_Length, false ) )
+			, m_pData( AllocateBuffer( m_Length ) )
 		{
 			Mem::UninitializedCopy( begin(), ilist.begin(), m_Length );
 		}
@@ -142,7 +142,7 @@ namespace OreOreLib
 			: m_Length( static_cast<IndexType>( last - first ) )
 			, m_AllocSize( m_Length * sizeof(T) )
 			, m_Capacity( m_Length )
-			, m_pData( AllocateBuffer( m_Length, false ) )
+			, m_pData( AllocateBuffer( m_Length ) )
 		{
 			Mem::UninitializedCopy( begin(), first, m_Length );
 		}
@@ -166,7 +166,7 @@ namespace OreOreLib
 			//tcout << _T("MemoryBase copy constructor...\n");
 			if( obj.m_pData )
 			{
-				AllocateBuffer( m_Capacity );
+				m_pData = AllocateBuffer( m_Capacity );
 				Mem::UninitializedCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 			}
 		}
@@ -202,7 +202,7 @@ namespace OreOreLib
 				
 				if( obj.m_pData )
 				{
-					AllocateBuffer( m_Capacity, false );
+					m_pData = AllocateBuffer( m_Capacity );
 					Mem::UninitializedCopy( m_pData, obj.m_pData, Min(m_Length, obj.m_Length) );
 				}
 			}
@@ -279,21 +279,8 @@ namespace OreOreLib
 
 		void Init( IndexType len )
 		{
-			// len > m_Capacity
-			if( len > m_Capacity )
-			{
-				DeallocateBuffer();
-				m_Capacity	= len;
-				AllocateBuffer( m_Capacity, false );
-			}
-			else
-			{
-				Mem::Clear( m_pData, m_Length );// delete existing data
-			}
-
-			// Update m_Length and m_AllocSize
-			m_Length = len;
-			m_AllocSize	= c_ElementSize * len;
+			// Reallocate buffer
+			ReallocateBuffer( len );
 
 			// Initialize
 			Mem::UninitializedInit( m_pData, len );
@@ -302,21 +289,8 @@ namespace OreOreLib
 
 		void Init( IndexType len, const T& fill )
 		{
-			// len > m_Capacity
-			if( len > m_Capacity )
-			{
-				DeallocateBuffer();
-				m_Capacity	= len;
-				AllocateBuffer( m_Capacity, false );
-			}
-			else
-			{
-				Mem::Clear( m_pData, m_Length );
-			}
-
-			// Update m_Length and m_AllocSize
-			m_Length = len;
-			m_AllocSize	= c_ElementSize * len;
+			// Reallocate buffer
+			ReallocateBuffer( len );
 
 			// Fill
 			for( auto iter=m_pData; iter !=m_pData+len; ++iter )
@@ -326,22 +300,8 @@ namespace OreOreLib
 
 		void Init( std::initializer_list<T> ilist )
 		{
-			IndexType len = static_cast<IndexType>( ilist.size() );
-
-			if( len > m_Capacity )
-			{
-				DeallocateBuffer();
-				m_Capacity	= len;
-				AllocateBuffer( m_Capacity, false );
-			}
-			else
-			{
-				Mem::Clear( m_pData, m_Length );
-			}
-
-			// Update m_Length and m_AllocSize
-			m_Length = len;
-			m_AllocSize	= c_ElementSize * len;
+			// Reallocate buffer
+			ReallocateBuffer( static_cast<IndexType>( ilist.size() ) );
 
 			// Copy data
 			Mem::UninitializedCopy( begin(), ilist.begin(), ilist.size() );
@@ -352,22 +312,8 @@ namespace OreOreLib
 		template < class Iter >
 		void Init( Iter first, Iter last )
 		{
-			IndexType len = static_cast<IndexType>( last - first );
-
-			if( len > m_Capacity )
-			{
-				DeallocateBuffer();
-				m_Capacity	= len;
-				AllocateBuffer( m_Capacity, false );
-			}
-			else
-			{
-				Mem::Clear( m_pData, m_Length );
-			}
-
-			// Update m_Length and m_AllocSize
-			m_Length = len;
-			m_AllocSize	= c_ElementSize * len;
+			// Reallocate buffer
+			ReallocateBuffer( static_cast<IndexType>( last - first ) );
 
 			// Copy data
 			Mem::UninitializedCopy( begin(), first, m_Length );
@@ -438,7 +384,7 @@ namespace OreOreLib
 			if( newlen==0 || newlen==~0u )	return false;
 
 			auto oldlen = m_Length;
-			if( !ReallocateBuffer( newlen ) )
+			if( !MigrateBuffer( newlen ) )
 				return false;
 
 			// placement new uninitialized elements
@@ -454,7 +400,7 @@ namespace OreOreLib
 			if( newlen==0 || newlen==~0u )	return false;
 
 			auto oldlen = m_Length;
-			if( !ReallocateBuffer( newlen ) )
+			if( !MigrateBuffer( newlen ) )
 				return false;
 
 			// Fill uninitialized elements using placement new copy constructor
@@ -679,19 +625,9 @@ namespace OreOreLib
 
 		// new delete memory without constructor
 		// https://stackoverflow.com/questions/4576307/c-allocate-memory-without-activating-constructors/4576402
-		inline T* AllocateBuffer( IndexType len, bool init=false )
+		inline T* AllocateBuffer( IndexType newlen )
 		{
-			// Allocate memory
-			/*T* buffer*/m_pData = static_cast<T*>( ::operator new( c_ElementSize * len ) );
-			
-			// Call default constructor
-			if( init )
-			{
-				for( auto iter=m_pData; iter !=m_pData+len; ++iter )
-					new ( iter ) T();
-			}
-
-			return m_pData;
+			return static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
 		}
 
 
@@ -709,7 +645,38 @@ namespace OreOreLib
 
 
 		inline bool ReallocateBuffer( IndexType newlen )
+		{	
+			if( newlen > m_Capacity )// Allocate new buffer if capacity is short
+			{
+				DeallocateBuffer();
+
+				m_pData = static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
+				if( !m_pData )
+				{
+					m_Length	= 0;
+					m_Capacity	= 0;
+					m_AllocSize	= 0;
+					return false;
+				}
+
+				m_Capacity	= newlen;
+			}
+			else// Clear existing buffer
+			{
+				Mem::Clear( m_pData, m_Length );
+			}
+
+			// Update m_Length and m_AllocSize
+			m_Length	= newlen;
+			m_AllocSize	= c_ElementSize * newlen;
+
+			return true;
+		}
+
+
+		inline bool MigrateBuffer( IndexType newlen )
 		{
+			// Reallocate buffer if capacity is short
 			//   m_Length    m_Capacity   newlen
 			// -----*------------|----------x
 			if( newlen > m_Capacity )
@@ -726,8 +693,7 @@ namespace OreOreLib
 				m_pData		= newdata;
 			}
 
-
-			// Delete elements [ newlen, m_Length -1 ]
+			// Delete out-of-bound elements ( if newlen is smaller than m_Length )
 			//    newlen    m_Length    m_Capacity
 			// -----x-----------*------------|
 			for( auto iter=m_pData+newlen; iter<m_pData+m_Length; ++iter )
@@ -741,11 +707,8 @@ namespace OreOreLib
 		}
 
 
-
-//		template < typename TYPE=T >
-//		std::enable_if_t< std::is_copy_constructible_v<TYPE> || std::is_copy_assignable_v<TYPE>, bool >
-//		inline ReallocateBuffer( IndexType newlen, bool init, const T* fill=nullptr )
-		//inline bool ReallocateBuffer( IndexType newlen, bool init, const T* fill=nullptr )
+		
+		//inline bool MigrateBuffer( IndexType newlen, bool init, const T* fill=nullptr )
 		//{
 		//	//   m_Length    m_Capacity   newlen
 		//	// -----*------------|----------x
@@ -792,56 +755,6 @@ namespace OreOreLib
 
 		//	return true;
 		//}
-
-
-//TODO: fillなしでメモリ初期化する関数だけ独立させておく.
-//		template < typename TYPE=T >
-//		std::enable_if_t< (!std::is_copy_constructible_v<TYPE> && !std::is_copy_assignable_v<TYPE>), bool >
-//		inline ReallocateBuffer( IndexType newlen, bool init )
-//		//inline bool ReallocateBuffer( IndexType newlen, bool init )
-//		{
-//			//   m_Length    m_Capacity   newlen
-//			// -----*------------|----------x
-//			if( newlen > m_Capacity )
-//			{
-//				T* newdata	= static_cast<T*>( ::operator new( c_ElementSize * newlen ) );
-//				
-//				if( init )
-//				for( auto i=m_Length; i<newlen; ++i )
-//					new ( newdata + i ) T();
-//
-//				if( m_pData )
-//				{
-//					Mem::UninitializedMigrate( newdata, m_pData, Min(m_Length, newlen) );
-////ムーブコンストラクタがない -> 代わりにコピーコンストラクタに切り替える -> コピーコンストラクタもないぞ！！！ -> コンパイルできません
-//					DeallocateBuffer();
-//				}
-//				m_Capacity	= newlen;
-//				m_pData		= newdata;
-//			}
-//
-//			//   m_Length    newlen     m_Capacity
-//			// -----*-----------x------------|
-//			else if( newlen > m_Length )
-//			{
-//				if( init )
-//				for( auto iter=m_pData+m_Length; iter!=m_pData+newlen; ++iter )
-//					new ( iter ) T();
-//			}
-//
-//			//    newlen    m_Length    m_Capacity
-//			// -----x-----------*------------|
-//			else if( newlen < m_Length )
-//			{
-//				for( auto iter=m_pData+newlen; iter!=m_pData+m_Length; ++iter )
-//					iter->~T();
-//			}
-//
-//			m_Length	= newlen;
-//			m_AllocSize	= c_ElementSize * m_Length;
-//
-//			return true;
-//		}
 
 
 		// Create new memory space in the middle of m_pData. Allocated new space is UNINITIALIZED.
