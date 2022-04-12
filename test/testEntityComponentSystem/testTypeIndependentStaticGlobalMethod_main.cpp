@@ -6,12 +6,12 @@ using namespace std;
 #include	<oreore/memory/UniquePtr.h>
 
 
-struct fValue
+struct FloatStruct
 {
 	float val;
 
-	fValue( ){}
-	fValue( const float& f )
+	FloatStruct( ){}
+	FloatStruct( const float& f )
 		: val(f)
 	{
 	}
@@ -21,7 +21,7 @@ struct fValue
 
 
 template < typename T >
-class AAA
+class GenericGetter
 {
 public:
 
@@ -30,9 +30,9 @@ public:
 
 protected:
 
-	~AAA()
+	~GenericGetter()
 	{
-		cout << "~AAA()\n";
+		cout << "~GenericGetter()\n";
 		m_Instance.Reset();
 	}
 
@@ -50,18 +50,18 @@ protected:
 
 
 template < typename T >
-OreOreLib::UniquePtr<T> AAA<T>::m_Instance = nullptr;
-//T* AAA<T>::m_Instance = nullptr;
+OreOreLib::UniquePtr<T> GenericGetter<T>::m_Instance = nullptr;
+//T* GenericGetter<T>::m_Instance = nullptr;
 
 
 
 
 // https://github.com/EQMG/Acid/blob/cb1e62a80cdba662a0b2c1ba008b2bf4a397877a/Sources/Animations/AnimatedMesh.hpp
-class TestStruct : public AAA<fValue>
+class Float : public GenericGetter<FloatStruct>
 {
 public:
 
-	TestStruct()
+	Float()
 	{
 		Register( 9999.9f );
 	}
@@ -72,11 +72,11 @@ private:
 
 
 
-class TestStr : public AAA<string>
+class String : public GenericGetter<string>
 {
 public:
 
-	TestStr()
+	String()
 	{
 		Register( "oreore" );
 	}
@@ -93,11 +93,11 @@ int main()
 {
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	TestStruct test;
-	TestStr teststr;
+	Float testfloat;
+	String teststr;
 
-	cout << (*TestStruct::Get()).val << endl;
-	cout << *TestStr::Get() << endl;
+	cout << (*Float::Get()).val << endl;
+	cout << *String::Get() << endl;
 
 	return 0;
 }

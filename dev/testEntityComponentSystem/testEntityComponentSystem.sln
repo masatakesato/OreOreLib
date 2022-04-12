@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.1705
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testEntityComponentSystem", "testEntityComponentSystem\testEntityComponentSystem.vcxproj", "{B26D7900-18BA-4F8D-9C5E-E2AD1EBEF770}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testTypeIndependentStaticGlobalMethod", "testTypeIndependentStaticGlobalMethod\testTypeIndependentStaticGlobalMethod.vcxproj", "{7EB59A83-22D4-4864-B103-DF76AE2BFF5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,10 @@ Global
 		{B26D7900-18BA-4F8D-9C5E-E2AD1EBEF770}.Debug|x64.Build.0 = Debug|x64
 		{B26D7900-18BA-4F8D-9C5E-E2AD1EBEF770}.Release|x64.ActiveCfg = Release|x64
 		{B26D7900-18BA-4F8D-9C5E-E2AD1EBEF770}.Release|x64.Build.0 = Release|x64
+		{7EB59A83-22D4-4864-B103-DF76AE2BFF5E}.Debug|x64.ActiveCfg = Debug|x64
+		{7EB59A83-22D4-4864-B103-DF76AE2BFF5E}.Debug|x64.Build.0 = Debug|x64
+		{7EB59A83-22D4-4864-B103-DF76AE2BFF5E}.Release|x64.ActiveCfg = Release|x64
+		{7EB59A83-22D4-4864-B103-DF76AE2BFF5E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

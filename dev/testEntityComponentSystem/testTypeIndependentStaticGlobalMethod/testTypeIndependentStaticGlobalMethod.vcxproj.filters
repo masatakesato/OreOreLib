@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\test\testStaticGlobal\testStaticGlobal_main.cpp">
+    <ClCompile Include="..\..\..\test\testEntityComponentSystem\testTypeIndependentStaticGlobalMethod_main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
