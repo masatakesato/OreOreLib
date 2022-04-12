@@ -1,8 +1,4 @@
-﻿#include	<iostream>
-#include	<string>
-using namespace std;
-
-#include	<oreore/common/Utility.h>
+﻿#include	<oreore/common/Utility.h>
 #include	<oreore/memory/DebugNew.h>
 
 
