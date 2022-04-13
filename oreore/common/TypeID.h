@@ -10,7 +10,27 @@ namespace OreOreLib
 
 	namespace detail
 	{
-		
+	
+		#if defined( MEM_64 )
+
+			using TIDSizeType = typedef uint64;// 64bit
+
+		#elif defined( MEM_86 )
+
+			using TIDSizeType = typedef uint32;// 32bit
+
+		#elif defined( MEM_ENVIRONMENT )
+	
+			using TIDSizeType = typename sizeType;// platform dependent
+
+		#else
+
+			using TIDSizeType = typename uint32;// default configuration
+
+		#endif
+
+
+
 		//##########################################################//
 		//															//
 		//						Forward declaration					//
@@ -76,17 +96,17 @@ namespace OreOreLib
 	//##########################################################//
 
 	template < typename T >
-	using TypeID = detail::TypeIDImpl<T, uint32>;
+	using TypeID = detail::TypeIDImpl<T, detail::TIDSizeType>;
 
 
-	template < typename T >
-	using TypeID8 = detail::TypeIDImpl<T, uint8>;
+	//template < typename T >
+	//using TypeID8 = detail::TypeIDImpl<T, uint8>;
 
-	template < typename T >
-	using TypeID16 = detail::TypeIDImpl<T, uint16>;
+	//template < typename T >
+	//using TypeID16 = detail::TypeIDImpl<T, uint16>;
 
-	template < typename T >
-	using TypeID64 = detail::TypeIDImpl<T, uint64>;
+	//template < typename T >
+	//using TypeID64 = detail::TypeIDImpl<T, uint64>;
 
 
 
