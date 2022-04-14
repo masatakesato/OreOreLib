@@ -156,9 +156,11 @@ inline static char* TCharToChar( const TCHAR* src, size_t numchars )
 
 
 
-inline static tstring CharToTString( const char* src, size_t size )
+inline static tstring CharToTString( const char* src, size_t size=0 )
 {
-	TCHAR* tchars = CharToTChar( src, size );
+	if( !src )	return _T("");
+
+	TCHAR* tchars = CharToTChar( src, size ? size : strlen(src) );
 	tstring tstr( tchars );
 	delete [] tchars;
 
