@@ -6,12 +6,12 @@
 
 //######################################################################################//
 //																						//
-//								Function kind detection									//
+//					Function kind ( args/return existence ) detection					//
 //																						//
 //######################################################################################//
 
 
-//######################### result/args type detection ########################//
+//======================== args/result type detection ======================//
 
 // structs for function kind detection
 struct result_nonvoid{};
@@ -29,13 +29,12 @@ template <int N> struct arg_count_trait	{ using type = typename args_nonzero; };
 template <> struct arg_count_trait<0>	{ using type = typename args_zero; };
 
 
-
-//########################### Function kind detection #######################//
+//======================== Function kind detection ======================//
 
 template <typename T>
 struct func_kind_info : func_kind_info< decltype(&T::operator()) > {};
 
-
+// non-member function
 template < typename F, typename ... Args >
 struct func_kind_info< F ( *)(Args...) >
 {
@@ -43,11 +42,11 @@ struct func_kind_info< F ( *)(Args...) >
 	using result_type = typename result_trait<F>::type;// result_nonvoid if F returns anything, else result_void
 };
 
-
+// member function
 template < typename Class, typename R, typename... Args >
 struct func_kind_info< R( Class::* )(Args...) > : func_kind_info<R ( *)(Args...)> {};
 
-
+// const member function
 template <typename C, typename R, typename... Args>
 struct func_kind_info< R( C::* )(Args...) const > : func_kind_info<R ( *)(Args...)> {};
 
@@ -63,8 +62,7 @@ struct func_kind_info< R( C::* )(Args...) const > : func_kind_info<R ( *)(Args..
 template < typename T >
 struct func_traits : func_traits< decltype(&T::operator()) >{};
 
-
-// 
+// non-member function
 template < typename R, typename ... Args >
 struct func_traits< R( *)(Args...) >
 {
@@ -73,11 +71,11 @@ struct func_traits< R( *)(Args...) >
 	using args_type = std::tuple< typename std::decay<Args>::type... >;
 };
 
-
+// member function
 template < typename C, typename R, typename... Args>
 struct func_traits< R( C::* )(Args...) > : func_traits<R ( *)(Args...)> {};
 
-
+// const member function
 template < typename C, typename R, typename... Args>
 struct func_traits< R( C::* )(Args...) const > : func_traits<R ( *)(Args...)> {};
 
