@@ -4,6 +4,13 @@
 #include	<tuple>
 
 
+//######################################################################################//
+//																						//
+//								Function kind detection									//
+//																						//
+//######################################################################################//
+
+
 //######################### result/args type detection ########################//
 
 // structs for function kind detection
@@ -29,16 +36,16 @@ template <typename T>
 struct func_kind_info : func_kind_info< decltype(&T::operator()) > {};
 
 
-template <typename R, typename ... Args>
-struct func_kind_info< R ( *)(Args...) >
+template < typename F, typename ... Args >
+struct func_kind_info< F ( *)(Args...) >
 {
-	using args_type = typename arg_count_trait<sizeof...(Args)>::type;
-	using result_type = typename result_trait<R>::type;
+	using args_type = typename arg_count_trait<sizeof...(Args)>::type;// args_nonzero if Args exist, else args_zero
+	using result_type = typename result_trait<F>::type;// result_nonvoid if F returns anything, else result_void
 };
 
 
-template <typename C, typename R, typename... Args>
-struct func_kind_info< R( C::* )(Args...) > : func_kind_info<R ( *)(Args...)> {};
+template < typename Class, typename R, typename... Args >
+struct func_kind_info< R( Class::* )(Args...) > : func_kind_info<R ( *)(Args...)> {};
 
 
 template <typename C, typename R, typename... Args>
@@ -46,13 +53,19 @@ struct func_kind_info< R( C::* )(Args...) const > : func_kind_info<R ( *)(Args..
 
 
 
-//############################### Function traits ##############################//
 
-template <typename T>
+//######################################################################################//
+//																						//
+//									Function traits										//
+//																						//
+//######################################################################################//
+
+template < typename T >
 struct func_traits : func_traits< decltype(&T::operator()) >{};
 
 
-template <typename R, typename ... Args>
+// 
+template < typename R, typename ... Args >
 struct func_traits< R( *)(Args...) >
 {
 	using result_type = R;
@@ -61,36 +74,143 @@ struct func_traits< R( *)(Args...) >
 };
 
 
-template <typename C, typename R, typename... Args>
+template < typename C, typename R, typename... Args>
 struct func_traits< R( C::* )(Args...) > : func_traits<R ( *)(Args...)> {};
 
 
-template <typename C, typename R, typename... Args>
+template < typename C, typename R, typename... Args>
 struct func_traits< R( C::* )(Args...) const > : func_traits<R ( *)(Args...)> {};
 
 
 
 
-//################################ Helper functions ###########################//
+//######################################################################################//
+//																						//
+//								Create tuple from arguments								//
+//																						//
+//######################################################################################//
 
 // parameter pack expansion
-template <typename ... Args>
+template < typename ... Args >
 auto ToTuple( Args ...args ) -> std::tuple<Args...>
 {
 	return { args... };
 }
 
 
+
+
+//######################################################################################//
+//																						//
+//						Create tuple from function arguments							//
+//																						//
+//######################################################################################//
+
+// non-member variable
+template < typename F, typename ... Args >
+std::tuple<Args...> CreateTupleFromFuncion( F( *)(Args...) )
+{
+	return std::tuple<Args...>();
+}
+
+
+// class member variable
+template < typename Class, typename F, typename... Args >
+std::tuple<Args...> CreateTupleFromFuncion( F(Class::*)(Args...) )
+{
+	return std::tuple<Args...>();
+}
+
+
+
+
+//######################################################################################//
+//																						//
+//							function callback per tuple element  						//
+//																						//
+//######################################################################################//
+
+#if __cplusplus >= 201703L
+
 // for_each for tuple. c++17 or later required.
-template <typename F, typename ... Args>
-void for_each( std::tuple<Args...> const& t, F f )
+template < typename F, typename ... Args >
+void for_each_tuple( std::tuple<Args...> const& t, F f )
 {
 	std::apply( [&]( auto... args ) constexpr { (f( args ), ...); }, t );
 }
 
 
+#else
 
-// TODO: ToArgs
+// for_each for tuple. below c++14 non-member function
+
+namespace detail
+{
+	template < typename F, typename Tuple, size_t ... I >
+	void for_each_tuple_impl( F&& func, Tuple&& t, std::index_sequence<I ...> )
+	{
+		( func( std::get<I>( (Tuple&&)t ) ), ... );
+	}
+
+}
+
+
+template < typename F, typename Tuple >
+void for_each_tuple( Tuple&& t, F&& func )
+{
+	static constexpr auto size = std::tuple_size_v< std::decay_t<Tuple> >;
+	detail::for_each_tuple_impl( func, t, std::make_index_sequence<size>{} );
+}
+
+
+#endif
+
+
+
+
+//######################################################################################//
+//																						//
+//						Call function using tuple arguments								//
+//																						//
+//######################################################################################//
+
+// https://stackoverflow.com/questions/7858817/unpacking-a-tuple-to-call-a-matching-function-pointer
+
+// Below c++14 static function callback
+template < typename F, typename Tuple, size_t ... I >
+auto CallImpl( F&& func, Tuple&& t, std::index_sequence<I ...> )
+{
+	return func( std::get<I>(t) ... );
+}
+
+
+template < typename F, typename Tuple >
+auto Call( F&& func, Tuple&& t )
+{
+	static constexpr auto size = std::tuple_size_v< std::decay_t<Tuple> >;
+	return CallImpl( func, t, std::make_index_sequence<size>{} );
+}
+
+
+
+// https://www.tutorialspoint.com/function-pointer-to-member-function-in-cplusplus
+// https://qiita.com/_EnumHack/items/677363eec054d70b298d
+// Below c++14 member function callback
+template < typename F, typename Class, typename Tuple, size_t ... I >
+auto CallImpl( F&& mfunc, Class&& obj, Tuple&& t, std::index_sequence<I ...> )
+{
+	return (obj->*mfunc)( std::get<I>(t) ... );
+}
+
+
+template< typename F, typename Class, typename Tuple >
+auto Call( F&& mfunc, Class&& obj, Tuple&& t )
+{
+	static constexpr auto size = std::tuple_size_v< std::decay_t<Tuple> >;
+	return CallImpl( (F&&)mfunc, (Class&&)obj, (Tuple&&)t, std::make_index_sequence<size>{} );
+}
+
+
 
 
 

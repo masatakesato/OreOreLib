@@ -94,7 +94,7 @@ auto Call_client( const std::string& proc_name, Args ...args )
 
 
 	OreOreLib::MemoryBase<char, int> mem( /*(OreOreLib::MemSizeType)sbuf.size(),*/ sbuf.data(), sbuf.data() + sbuf.size() ); 
-	auto result = Dispatch( mem );//g_Dispatcher.Dispatch( mem );
+	auto result = g_Dispatcher.Dispatch( mem );//Dispatch( mem );//
 
 
 	return (*result)->as<T>();

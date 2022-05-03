@@ -101,7 +101,7 @@ msgpack::object_handle Client::Call( tstring const& proc_name, Args ...args )
 		{
 			// serialize data
 			auto msg = std::make_tuple( proc_name, std::make_tuple( args... ) );
-			//for_each( args_, []( auto it ){ std::cout << it << std::endl; } );
+			//for_each_tuple( args_, []( auto it ){ std::cout << it << std::endl; } );
 			auto sbuf = std::make_shared<msgpack::sbuffer>();// 別スレッドにstd::moveすることを想定して実装.
 			msgpack::pack( *sbuf, msg );
 

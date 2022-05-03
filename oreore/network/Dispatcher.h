@@ -109,6 +109,7 @@ void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, cons
 			[func]( const msgpack::object& args )
 			{
 				//int args_count = std::tuple_size<args_type>::value;
+				// Extract arguments tuple
 				args_type args_real;
 				args.convert( args_real );
 				std::apply( func, args_real );//Call( func, args_real );
@@ -157,6 +158,7 @@ void Dispatcher::BindFunc( const tstring& name, F func, const result_nonvoid&, c
 			name,
 			[func]( const msgpack::object& args )
 			{
+				// Extract arguments tuple
 				args_type args_real;
 				args.convert( args_real );
 
