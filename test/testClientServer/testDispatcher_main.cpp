@@ -6,6 +6,52 @@
 
 
 
+////template<typename T>
+//struct Point
+//{
+//    //template<typename U>
+//    //std::enable_if_t<std::is_same<U, int>::value>
+//    //MyFunction()
+//    //{
+//    //    std::cout << "T is int." << std::endl;
+//    //}
+//
+//    //template<typename U>
+//    //std::enable_if_t<std::is_same<U, float>::value>
+//    //MyFunction()
+//    //{
+//    //    std::cout << "T is not int." << std::endl;
+//    //}
+//
+//	//template<typename U>std::enable_if_t<std::is_same<U, int>::value, void>
+//	//MyFunction();
+//
+//	//template<typename U>std::enable_if_t<std::is_same<U, float>::value, void>
+//	//MyFunction();
+//
+//	template<typename U>
+//	void MyFunction();
+//
+//};
+//
+//    template<typename U>
+//    std::enable_if_t<std::is_same<U, int>::value, void>
+//    Point::MyFunction()
+//    {
+//        std::cout << "T is int." << std::endl;
+//    }
+//
+//    template<typename U>
+//    std::enable_if_t<std::is_same<U, float>::value, void>
+//    Point::MyFunction()
+//    {
+//        std::cout << "T is not int." << std::endl;
+//    }
+//
+
+
+
+
 
 
 

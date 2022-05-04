@@ -19,10 +19,123 @@ class Dispatcher
 public:
 	
 	template < typename F >
-	void BindFunc( const tstring& name, F func )
+	std::enable_if_t<
+		std::is_same_v< typename func_kind_info<F>::result_type, result_void > &&
+		std::is_same_v< typename func_kind_info<F>::args_type, args_zero >,
+		void >
+	BindFunc( const tstring& name, F func )
 	{
-		BindFunc<F>( name, func, func_kind_info<F>::result_type(), func_kind_info<F>::args_type() );
+		m_Funcs.insert
+		(
+			std::make_pair
+			(
+				name,
+				[func]( const msgpack::object& args )
+				{
+					func();
+					return std::make_unique<msgpack::object_handle>();
+				}
+			)
+		);
 	}
+
+
+	// BindFunc with result/args = void/non-zero
+	template < typename F >
+	std::enable_if_t<
+		std::is_same_v< typename func_kind_info<F>::result_type, result_void > &&
+		std::is_same_v< typename func_kind_info<F>::args_type, args_nonzero >,
+		void >
+	BindFunc( const tstring& name, F func )
+	{
+		using args_type = typename func_traits<F>::args_type;
+
+		m_Funcs.insert
+		(
+			std::make_pair
+			(
+				name,
+				[func]( const msgpack::object& args )
+				{
+					//int args_count = std::tuple_size<args_type>::value;
+					// Extract arguments tuple
+					args_type args_real;
+					args.convert( args_real );
+					std::apply( func, args_real );//Call( func, args_real );
+
+					return std::make_unique<msgpack::object_handle>();
+				}
+			)
+		);
+	}
+
+
+	// BindFunc with result/args = non-void/zero
+	template < typename F >
+	std::enable_if_t<
+		std::is_same_v< typename func_kind_info<F>::result_type, result_nonvoid > &&
+		std::is_same_v< typename func_kind_info<F>::args_type, args_zero >,
+		void >
+	BindFunc( const tstring& name, F func )
+	{
+		using args_type = typename func_traits<F>::args_type;
+
+		m_Funcs.insert
+		(
+			std::make_pair
+			(
+				name,
+				[func]( const msgpack::object& args )
+				{
+					auto z = std::make_unique<msgpack::zone>();
+					auto result = msgpack::object( func(), *z );
+
+					return std::make_unique<msgpack::object_handle>( result, std::move( z ) );
+				}
+			)
+		);
+	}
+
+
+	// BindFunc with result/args = non-void/non-zero
+	template < typename F >
+	std::enable_if_t<
+		std::is_same_v< typename func_kind_info<F>::result_type, result_nonvoid > &&
+		std::is_same_v< typename func_kind_info<F>::args_type, args_nonzero >,
+		void >
+	BindFunc( const tstring& name, F func )
+	{
+		using args_type = typename func_traits<F>::args_type;
+
+		m_Funcs.insert
+		(
+			std::make_pair
+			(
+				name,
+				[func]( const msgpack::object& args )
+				{
+					// Extract arguments tuple
+					args_type args_real;
+					args.convert( args_real );
+
+					auto z = std::make_unique<msgpack::zone>();
+					auto result = msgpack::object( std::apply( func, args_real ), *z );
+
+					return std::make_unique<msgpack::object_handle>( result, std::move( z ) );
+				}
+			)
+		);
+	}
+
+
+	// Old BindFunc implementation. deprecated. 2022.05.04
+	//template < typename F >
+	//void BindFunc( const tstring& name, F func )
+	//{
+	//	//BindFunc<F>( name, func, func_kind_info<F>::result_type(), func_kind_info<F>::args_type() );
+	//	BindFunc<F>( name, func );
+	//}
+
 
 
 	template < typename IndexType >
@@ -49,129 +162,135 @@ public:
 	}
 	
 
+
 private:
 
 	std::unordered_map< tstring, std::function< std::unique_ptr<msgpack::object_handle>( const msgpack::object& ) > >	m_Funcs;
 
 
-	// result/args = void/zero
-	template < typename F >
-	void BindFunc( const tstring& name, F func, const result_void&, const args_zero& );
+	// Old BindFunc implementation. deprecated. 2022.05.04
 
-	// BindFunc with result/args = void/non-zero
-	template < typename F >
-	void BindFunc( const tstring& name, F func, const result_void&, const args_nonzero& );
 
-	// BindFunc with result/args = non-void/zero
-	template < typename F >
-	void BindFunc( const tstring& name, F func, const result_nonvoid&, const args_zero& );
+	//// result/args = void/zero
+	//template < typename F >
+	//void BindFunc( const tstring& name, F func, const result_void&, const args_zero& );
 
-	// BindFunc with result/args = non-void/non-zero
-	template < typename F >
-	void BindFunc( const tstring& name, F func, const result_nonvoid&, const args_nonzero& );
+	//// BindFunc with result/args = void/non-zero
+	//template < typename F >
+	//void BindFunc( const tstring& name, F func, const result_void&, const args_nonzero& );
+
+	//// BindFunc with result/args = non-void/zero
+	//template < typename F >
+	//void BindFunc( const tstring& name, F func, const result_nonvoid&, const args_zero& );
+
+	//// BindFunc with result/args = non-void/non-zero
+	//template < typename F >
+	//void BindFunc( const tstring& name, F func, const result_nonvoid&, const args_nonzero& );
+
 
 };
 
 
 
+// Old BindFunc implementation. deprecated. 2022.05.04
 
-// result/args = void/zero
-template < typename F >
-void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, const args_zero& )
-{
-	m_Funcs.insert
-	(
-		std::make_pair
-		(
-			name,
-			[func]( const msgpack::object& args )
-			{
-				func();
-				return std::make_unique<msgpack::object_handle>();
-			}
-		)
-	);
-}
-
-
-// BindFunc with result/args = void/non-zero
-template < typename F >
-void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, const args_nonzero& )
-{
-	using args_type = typename func_traits<F>::args_type;
-	//std::cout << typeid(args_type).name() << std::endl;
-
-	m_Funcs.insert
-	(
-		std::make_pair
-		(
-			name,
-			[func]( const msgpack::object& args )
-			{
-				//int args_count = std::tuple_size<args_type>::value;
-				// Extract arguments tuple
-				args_type args_real;
-				args.convert( args_real );
-				std::apply( func, args_real );//Call( func, args_real );
-
-				return std::make_unique<msgpack::object_handle>();
-			}
-		)
-	);
-}
-
-
-// BindFunc with result/args = non-void/zero
-template < typename F >
-void Dispatcher::BindFunc( const tstring& name, F func, const result_nonvoid&, const args_zero& )
-{
-	using args_type = typename func_traits<F>::args_type;
-
-	m_Funcs.insert
-	(
-		std::make_pair
-		(
-			name,
-			[func]( const msgpack::object& args )
-			{
-				auto z = std::make_unique<msgpack::zone>();
-				auto result = msgpack::object( func(), *z );
-
-				return std::make_unique<msgpack::object_handle>( result, std::move( z ) );
-			}
-		)
-	);
-}
-
-
-// BindFunc with result/args = non-void/non-zero
-template <typename F>
-void Dispatcher::BindFunc( const tstring& name, F func, const result_nonvoid&, const args_nonzero& )
-{
-	using args_type = typename func_traits<F>::args_type;
-	//std::cout << typeid(args_type).name() << std::endl;
-
-	m_Funcs.insert
-	(
-		std::make_pair
-		(
-			name,
-			[func]( const msgpack::object& args )
-			{
-				// Extract arguments tuple
-				args_type args_real;
-				args.convert( args_real );
-
-				auto z = std::make_unique<msgpack::zone>();
-				auto result = msgpack::object( std::apply( func, args_real ), *z );
-
-				return std::make_unique<msgpack::object_handle>( result, std::move( z ) );
-			}
-		)
-	);
-
-
-}
+//// result/args = void/zero
+//template < typename F >
+//void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, const args_zero& )
+//{
+//	m_Funcs.insert
+//	(
+//		std::make_pair
+//		(
+//			name,
+//			[func]( const msgpack::object& args )
+//			{
+//				func();
+//				return std::make_unique<msgpack::object_handle>();
+//			}
+//		)
+//	);
+//}
+//
+//
+//// BindFunc with result/args = void/non-zero
+//template < typename F >
+//void Dispatcher::BindFunc( const tstring& name, F func, const result_void&, const args_nonzero& )
+//{
+//	using args_type = typename func_traits<F>::args_type;
+//	//std::cout << typeid(args_type).name() << std::endl;
+//
+//	m_Funcs.insert
+//	(
+//		std::make_pair
+//		(
+//			name,
+//			[func]( const msgpack::object& args )
+//			{
+//				//int args_count = std::tuple_size<args_type>::value;
+//				// Extract arguments tuple
+//				args_type args_real;
+//				args.convert( args_real );
+//				std::apply( func, args_real );//Call( func, args_real );
+//
+//				return std::make_unique<msgpack::object_handle>();
+//			}
+//		)
+//	);
+//}
+//
+//
+//// BindFunc with result/args = non-void/zero
+//template < typename F >
+//void Dispatcher::BindFunc( const tstring& name, F func, const result_nonvoid&, const args_zero& )
+//{
+//	using args_type = typename func_traits<F>::args_type;
+//
+//	m_Funcs.insert
+//	(
+//		std::make_pair
+//		(
+//			name,
+//			[func]( const msgpack::object& args )
+//			{
+//				auto z = std::make_unique<msgpack::zone>();
+//				auto result = msgpack::object( func(), *z );
+//
+//				return std::make_unique<msgpack::object_handle>( result, std::move( z ) );
+//			}
+//		)
+//	);
+//}
+//
+//
+//// BindFunc with result/args = non-void/non-zero
+//template <typename F>
+//void Dispatcher::BindFunc( const tstring& name, F func, const result_nonvoid&, const args_nonzero& )
+//{
+//	using args_type = typename func_traits<F>::args_type;
+//	//std::cout << typeid(args_type).name() << std::endl;
+//
+//	m_Funcs.insert
+//	(
+//		std::make_pair
+//		(
+//			name,
+//			[func]( const msgpack::object& args )
+//			{
+//				// Extract arguments tuple
+//				args_type args_real;
+//				args.convert( args_real );
+//
+//				auto z = std::make_unique<msgpack::zone>();
+//				auto result = msgpack::object( std::apply( func, args_real ), *z );
+//
+//				return std::make_unique<msgpack::object_handle>( result, std::move( z ) );
+//			}
+//		)
+//	);
+//
+//
+//}
 
 
 
