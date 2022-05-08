@@ -154,8 +154,8 @@ void Server::Send_Recv( SOCKET sock, void *serializer, std::shared_ptr<Dispatche
 	{
 		try
 		{
-			// recieve message from client
-			numrcv = recieve_message( sock, raw_message );
+			// receive message from client
+			numrcv = receive_message( sock, raw_message );
 			if( numrcv ==0 || numrcv ==-1 )
 				break;
 						

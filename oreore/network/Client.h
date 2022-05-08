@@ -109,11 +109,11 @@ msgpack::object_handle Client::Call( tstring const& proc_name, Args ...args )
 			send_message( __m_socket, sbuf->data(), (int)sbuf->size() );// buffer.c_str(), buffer.length() );
 
 
-			// recieve data from server
-			numrcv = recieve_message( __m_socket, buffer );
+			// receive data from server
+			numrcv = receive_message( __m_socket, buffer );
 			if( numrcv ==0 || numrcv ==-1 )
 			{
-				tcout << "Client::Call()... recieved data is None!" << tendl;
+				tcout << "Client::Call()... received data is None!" << tendl;
 				break;
 			}
 

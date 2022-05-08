@@ -40,7 +40,7 @@ static int SendAll( SOCKET sock, const void *data, int data_size )
 
 
 
-static int RecieveAll( SOCKET sock, void* data, int data_size )
+static int ReceiveAll( SOCKET sock, void* data, int data_size )
 {
 	char *data_ptr =(char *)data;
 	int bytes_recv;
@@ -48,10 +48,10 @@ static int RecieveAll( SOCKET sock, void* data, int data_size )
 	while( data_size > 0 )
 	{
 		bytes_recv = recv( sock, data_ptr, data_size, 0 );
-		//tcout << "recieved " << bytes_recv << "[bytes]." <<tendl;
+		//tcout << "received " << bytes_recv << "[bytes]." <<tendl;
 		if( bytes_recv==SOCKET_ERROR )
 		{
-			tcout << "SOCKET_ERROR at RecieveAll..." << tendl;
+			tcout << "SOCKET_ERROR at ReceiveAll..." << tendl;
 			throw RecvMessageException();
 			return -1;
 		}
@@ -104,18 +104,18 @@ static int send_message( SOCKET sock, const char* data, int data_size )
 
 
 template < typename IndexType >
-static int recieve_message( SOCKET sock, OreOreLib::MemoryBase<char, IndexType>& data )//char* data, int data_size  )
+static int receive_message( SOCKET sock, OreOreLib::MemoryBase<char, IndexType>& data )//char* data, int data_size  )
 {
 	try
 	{
 		// Extract message length first
 		u_long size_nl = 0;
-		int result = RecieveAll( sock, &size_nl, sizeof size_nl );
+		int result = ReceiveAll( sock, &size_nl, sizeof size_nl );
 		
 		if( result == 1 )
 		{
 			int msg_size = ntohl( size_nl );
-			//tcout << "recieve_message::recieving data_size..." << msg_size << tendl;
+			//tcout << "receive_message::recieving data_size..." << msg_size << tendl;
 
 			// Resize Memory if needed
 			if( data.Length() < msg_size )
@@ -125,8 +125,8 @@ static int recieve_message( SOCKET sock, OreOreLib::MemoryBase<char, IndexType>&
 			}
 
 			//tcout << "recieving data..." << tendl;
-			// Recieve all message data
-			result = RecieveAll( sock, data.begin(), msg_size );
+			// Receive all message data
+			result = ReceiveAll( sock, data.begin(), msg_size );
 			if( result != 1 )
 			{
 				//tcout << "releasing data..." << result << tendl;
@@ -139,7 +139,7 @@ static int recieve_message( SOCKET sock, OreOreLib::MemoryBase<char, IndexType>&
 	catch( ... )
 	{
 		data.Release();
-		std::cout << "Exception occured at recieve_message" << std::endl;
+		std::cout << "Exception occured at receive_message" << std::endl;
 		throw;// RecvMessageError();
 		return 0;
 	}
