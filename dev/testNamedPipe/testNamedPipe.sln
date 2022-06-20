@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32510.428
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testRPCNode1", "testRPCNode1\testRPCNode1.vcxproj", "{7E44DD89-E574-4435-84AE-E6AE7B704D3D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testRPCNode2", "testRPCNode2\testRPCNode2.vcxproj", "{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7E44DD89-E574-4435-84AE-E6AE7B704D3D}.Debug|x64.ActiveCfg = Debug|x64
+		{7E44DD89-E574-4435-84AE-E6AE7B704D3D}.Debug|x64.Build.0 = Debug|x64
+		{7E44DD89-E574-4435-84AE-E6AE7B704D3D}.Release|x64.ActiveCfg = Release|x64
+		{7E44DD89-E574-4435-84AE-E6AE7B704D3D}.Release|x64.Build.0 = Release|x64
+		{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}.Debug|x64.ActiveCfg = Debug|x64
+		{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}.Debug|x64.Build.0 = Debug|x64
+		{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}.Release|x64.ActiveCfg = Release|x64
+		{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8636C533-7B66-476E-BA31-EEDF2AE84FBE}
+	EndGlobalSection
+EndGlobal
