@@ -13,6 +13,10 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\test\testNamedPipe\testNamedPipeRPC\testHalfDuplexRPC2_main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\oreore\network\namedpipe\HalfDuplexRPCNode.h" />
+    <ClInclude Include="..\..\..\oreore\network\namedpipe\NamedPipeRPC.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -60,7 +64,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../../;D:\Lib\msgpack-c\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../;D:\Lib\messagepack_build\msgpack-c-cpp-4.1.1\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,7 +82,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../../;D:\Lib\msgpack-c\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../;D:\Lib\messagepack_build\msgpack-c-cpp-4.1.1\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

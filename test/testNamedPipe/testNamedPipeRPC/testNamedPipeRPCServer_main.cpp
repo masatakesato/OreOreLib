@@ -14,10 +14,10 @@ void NoReturn()
 
 
 
-tstring Test()
+charstring Test()
 {
 	tcout << _T( "Procedure::Test()...\n" );
-	return _T( "OK..." );
+	return "OK...";
 }
 
 
@@ -33,11 +33,11 @@ int Add( int a, int b )
 
 int main()
 {
-	PipeServerRPC server( _T( "\\\\.\\pipe\\Foo" ) );//#pipe_prefix + pipe_name )#
+	PipeServerRPC server( "\\\\.\\pipe\\Foo" );//#pipe_prefix + pipe_name )#
 
-	server.BindFunc( _T( "NoReturn" ), &NoReturn );
-	server.BindFunc( _T( "Test" ), &Test );
-	server.BindFunc( _T( "Add" ), &Add );
+	server.BindFunc( "NoReturn", &NoReturn );
+	server.BindFunc( "Test", &Test );
+	server.BindFunc( "Add", &Add );
 
 	server.Run();
 

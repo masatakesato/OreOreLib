@@ -97,7 +97,7 @@ class PipeServerRPC
 {
 public:
 
-	PipeServerRPC( const tstring& pipe_name )
+	PipeServerRPC( const charstring& pipe_name )
 		: m_IsListening( false )
 		, m_PipeName( pipe_name )
 		, m_PipeHandle( INVALID_HANDLE_VALUE )
@@ -115,7 +115,7 @@ public:
 
 	
 	template <typename F>
-	void BindFunc( const tstring& name, F func )
+	void BindFunc( const charstring& name, F func )
 	{
 		m_Dispatcher->BindFunc<F>( name, func );
 	}
@@ -128,7 +128,7 @@ public:
 		// Disconnect existing named pipe
 		ReleasePipe();
 
-		m_PipeHandle = CreateNamedPipe(
+		m_PipeHandle = CreateNamedPipeA(
 			m_PipeName.c_str(), //'\\.\pipe\Foo',
 			PIPE_ACCESS_DUPLEX,
 			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
@@ -184,7 +184,7 @@ public:
 		tcout << _T( "//============ PipeServer Status ===========//\n" );
 		tcout << _T( "PipeName: " ) << m_PipeName.c_str() << tendl;
 		tcout << _T( "PipeHandle: " ) << m_PipeHandle << tendl;
-		tcout << _T( "IsListening: " ) << m_IsListening << tendl;
+		tcout << _T( "IsListening: " ) << m_IsListening << tendl << tendl;
 	}
 
 	
@@ -270,12 +270,10 @@ public:
 
 private:
 
-	bool	m_IsListening;
-	tstring	m_PipeName;
-	HANDLE	m_PipeHandle; //INVALID_HANDLE_VALUE;
-	//        self.__m_Serializer = Serializer( pack_encoding=None, unpack_encoding=None )
+	bool		m_IsListening;
+	charstring	m_PipeName;
+	HANDLE		m_PipeHandle;
 	OreOreLib::SharedPtr<Dispatcher>	m_Dispatcher;
-//        self.__m_ProcInstance = None
 
 };
 
@@ -287,7 +285,7 @@ class PipeClientRPC
 public:
 
 	PipeClientRPC()
-		: m_PipeName(_T(""))
+		: m_PipeName()
 		, m_PipeHandle()
 	{
 
@@ -300,12 +298,12 @@ public:
 	}
 
 
-	void Connect( const tstring& pipe_name )
+	void Connect( const charstring& pipe_name )
 	{
 		m_PipeName = pipe_name;
 		// https://programtalk.com/vs4/python/7855/conveyor/src/main/python/conveyor/address.py/
 		// Establish pipe connection
-		m_PipeHandle = CreateFile(
+		m_PipeHandle = CreateFileA(
 			m_PipeName.c_str(),//r'\\.\pipe\Foo',
 			GENERIC_READ | GENERIC_WRITE,
 			0,
@@ -344,12 +342,12 @@ public:
 		}
 
 		m_PipeHandle = INVALID_HANDLE_VALUE;
-		m_PipeName = _T( "" );
+		m_PipeName = "";
 	}
 
 
 	template <typename... Args >
-	msgpack::object_handle Call( tstring const& proc_name, Args ...args )
+	msgpack::object_handle Call( charstring const& proc_name, Args ...args )
 	{
 		int trial = 0;
 		int numrcv;
@@ -397,7 +395,7 @@ public:
 
 private:
 
-	tstring	m_PipeName;
+	charstring	m_PipeName;
 	HANDLE	m_PipeHandle;
 
 	uint32	m_MaxTrials = 5;

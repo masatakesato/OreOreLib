@@ -2,7 +2,7 @@
 
 
 
-const TCHAR* g_PipeName = _T( "\\\\.\\pipe\\Foo" );
+const charstring g_PipeName = "\\\\.\\pipe\\Foo";
 
 
 
@@ -21,7 +21,7 @@ int main()
 	int a = 4, b = 6;
 	//for( int i=0; i<100; ++i )
 	//{
-		auto result = client.Call( _T( "Add" ), a, b );
+		auto result = client.Call( "Add", a, b );
 		tcout << _T( "Add(" ) << a << _T( ", " ) << b << _T( ") -> " ) << result->as<int>() << tendl;
 	//}
 
