@@ -14,37 +14,11 @@
 
 
 
-////import sys
-////import threading
-////import struct
-////import ctypes
-////from ctypes.wintypes import DWORD
-////import traceback
-////
-////import oreorepylib.utils.compat as compat
-////from oreorepylib.network.message_protocol import SendMessageError, ReceiveMessageError
-////from oreorepylib.network.serializer import Serializer
-////
-////
-////Kernel32 = ctypes.windll.kernel32
-////
-////
-////if( compat.Python3x ):
-////    CreateNamedPipe = Kernel32.CreateNamedPipeW
-////    CreateFile = Kernel32.CreateFileW
-////else:
-////    CreateNamedPipe = Kernel32.CreateNamedPipeA
-////    CreateFile = Kernel32.CreateFileA
-//
-//
-
-
 
 static int send_message( HANDLE pipe_handle, const char* msg, int data_size )
 {
 	try
 	{
-
 		if( !msg )
 			return 0;
 
@@ -83,7 +57,7 @@ static int receive_message( HANDLE pipe_handle, OreOreLib::MemoryBase<char, Inde
 	{
 		// Read buffer size first
 		u_long size_nl = 0;
-		int result = ReadFile( pipe_handle, size_nl, sizeof( size_nl ), nullptr, nullptr );
+		int result = ReadFile( pipe_handle, &size_nl, sizeof( size_nl ), nullptr, nullptr );
 
 		if( result == 1 )
 		{
@@ -94,9 +68,9 @@ static int receive_message( HANDLE pipe_handle, OreOreLib::MemoryBase<char, Inde
 				data.Resize( msg_size );
 
 			// Then read actual buffer
-			int recv_msg_len = 0;
+			DWORD  recv_msg_len;
 			// https://github.com/ipython/ipython/blob/master/IPython/utils/_process_win32_controller.py
-			result = ReadFile( pipe_handle, data, msg_size, &recv_msg_len, nullptr );
+			result = ReadFile( pipe_handle, data.begin(), msg_size, &recv_msg_len, nullptr );
 			if( result != 1 )
 			{
 				//tcout << _T("releasing data...") << result << tendl;
@@ -114,42 +88,6 @@ static int receive_message( HANDLE pipe_handle, OreOreLib::MemoryBase<char, Inde
 		return 0;
 	}
 }
-
-
-//# helper function to receive n bytes or return None if EOF is hit
-//#def receive_all( pipe_handle, n ):
-//
-//#    data = b''
-//
-//#    while( len(data) < n ):
-//#        packet = pipe_handle.recv( n - len(data) )
-//#        if( not packet ):
-//#            return None
-//#        data += packet
-//#        #print( packet, n - len(data) )
-//
-//#    #print( data )
-//#    return data
-
-
-
-//class Win32Constant:
-//
-//    GENERIC_READ = -2147483648
-//    GENERIC_WRITE = 1073741824
-//
-//    OPEN_EXISTING = 3
-//
-//    PIPE_ACCESS_INBOUND = 1
-//    PIPE_ACCESS_OUTBOUND = 2
-//    PIPE_ACCESS_DUPLEX = 3
-//
-//    PIPE_WAIT = 0
-//    PIPE_NOWAIT = 1
-//    PIPE_READMODE_BYTE = 0
-//    PIPE_READMODE_MESSAGE = 2
-//    PIPE_TYPE_BYTE = 0
-//    PIPE_TYPE_MESSAGE = 4
 
 
 
@@ -417,9 +355,9 @@ public:
 		int numrcv;
 		msgpack::object_handle oh;
 
-		while( trial < self.__m_MaxTrials )
+		while( trial < m_MaxTrials )
 		{
-			try :
+			try
 			{
 				// Serialize data
 				auto msg = std::make_tuple( proc_name, std::make_tuple( args... ) );
@@ -450,12 +388,9 @@ public:
 				++trial;
 			}
 
-
-
-
-
 		}// end of while( trial < self.__m_MaxTrials )
 
+		return oh;//nullptr;
 	}
 
 

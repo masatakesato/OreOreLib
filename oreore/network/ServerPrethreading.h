@@ -30,9 +30,9 @@ public:
 	virtual ~ServerPrethreading();
 
 	template <typename F>
-	void BindFunc( const tstring& name, F func );
+	void BindFunc( const charstring& name, F func );
 
-	void Listen( tstring host, int port, int backlog=1 );
+	void Listen( const charstring& host, int port, int backlog=1 );
 	void Run();
 	void Accept( SOCKET sock );
 	void Close();
@@ -42,7 +42,7 @@ public:
 
 protected:
 
-	tstring		m_Host;
+	charstring	m_Host;
 	int			m_Port;
 	int			m_Backlog;
 	SOCKET		m_Socket;
@@ -57,7 +57,7 @@ protected:
 
 template <int N>
 ServerPrethreading<N>::ServerPrethreading() :
-	m_Host( _T( "localhost" ) ),
+	m_Host( "localhost" ),
 	m_Port( 8080 ),
 	m_Backlog( 5 ),
 	m_Socket()
@@ -77,7 +77,7 @@ ServerPrethreading<N>::~ServerPrethreading()
 
 
 template <int N>
-template <typename F> void ServerPrethreading<N>::BindFunc( const tstring& name, F func )
+template <typename F> void ServerPrethreading<N>::BindFunc( const charstring& name, F func )
 {
 	m_Dispatcher->BindFunc<F>( name, func );
 }
@@ -85,7 +85,7 @@ template <typename F> void ServerPrethreading<N>::BindFunc( const tstring& name,
 
 
 template <int N>
-void ServerPrethreading<N>::Listen( tstring host, int port, int backlog )
+void ServerPrethreading<N>::Listen( const charstring& host, int port, int backlog )
 {
 	try
 	{

@@ -26,9 +26,9 @@ public:
 	virtual ~Server();
 
 	template <typename F>
-	void BindFunc( const tstring& name, F func );
+	void BindFunc( const charstring& name, F func );
 
-	void Listen( tstring host, int port, int backlog=1 );
+	void Listen( const charstring& host, int port, int backlog=1 );
 	void Run();
 	void Close();
 
@@ -37,7 +37,7 @@ public:
 
 protected:
 
-	tstring		m_Host;
+	charstring	m_Host;
 	int			m_Port;
 	int			m_Backlog;
 	SOCKET		m_Socket;
@@ -49,7 +49,7 @@ protected:
 
 
 Server::Server() :
-	m_Host(_T("localhost")),
+	m_Host( "localhost" ),
 	m_Port(8080),
 	m_Backlog(5),
 	m_Socket()
@@ -68,14 +68,14 @@ Server::~Server()
 
 
 template <typename F>
-void Server::BindFunc( const tstring& name, F func )
+void Server::BindFunc( const charstring& name, F func )
 {
 	m_Dispatcher->BindFunc<F>( name, func );
 }
 
 
 
-void Server::Listen( tstring host, int port, int backlog )
+void Server::Listen( const charstring& host, int port, int backlog )
 {
 	try
 	{

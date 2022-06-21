@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testRPCNode1", "testRPCNode
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testRPCNode2", "testRPCNode2\testRPCNode2.vcxproj", "{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNamedPipeRPCServer", "testNamedPipeRPCServer\testNamedPipeRPCServer.vcxproj", "{AF862172-0FA4-45D6-A807-62A048EBD374}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testNamedPipeRPCClient", "testNamedPipeRPCClient\testNamedPipeRPCClient.vcxproj", "{33A5A4DE-8FF0-4848-B02A-F1009FEA0CB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +25,14 @@ Global
 		{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}.Debug|x64.Build.0 = Debug|x64
 		{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}.Release|x64.ActiveCfg = Release|x64
 		{1E31D401-0DAB-4AF3-81A0-233A7E72F8F5}.Release|x64.Build.0 = Release|x64
+		{AF862172-0FA4-45D6-A807-62A048EBD374}.Debug|x64.ActiveCfg = Debug|x64
+		{AF862172-0FA4-45D6-A807-62A048EBD374}.Debug|x64.Build.0 = Debug|x64
+		{AF862172-0FA4-45D6-A807-62A048EBD374}.Release|x64.ActiveCfg = Release|x64
+		{AF862172-0FA4-45D6-A807-62A048EBD374}.Release|x64.Build.0 = Release|x64
+		{33A5A4DE-8FF0-4848-B02A-F1009FEA0CB8}.Debug|x64.ActiveCfg = Debug|x64
+		{33A5A4DE-8FF0-4848-B02A-F1009FEA0CB8}.Debug|x64.Build.0 = Debug|x64
+		{33A5A4DE-8FF0-4848-B02A-F1009FEA0CB8}.Release|x64.ActiveCfg = Release|x64
+		{33A5A4DE-8FF0-4848-B02A-F1009FEA0CB8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

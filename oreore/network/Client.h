@@ -24,29 +24,29 @@ class Client
 public:
 
 	Client();
-	Client( tstring host, int port, int timeout, int trial );
+	Client( const charstring& host, int port, int timeout, int trial );
 	virtual ~Client();
 
 	template < typename... Args >
-	msgpack::object_handle Call( tstring const& proc_name, Args ...args );
+	msgpack::object_handle Call( const charstring& proc_name, Args ...args );
 	bool IsReady();
 	void Close();
 
 
 private:
 
-	tstring	__m_host;
-	int		__m_port;
+	charstring	__m_host;
+	int			__m_port;
 
-	int		__m_timeout;// miliseconds.
-	int		__m_trial;
+	int			__m_timeout;// miliseconds.
+	int			__m_trial;
 	//void*	__m_Serializer;
-	SOCKET	__m_socket;
+	SOCKET		__m_socket;
 
 	OreOreLib::MemoryBase<char, int>	buffer;
 
 
-	static SOCKET make_connection( tstring const& host_, int port_, int timeout_, int trial_ );
+	static SOCKET make_connection( const charstring& host_, int port_, int timeout_, int trial_ );
 
 };
 
@@ -63,7 +63,7 @@ Client::Client()
 
 
 
-Client::Client( tstring host, int port, int timeout, int trial )
+Client::Client( const charstring& host, int port, int timeout, int trial )
 {
 	__m_host = host;
 	__m_port = port;
@@ -86,7 +86,7 @@ Client::~Client()
 
 
 template <typename... Args >
-msgpack::object_handle Client::Call( tstring const& proc_name, Args ...args )
+msgpack::object_handle Client::Call( const charstring& proc_name, Args ...args )
 {
 	tcout << _T("client.call...") << tendl; 
 	//print( '    args: ', args )
@@ -168,7 +168,7 @@ bool Client::IsReady()
 
 
 
-SOCKET Client::make_connection( tstring const& host_, int port_, int timeout_, int trial_ )
+SOCKET Client::make_connection( const charstring& host_, int port_, int timeout_, int trial_ )
 {
 	try
 	{
@@ -181,7 +181,7 @@ SOCKET Client::make_connection( tstring const& host_, int port_, int timeout_, i
 		dstAddr.sin_port = htons( port_ );
 		dstAddr.sin_family = AF_INET;
 		inet_pton( dstAddr.sin_family, host_.c_str(), &dstAddr.sin_addr.S_un.S_addr );//dstAddr.sin_addr.s_addr = inet_addr( destination );
-		
+
 		// create socket
 		BOOL yes = 1;
 		SOCKET dstSocket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
@@ -196,7 +196,7 @@ SOCKET Client::make_connection( tstring const& host_, int port_, int timeout_, i
 		tcout << "connecting...\n";
 		if( connect( dstSocket, ( struct sockaddr * ) &dstAddr, sizeof( dstAddr ) ) )
 		{
-			tcout << "failed to connect to " << host_ << tendl;
+			tcout << "failed to connect to " << host_.c_str() << tendl;
 			throw SocketException();
 			//return( -1 );
 		}
