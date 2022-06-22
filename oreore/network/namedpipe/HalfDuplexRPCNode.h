@@ -54,19 +54,22 @@ public:
 	}
 
 
-	void StartListen()
+	bool StartListen()
 	{
 		tcout << _T( "HalfDuplexRPCNode::StartListen()...\n" );
 
 		if( m_Receiver.IsListening() )
 		{
 			tcout << _T( "  Aborting: already listening...\n" );
-			return;
+			return false;
 		}
 
 		// Init pipe
-		m_Receiver.InitPipe();
-
+		if( !m_Receiver.InitPipe() )
+		{
+			tcout << _T( "  Aborting: pipe creation failed...\n" );
+			return false;
+		}
 
 		// Initialize promise/future
 		m_Promise = std::promise<bool>();
@@ -83,6 +86,8 @@ public:
 		);// &PipeServerRPC::Run, m_Receiver );
 
 		m_Receiver.WaitForStartup();
+
+		return true;
 	}
 
 

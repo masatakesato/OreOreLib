@@ -123,7 +123,7 @@ public:
 	}
 
 
-	void InitPipe()
+	bool InitPipe()
 	{
 		tcout << _T( "PipeServerRPC::InitPipe()...\n" );
 
@@ -144,13 +144,14 @@ public:
 		{
 			tcout << _T( "error check after client::CreateNamedPipe(): " ) << err << tendl;
 			m_PipeHandle = INVALID_HANDLE_VALUE;
-			return;
+			return false;
 		}
-
 
 		tcout << _T( "Successfully created named pipe: " ) << m_PipeName.c_str() << tendl;
 	
 		m_IsListening = true;
+
+		return true;
 	}
 
 
@@ -216,7 +217,6 @@ public:
 				m_NotifyReady = true;
 				m_CvReady.notify_all();
 			}
-			//m_Mutex.unlock();
 			bool result = ConnectNamedPipe( m_PipeHandle, nullptr );
 
 			// クライアント側で閉じたらサーバー側でも名前付きパイプの作り直しが必要.
@@ -417,6 +417,7 @@ public:
 		}// end of while( trial < self.__m_MaxTrials )
 
 		return oh;//nullptr;
+
 	}
 
 

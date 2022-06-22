@@ -45,6 +45,8 @@ public:
 
 int main()
 {
+	SetConsoleTitleA( g_InPipeName.c_str() );
+
 	auto proc = Procedure();
 	auto node = HalfDuplexRPCNode( g_InPipeName );
 
@@ -54,7 +56,9 @@ int main()
 	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
 	node.BindFunc( "Str", [&proc]( const charstring& string ){ return proc.Str( string ); } );
 
-	node.StartListen();
+	if( !node.StartListen() )
+		return 0;
+
 
 	//node.StopListen();
 	//
@@ -86,11 +90,20 @@ int main()
 
 		else if( input_text=="testrpc" )
 		{
-			auto result = node.Call( "Add", 4, 6 );
+			//
 			////auto val = result->as<int>();
 			//tcout << result << tendl;
-
-			//tcout << node.Call( "Add", 4, 6 )->as<int>() << tendl;
+			try
+			{
+				auto result = node.Call( "Add", 4, 6 );
+				result->type != msgpack::type::object_type::NIL
+					? (tcout << result->as<int>() << tendl)
+					: (tcout << "None\n");
+			}
+			catch( TCHAR *e )
+			{
+				tcout << e << tendl;
+			}
 		}
 			
 			//tcout << node.Call( "Add", 4, 6 )->as<int>() << tendl;

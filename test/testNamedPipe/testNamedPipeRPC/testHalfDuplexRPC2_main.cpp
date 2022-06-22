@@ -34,8 +34,11 @@ public:
 
 
 
+
 int main()
 {
+	SetConsoleTitleA( g_InPipeName.c_str() );
+
 	auto proc = Procedure();
 	auto node = HalfDuplexRPCNode( g_InPipeName );
 
@@ -43,7 +46,8 @@ int main()
 	node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
 	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
 
-	node.StartListen();
+	if( !node.StartListen() )
+		return 0;
 
 
 	std::string input_text;
