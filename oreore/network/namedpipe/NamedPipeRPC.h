@@ -2,6 +2,7 @@
 #define	NAMED_PIPE_RPC_H
 
 #include	<Windows.h>
+#include	<mutex>
 
 #include	<msgpack.hpp>
 
@@ -103,6 +104,7 @@ public:
 		, m_PipeHandle( INVALID_HANDLE_VALUE )
 		//, self.__m_Serializer = Serializer( pack_encoding=None, unpack_encoding=None )
 		, m_Dispatcher( new Dispatcher )
+		, m_NotifyReady( false )
 	{
 
 	}
@@ -152,18 +154,21 @@ public:
 	}
 
 
-	void ReleasePipe()
+	bool ReleasePipe()
 	{
+		if( m_PipeHandle == INVALID_HANDLE_VALUE )
+			return false;
+
 		tcout << _T( "PipeServerRPC::ReleasePipe()...\n" );
 	
-		if( m_PipeHandle != INVALID_HANDLE_VALUE )
-		{
-			DisconnectNamedPipe( m_PipeHandle );
-			CloseHandle( m_PipeHandle );
-		}
+		DisconnectNamedPipe( m_PipeHandle );
+		CloseHandle( m_PipeHandle );
 
 		m_PipeHandle = INVALID_HANDLE_VALUE;
 		m_IsListening = false;
+		m_NotifyReady = false;
+
+		return true;
 	}
 
 
@@ -176,6 +181,16 @@ public:
 	bool IsListening()
 	{
 		return m_IsListening;
+	}
+
+
+	void WaitForStartup()
+	{
+		//std::mutex mtx;
+		//{
+			std::unique_lock<std::mutex> lock( m_Mutex );//mtx );// 
+			m_CvReady.wait( lock, [&]{ return m_NotifyReady; } );
+		//}
 	}
 
 	
@@ -191,10 +206,17 @@ public:
 	void Run()
 	{
 		m_IsListening = true;
+		m_NotifyReady = false;
 
 		while( m_IsListening ) //true
 		{
 			tcout << _T( "waiting for client connection...\n" );
+			{
+				std::unique_lock<std::mutex> lock( m_Mutex );
+				m_NotifyReady = true;
+				m_CvReady.notify_all();
+			}
+			//m_Mutex.unlock();
 			bool result = ConnectNamedPipe( m_PipeHandle, nullptr );
 
 			// クライアント側で閉じたらサーバー側でも名前付きパイプの作り直しが必要.
@@ -216,6 +238,8 @@ public:
 			tcout<< _T( "established connection. starts listening.\n" );
 			__Listen();
 		
+
+m_NotifyReady = false;
 		}// end of while( m_IsListening )
 
 	}
@@ -266,7 +290,7 @@ public:
 
 	}
 
-	
+
 
 private:
 
@@ -274,6 +298,10 @@ private:
 	charstring	m_PipeName;
 	HANDLE		m_PipeHandle;
 	OreOreLib::SharedPtr<Dispatcher>	m_Dispatcher;
+
+std::mutex	m_Mutex;
+	std::condition_variable	m_CvReady;
+	bool					m_NotifyReady;
 
 };
 
@@ -383,7 +411,7 @@ public:
 			catch( const SendMessageException& e )
 			{
 				tcout << _T( "PipeClientRPC::Call()...SendMessageException occured.... trial: " ) << trial << _T( ", " ) << e.what() << tendl;
-				++trial;
+				trial++;
 			}
 
 		}// end of while( trial < self.__m_MaxTrials )

@@ -30,11 +30,14 @@ public:
 		return a + b;
 	}
 
-	//def Str( self, string ) :
-	//	time.sleep( 1 )
-	//	d ={ "Key": 55555 }
 
-	//	print( d[string] )
+	void  Str( const charstring& string )
+	{
+		Sleep( 1000 );
+
+		std::unordered_map<charstring, int> d{ {"Key", 55555} };
+		tcout << d[string] << tendl;
+	}
 };
 
 
@@ -49,13 +52,51 @@ int main()
 	node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
 	node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
 	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
+	node.BindFunc( "Str", [&proc]( const charstring& string ){ return proc.Str( string ); } );
 
 	node.StartListen();
 
-	//std::cin.get();
-	node.StopListen();
-	
-	node.StartListen();
+	//node.StopListen();
+	//
+	//node.StartListen();
+	//node.StopListen();
+
+
+	std::string input_text;
+
+	while( true )
+	{
+		tcout << ">";
+		std::cin >> input_text;
+
+		if( input_text == "quit" )
+			break;
+
+		else if( input_text=="disconnect" )
+			node.Disconnect();
+
+		else if( input_text=="connect" )
+			node.Connect( g_OutPipeName );
+
+		else if( input_text=="startlisten" )
+			node.StartListen();
+
+		else if( input_text=="stoplisten" )
+			node.StopListen();
+
+		else if( input_text=="testrpc" )
+		{
+			auto result = node.Call( "Add", 4, 6 );
+			////auto val = result->as<int>();
+			//tcout << result << tendl;
+
+			//tcout << node.Call( "Add", 4, 6 )->as<int>() << tendl;
+		}
+			
+			//tcout << node.Call( "Add", 4, 6 )->as<int>() << tendl;
+			//else:
+			//    node.Send( input_text.encode() )
+	}
 
 	return 0;
 }

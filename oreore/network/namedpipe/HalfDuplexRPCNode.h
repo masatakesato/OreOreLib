@@ -3,6 +3,7 @@
 
 #include	<thread>
 #include	<future>
+#include	<mutex>
 
 #include	"NamedPipeRPC.h"
 
@@ -72,7 +73,7 @@ public:
 		m_Future = m_Promise.get_future();
 
 		// Start listen thread
-		//tcout << _T( "StartListen::running thread...\n" );
+		tcout << _T( "StartListen::running thread...\n" );
 		m_ListenThread = std::thread(
 			[&p=m_Promise, &recv=m_Receiver]
 			{
@@ -80,6 +81,8 @@ public:
 				p.set_value( true );
 			}
 		);// &PipeServerRPC::Run, m_Receiver );
+
+		m_Receiver.WaitForStartup();
 	}
 
 
@@ -87,28 +90,23 @@ public:
 	{
 		tcout << _T( "HalfDuplexNode::StopListen()...\n" );
 
+		if( !m_ListenThread.joinable() )//!IsRunning() )//
+			return;
+
 		// Set polling flag to false
 		//tcout << _T("StopListen::self.__m_Receiver.SetListen(False)...\n");
 		m_Receiver.SetListen( false );
 
-Sleep( 100 );
-TODO: Atomic SetListen!!!
-		if( IsRunning() )
-		{
-			tcout << _T( "StopListen::m_ListenThread.join()...\n" );
-			HANDLE hthread = m_ListenThread.native_handle();//hthread = OpenThread( 0x40000000, false, (DWORD)(m_ListenThread.get_id()) );
-			CancelSynchronousIo( hthread );
+		// Stop listening thread
+		//tcout << _T( "  Stop listening thread...\n" );
+		HANDLE hthread = m_ListenThread.native_handle();
+		CancelSynchronousIo( hthread );
+		//CloseHandle( hthread );
+		m_ListenThread.join();
+		m_ListenThread.~thread();
 
-m_ListenThread.join();
-
-			CloseHandle( hthread );
-		}
-
-		//m_ListenThread = std::thread();
-		//self.__m_ListenThread = None
-
-		// Release pipe instances
-		//tcout << _T("StopListen::m_Receiver.ReleasePipe()...\n")
+		//Release pipe instances
+		//tcout << _T( "  Release pipe instances...\n" );
 		m_Receiver.ReleasePipe();
 
 		// Check status
@@ -139,12 +137,12 @@ private:
 		auto result = m_Future.wait_for( std::chrono::seconds( 0 ) );
 		if( result == std::future_status::ready )
 		{
-			tcout << _T( "Thread finished\n;" );
+			tcout << _T( "Thread finished.\n" );
 			return false;
 		}
 		else
 		{
-			tcout << _T( "Thread still running\n;" );
+			tcout << _T( "Thread still running.\n" );
 			return true;
 		}
 

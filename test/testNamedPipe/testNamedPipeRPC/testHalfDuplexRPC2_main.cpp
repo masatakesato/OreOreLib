@@ -1,11 +1,78 @@
-﻿//#include    <oreore/network/namedpipe/halfduplexrpcnode.h>
+﻿#include	<iostream>
 
-#include <stdio.h>
+#include    <oreore/network/namedpipe/HalfDuplexRPCNode.h>
+
+const charstring g_InPipeName = "\\\\.\\pipe\\Foo2";
+const charstring g_OutPipeName = "\\\\.\\pipe\\Foo1";
+
+
+
+class Procedure
+{
+public:
+
+	void NoReturn()
+	{
+		tcout << _T( "Procedure::NoReturn()...\n" );
+	}
+
+
+	charstring Test()
+	{
+		tcout << _T( "Procedure::Test()...\n" );
+		return "OK...";
+	}
+
+
+	int Add( int a, int b )
+	{
+		tcout << _T( "Procedure::Add( " ) << a << _T( ", " ) << b << _T( ")\n" );
+		return a + b;
+	}
+
+};
+
+
 
 int main()
 {
+	auto proc = Procedure();
+	auto node = HalfDuplexRPCNode( g_InPipeName );
 
-	printf( "Hello World" );
+	node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
+	node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
+	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
+
+	node.StartListen();
+
+
+	std::string input_text;
+
+	while( true )
+	{
+		tcout << ">";
+		std::cin >> input_text;
+
+		if( input_text == "quit" )
+			break;
+
+		else if( input_text=="disconnect" )
+			node.Disconnect();
+
+		else if( input_text=="connect" )
+			node.Connect( g_OutPipeName );
+
+		else if( input_text=="startlisten" )
+			node.StartListen();
+
+		else if( input_text=="stoplisten" )
+			node.StopListen();
+
+		else if( input_text=="testrpc" )
+			node.Call( "Str", "Key" );
+			//tcout << node.Call( "Str", "Key" )->as<charstring>().c_str() << tendl;
+	}
+
 
 	return 0;
 }
@@ -13,32 +80,9 @@ int main()
 
 
 
-//import oreorepylib.utils.compat as compat
-//
-//from halfduplexrpcnode import *
-//
-//
-//g_InPipeName = r"\\.\pipe\Foo2"
-//g_OutPipeName = r"\\.\pipe\Foo1"
-//
-//
-//
-//
-//class Procedure:
-//
-//    def NoReturn( self ):
-//        print( "Procedure::NoReturn()..." )
-//
-//
-//    def Test( self ):
-//        print( "Procedure::Test()..." )
-//        return "OK..."
-//
-//
-//    def Add( self, a, b ):
-//        print( "Procedure::Add( %d, %d )..." % (a, b) )
-//        return a + b
-//
+
+
+
 //
 //
 //
