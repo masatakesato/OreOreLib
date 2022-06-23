@@ -39,35 +39,35 @@ namespace OreOreLib
 
 
 	// ArrayBase declaration
-	template< typename T, sizeType Size, typename InexType, typename enable=void > class ArrayBase; 
+	template< typename T, sizeType Size, typename IndexType, typename enable=void > class ArrayBase; 
 
 
 
 
 	//##########################################################################//
 	//																			//
-	//						NDArrayBase partial specialization					//
+	//						ArrayBase partial specialization					//
 	//																			//
 	//##########################################################################//
 
 	// Dynamic array
-	template< typename T, typename InexType >
-	using ArrayImpl = ArrayBase< T, detail::DynamicSize, InexType >;
+	template< typename T, typename IndexType >
+	using ArrayImpl = ArrayBase< T, detail::DynamicSize, IndexType >;
 
 	// Static array
-	template< typename T, sizeType Size, typename InexType >
-	using StaticArrayImpl = ArrayBase< T, Size, InexType, std::enable_if_t< Size!=detail::DynamicSize > >;
+	template< typename T, sizeType Size, typename IndexType >
+	using StaticArrayImpl = ArrayBase< T, Size, IndexType, std::enable_if_t< Size!=detail::DynamicSize > >;
 
 	// Array view
-	template< typename T, typename InexType >
-	using ArrayViewImpl = ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, InexType >;
+	template< typename T, typename IndexType >
+	using ArrayViewImpl = ArrayBase< detail::ARRVIEW<T>, detail::DynamicSize, IndexType >;
 
 
 
 
 	//##########################################################################//
 	//																			//
-	//						NDArrayBase full specialization						//
+	//						ArrayBase full specialization						//
 	//																			//
 	//##########################################################################//
 
