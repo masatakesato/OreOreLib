@@ -32,5 +32,8 @@
     <ClInclude Include="..\..\..\oreore\memory\Memory.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\oreore\extra\MsgpackAdaptor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -89,6 +89,7 @@
     <ClInclude Include="..\..\..\oreore\container\Array.h" />
     <ClInclude Include="..\..\..\oreore\container\ArrayBase.h" />
     <ClInclude Include="..\..\..\oreore\container\StaticArray.h" />
+    <ClInclude Include="..\..\..\oreore\extra\MsgpackAdaptor.h" />
     <ClInclude Include="..\..\..\oreore\memory\Memory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
