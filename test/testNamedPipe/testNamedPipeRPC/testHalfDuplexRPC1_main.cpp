@@ -1,6 +1,7 @@
 ﻿#include	<iostream>
 
 #include    <oreore/network/namedpipe/HalfDuplexRPCNode.h>
+#include	<oreore/extra/MsgpackAdaptor.h>
 
 const charstring g_InPipeName = "\\\\.\\pipe\\Foo1";
 const charstring g_OutPipeName = "\\\\.\\pipe\\Foo2";
@@ -90,20 +91,29 @@ int main()
 
 		else if( input_text=="testrpc" )
 		{
-			//
-			////auto val = result->as<int>();
-			//tcout << result << tendl;
-			try
+			//try
+			//{
+			//	auto result = node.Call( "Add", 4, 6 );
+			//	result->type != msgpack::type::object_type::NIL
+			//		? (tcout << result->as<int>() << tendl)
+			//		: (tcout << "None\n");
+			//}
+			//catch( TCHAR *e )
+			//{
+			//	tcout << e << tendl;
+			//}
+
+			OreOreLib::Array<int> arr ={ 1, 2, 3, 4 };
+
+			auto result = node.Call( "TestArrayTransfer", OreOreExtra::CastToMsgpk( arr ) );
+
+			if( result->type != msgpack::type::object_type::NIL )
 			{
-				auto result = node.Call( "Add", 4, 6 );
-				result->type != msgpack::type::object_type::NIL
-					? (tcout << result->as<int>() << tendl)
-					: (tcout << "None\n");
+				auto ret = result->as<OreOreExtra::ArrayMsgpk<int>>();
+				
 			}
-			catch( TCHAR *e )
-			{
-				tcout << e << tendl;
-			}
+				//tcout << result->as<int>() << tendl;
+
 		}
 			
 			//tcout << node.Call( "Add", 4, 6 )->as<int>() << tendl;

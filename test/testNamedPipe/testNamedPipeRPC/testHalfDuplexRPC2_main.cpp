@@ -1,6 +1,7 @@
 ﻿#include	<iostream>
 
 #include    <oreore/network/namedpipe/HalfDuplexRPCNode.h>
+#include	<oreore/extra/MsgpackAdaptor.h>
 
 const charstring g_InPipeName = "\\\\.\\pipe\\Foo2";
 const charstring g_OutPipeName = "\\\\.\\pipe\\Foo1";
@@ -35,6 +36,45 @@ public:
 
 
 
+template< typename T, typename IndexType >
+void TestMemoryTransfer( const OreOreExtra::MemoryMsgpkImpl<T, IndexType>& arr )//const OreOreExtra::ArrayMsgpkImpl<T, IndexType>& arr )
+{
+	tcout << _T( "TestMemoryTransfer()...\n" );
+
+	for( auto& v : arr )
+		tcout << v << tendl;
+}
+
+
+
+template< typename T, typename IndexType >
+OreOreExtra::ArrayMsgpkImpl<T, IndexType> TestArrayTransfer( OreOreExtra::ArrayMsgpkImpl<T, IndexType>& arr )
+{
+	tcout << _T( "TestArrayTransfer()...\n" );
+
+	OreOreExtra::ArrayMsgpkImpl<T, IndexType> out;
+	out.Init(5);
+	//for( auto& v : arr )
+	//	tcout << v << tendl;
+
+	return out;
+}
+
+
+
+template< typename T, sizeType Size, typename IndexType >
+void TestStaticArrayTransfer( const OreOreExtra::StaticArrayMsgpkImpl<T, Size, IndexType>& arr )
+{
+	tcout << _T( "TestStaticArrayTransfer()...\n" );
+
+	for( auto& v : arr )
+		tcout << v << tendl;
+}
+
+
+
+
+
 int main()
 {
 	SetConsoleTitleA( g_InPipeName.c_str() );
@@ -45,6 +85,7 @@ int main()
 	node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
 	node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
 	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
+	node.BindFunc( "TestArrayTransfer", &TestArrayTransfer<int, uint32> );
 
 	if( !node.StartListen() )
 		return 0;

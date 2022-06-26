@@ -97,9 +97,22 @@ namespace OreOreExtra
 
 		// destination of this function is unknown - i've never ran into scenary
 		// what it was called. some explaination/documentation needed.
-		template <typename MSGPACK_OBJECT>
-		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone* z ) const
+		//template <typename MSGPACK_OBJECT>
+		//void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone* z ) const
+		//{
+
+		//}
+
+		template <typename MSGPACK_OBJECT>// =msgpack::object>
+		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone& z ) const
 		{
+			auto byte_size = this->AllocatedSize();//   Length<uint32_t>();
+
+			msgpack::object o_;
+			o_.type = msgpack::type::ARRAY;
+
+			char* ptr = static_cast<char*>( z.allocate_align( byte_size, MSGPACK_ZONE_ALIGNOF( char ) ) );
+
 
 		}
 
@@ -152,9 +165,29 @@ namespace OreOreExtra
 
 		// destination of this function is unknown - i've never ran into scenary
 		// what it was called. some explaination/documentation needed.
-		template <typename MSGPACK_OBJECT>
-		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone* z ) const
+		//template <typename MSGPACK_OBJECT>
+		//void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone* z ) const
+		//{
+
+		//}
+
+		// https://zv-louis.hatenablog.com/entry/2018/11/05/200000
+		template <typename MSGPACK_OBJECT>// =msgpack::object>
+		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone& z ) const
 		{
+			auto byte_size = this->AllocatedSize();//   Length<uint32_t>();
+			auto ptr = static_cast<msgpack::object*>( z.allocate_align( byte_size, MSGPACK_ZONE_ALIGNOF( char ) ) );
+
+			memcpy( ptr, this->m_pData, byte_size );
+
+			//msgpack::object o_;
+			o->type = msgpack::type::ARRAY;
+			o->via.array.size = this->Length<uint32_t>();
+			o->via.array.ptr = ptr;
+
+			if( ptr )
+				for( int i=0; i<this->Length<int>(); ++i )
+					o->via.array.ptr[i] = msgpack::object( this->m_pData[i] );
 
 		}
 
@@ -204,8 +237,14 @@ namespace OreOreExtra
 
 		// destination of this function is unknown - i've never ran into scenary
 		// what it was called. some explaination/documentation needed.
+		//template <typename MSGPACK_OBJECT>
+		//void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone* z ) const
+		//{
+
+		//}
+
 		template <typename MSGPACK_OBJECT>
-		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone* z ) const
+		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone& z ) const
 		{
 
 		}

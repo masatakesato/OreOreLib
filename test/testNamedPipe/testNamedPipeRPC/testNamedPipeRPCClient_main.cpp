@@ -47,8 +47,6 @@ int main()
 	{
 		OreOreLib::Array<int> arr ={ 1, 2, 3, 4 };
 		//OreOreExtra::ArrayMsgpk<int> arr = { 1, 2, 3, 4 };
-		;
-		auto p = static_cast<OreOreExtra::ArrayMsgpk<int>*>( &arr );//( OreOreExtra::ArrayMsgpk<int>* )( &arr);//
 		arr[0]= 6666;
 		/*auto result = */client.Call( "TestArrayTransfer", OreOreExtra::CastToMsgpk( arr ) );
 		//		tcout << _T( "TestSum : " ) << result->as<int>() << tendl;

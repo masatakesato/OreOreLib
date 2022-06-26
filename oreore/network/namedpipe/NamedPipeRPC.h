@@ -377,7 +377,7 @@ public:
 	template <typename... Args >
 	msgpack::object_handle Call( charstring const& proc_name, Args ...args )
 	{
-		int trial = 0;
+		uint32 trial = 0;
 		int numrcv;
 		msgpack::object_handle oh;
 
