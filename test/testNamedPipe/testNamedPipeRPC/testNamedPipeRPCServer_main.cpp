@@ -1,6 +1,8 @@
 ﻿#include    <oreore/network/namedpipe/NamedPipeRPC.h>
 
 #include	<oreore/memory/Memory.h>
+#include	<oreore/extra/MsgpackAdaptor.h>
+
 
 
 const tstring pipe_prefix = _T( "\\\\.\\pipe\\" );
@@ -49,6 +51,16 @@ int TestSum( std::vector<int>& vec1 )//int* a, int numelm )
 }
 
 
+void TestArrayTransfer( const OreOreExtra::ArrayMsgpk<int>& arr )
+{
+	tcout << _T( "TestArrayTransfer()...\n" );
+
+	for( auto& v : arr )
+		tcout << v << tendl;
+
+}
+
+
 
 
 int main()
@@ -59,6 +71,7 @@ int main()
 	server.BindFunc( "Test", &Test );
 	server.BindFunc( "Add", &Add );
 	server.BindFunc( "TestSum", &TestSum );
+	server.BindFunc( "TestArrayTransfer", &TestArrayTransfer );
 
 	server.Run();
 

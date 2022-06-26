@@ -57,6 +57,9 @@ namespace OreOreExtra
 	{
 	public:
 
+		using OreOreLib::ArrayImpl<T, IndexType>::ArrayImpl;
+
+
 		template <typename Packer>
 		void msgpack_pack( Packer& pk ) const
 		{
@@ -107,6 +110,8 @@ namespace OreOreExtra
 	class StaticArrayMsgpkImpl : public OreOreLib::StaticArrayImpl<T, Size, IndexType>
 	{
 	public:
+
+		using OreOreLib::StaticArrayImpl<T, Size, IndexType>::StaticArrayImpl;
 
 		template <typename Packer>
 		void msgpack_pack( Packer& pk ) const
