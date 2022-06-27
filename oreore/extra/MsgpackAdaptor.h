@@ -106,14 +106,18 @@ namespace OreOreExtra
 		template <typename MSGPACK_OBJECT>// =msgpack::object>
 		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone& z ) const
 		{
-			auto byte_size = this->AllocatedSize();//   Length<uint32_t>();
+			auto byte_size = this->AllocatedSize();
+			auto ptr = static_cast<msgpack::object*>( z.allocate_align( byte_size, MSGPACK_ZONE_ALIGNOF( char ) ) );
 
-			msgpack::object o_;
-			o_.type = msgpack::type::ARRAY;
+			o->type = msgpack::type::ARRAY;
+			o->via.array.size = this->Length<uint32_t>();
+			o->via.array.ptr = ptr;
 
-			char* ptr = static_cast<char*>( z.allocate_align( byte_size, MSGPACK_ZONE_ALIGNOF( char ) ) );
-
-
+			if( ptr )
+			{
+				for( int i=0; i<this->Length<int>(); ++i )
+					o->via.array.ptr[i] = msgpack::object( this->m_pData[i] );
+			}
 		}
 
 	};
@@ -175,20 +179,18 @@ namespace OreOreExtra
 		template <typename MSGPACK_OBJECT>// =msgpack::object>
 		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone& z ) const
 		{
-			auto byte_size = this->AllocatedSize();//   Length<uint32_t>();
+			auto byte_size = this->AllocatedSize();
 			auto ptr = static_cast<msgpack::object*>( z.allocate_align( byte_size, MSGPACK_ZONE_ALIGNOF( char ) ) );
 
-			memcpy( ptr, this->m_pData, byte_size );
-
-			//msgpack::object o_;
 			o->type = msgpack::type::ARRAY;
 			o->via.array.size = this->Length<uint32_t>();
 			o->via.array.ptr = ptr;
 
 			if( ptr )
+			{
 				for( int i=0; i<this->Length<int>(); ++i )
 					o->via.array.ptr[i] = msgpack::object( this->m_pData[i] );
-
+			}
 		}
 
 	};
@@ -243,10 +245,21 @@ namespace OreOreExtra
 
 		//}
 
-		template <typename MSGPACK_OBJECT>
+		template <typename MSGPACK_OBJECT>// =msgpack::object>
 		void msgpack_object( MSGPACK_OBJECT* o, msgpack::zone& z ) const
 		{
+			auto byte_size = this->AllocatedSize();
+			auto ptr = static_cast<msgpack::object*>( z.allocate_align( byte_size, MSGPACK_ZONE_ALIGNOF( char ) ) );
 
+			o->type = msgpack::type::ARRAY;
+			o->via.array.size = this->Length<uint32_t>();
+			o->via.array.ptr = ptr;
+
+			if( ptr )
+			{
+				for( int i=0; i<this->Length<int>(); ++i )
+					o->via.array.ptr[i] = msgpack::object( this->m_pData[i] );
+			}
 		}
 
 	};

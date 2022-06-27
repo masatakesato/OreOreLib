@@ -231,7 +231,9 @@ public:
 					return;
 				}
 
-				InitPipe();
+				if( InitPipe()==false )
+					return;
+
 				continue;
 			}
 
