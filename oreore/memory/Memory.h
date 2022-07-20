@@ -618,9 +618,8 @@ namespace OreOreLib
 
 		IndexType	m_Length;
 		IndexType	m_AllocSize;
-		T*			m_pData;
-
 		IndexType	m_Capacity;
+		T*			m_pData;
 
 
 		// new delete memory without constructor
