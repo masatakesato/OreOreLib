@@ -3,8 +3,8 @@
 #include    <oreore/network/namedpipe/HalfDuplexRPCNode.h>
 #include	<oreore/extra/MsgpackAdaptor.h>
 
-const charstring g_InPipeName = "\\\\.\\pipe\\Foo2";
-const charstring g_OutPipeName = "\\\\.\\pipe\\Foo1";
+const charstring g_InPipeName = "\\\\.\\pipe\\Bar";
+const charstring g_OutPipeName = "\\\\.\\pipe\\Foo";
 
 
 
@@ -114,8 +114,23 @@ int main()
 			node.StopListen();
 
 		else if( input_text=="testrpc" )
-			node.Call( "Str", "Key" );
+		{
+			//node.Call( "Str", "Key" );
 			//tcout << node.Call( "Str", "Key" )->as<charstring>().c_str() << tendl;
+
+			try
+			{
+				auto result = node.Call( "Add", 4, 6 );
+				result->type != msgpack::type::object_type::NIL
+					? (tcout << result->as<int>() << tendl)
+					: (tcout << "None\n");
+			}
+			catch( TCHAR *e )
+			{
+				tcout << e << tendl;
+			}
+
+		}
 	}
 
 

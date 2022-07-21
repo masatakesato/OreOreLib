@@ -3,8 +3,8 @@
 #include    <oreore/network/namedpipe/HalfDuplexRPCNode.h>
 #include	<oreore/extra/MsgpackAdaptor.h>
 
-const charstring g_InPipeName = "\\\\.\\pipe\\Foo1";
-const charstring g_OutPipeName = "\\\\.\\pipe\\Foo2";
+const charstring g_InPipeName = "\\\\.\\pipe\\Foo";
+const charstring g_OutPipeName = "\\\\.\\pipe\\Bar";
 
 
 

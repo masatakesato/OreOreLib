@@ -21,7 +21,7 @@ public:
 	}
 
 
-	~HalfDuplexRPCNode()
+	virtual ~HalfDuplexRPCNode()
 	{
 		StopListen();
 	}
