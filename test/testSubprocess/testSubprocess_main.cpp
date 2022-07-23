@@ -23,6 +23,10 @@ using namespace std;
 
 int main()
 {
+	auto procId = GetCurrentProcessId();
+	cout << "testSubprocess_main... " << procId << endl;
+
+
 	//{
 	//	//=================== アプリケーション名で起動/終了をコントロールする場合 =================//
 
@@ -54,41 +58,40 @@ int main()
 	//	OreOreLib::CloseProcess( exInfo );
 	//}
 
-	//{
-	//	//=================== CreateProcess/CloseHandle使って起動/終了をコントロールする場合 ================//
+	{
+		//=================== CreateProcess/CloseHandle使って起動/終了をコントロールする場合 ================//
 
-	//	PROCESS_INFORMATION pInfo = { 0 };
-	//	STARTUPINFO sInfo = { 0 };
-	//	sInfo.cb = sizeof( sInfo );
+		PROCESS_INFORMATION pInfo = { 0 };
+		STARTUPINFO sInfo = { 0 };
+		sInfo.cb = sizeof( sInfo );
 
-	//	//wchar_t commandline[] = L"notepad.exe test.py";
-	//	wchar_t commandline[] = L"D:/ProgramData/Anaconda3/python.exe";
+		//wchar_t commandline[] = L"notepad.exe test.py";
+		wchar_t commandline[] = L"D:/ProgramData/Anaconda3/python.exe test.py";
 
-	//	auto ret = CreateProcess(
-	//		NULL,//L"c:\\Windows\\System32\\notepad.exe",
-	//		commandline,
-	//		NULL,
-	//		NULL,
-	//		FALSE,
-	//		CREATE_NEW_CONSOLE,
-	//		NULL,
-	//		NULL,
-	//		&sInfo,
-	//		&pInfo
-	//	);
+		auto ret = CreateProcess(
+			NULL,//L"c:\\Windows\\System32\\notepad.exe",
+			commandline,
+			NULL,
+			NULL,
+			FALSE,
+			CREATE_NEW_CONSOLE,
+			NULL,
+			NULL,
+			&sInfo,
+			&pInfo
+		);
 
-	//	if( ret == 0 )
-	//	{
-	//		cout << GetLastError() << endl;
-	//	}
-	//	else
-	//	{
-	//		Sleep( 5000 );
+		if( ret == 0 )
+		{
+			cout << GetLastError() << endl;
+		}
+		else
+		{
+			Sleep( 5000 );
 
-	//		OreOreLib::CloseProcess( pInfo );
-	//	}
-
-	//}
+			OreOreLib::CloseProcess( pInfo );
+		}
+	}
 
 	//{
 	//	//=================== TODO: PyQtアプリの起動/終了を試してみる ================//
@@ -125,25 +128,25 @@ int main()
 	//	}
 	//}
 
-	{
-		//=================== プロセスハンドル使って起動/終了をコントロールする場合 ================//
+	//{
+	//	//=================== プロセスハンドル使って起動/終了をコントロールする場合 ================//
 
-		// ShellExecuteEx
-		SHELLEXECUTEINFO exInfo = { 0 };
-		exInfo.cbSize = sizeof( SHELLEXECUTEINFO );
-		exInfo.fMask = SEE_MASK_NOCLOSEPROCESS;//SEE_MASK_DEFAULT;//
-		exInfo.lpVerb = L"open";
-		exInfo.lpFile = L"D:/ProgramData/Anaconda3/envs/testpyqt/python.exe";
-		exInfo.lpParameters = L"D:/Repository/DC/dc/dc_0_0_1/__main__.py";
-		exInfo.nShow = SW_NORMAL;
+	//	// ShellExecuteEx
+	//	SHELLEXECUTEINFO exInfo = { 0 };
+	//	exInfo.cbSize = sizeof( SHELLEXECUTEINFO );
+	//	exInfo.fMask = SEE_MASK_NOCLOSEPROCESS;//SEE_MASK_DEFAULT;//
+	//	exInfo.lpVerb = L"open";
+	//	exInfo.lpFile = L"D:/ProgramData/Anaconda3/envs/testpyqt/python.exe";
+	//	exInfo.lpParameters = L"D:/Repository/DC/dc/dc_0_0_1/__main__.py";
+	//	exInfo.nShow = SW_NORMAL;
 
-		ShellExecuteEx( &exInfo );// ShellExecute( 0, L"open", L"c:\\windows\\notepad.exe", 0, 0, SW_SHOW );
-		cout << exInfo.hProcess << endl;
+	//	ShellExecuteEx( &exInfo );// ShellExecute( 0, L"open", L"c:\\windows\\notepad.exe", 0, 0, SW_SHOW );
+	//	cout << exInfo.hProcess << endl;
 
-		Sleep( 5000 );
+	//	Sleep( 5000 );
 
-		OreOreLib::CloseProcess( exInfo );
-	}
+	//	OreOreLib::CloseProcess( exInfo );
+	//}
 
 
 	return 0;
