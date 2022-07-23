@@ -7,16 +7,21 @@
 
 namespace OreOreLib
 {
+	// https://stackoverflow.com/questions/38081028/using-createprocess-and-exit-close-the-opened-application/38081764#38081764
 
-	static BOOL CALLBACK SendWMCloseMsg( HWND hwnd, LPARAM lParam )
+	namespace detail
 	{
-		DWORD dwProcessId = 0;
-		GetWindowThreadProcessId( hwnd, &dwProcessId );
+		static BOOL CALLBACK SendWMCloseMsg( HWND hwnd, LPARAM lParam )
+		{
+			DWORD dwProcessId = 0;
+			GetWindowThreadProcessId( hwnd, &dwProcessId );
 
-		if( dwProcessId == lParam )
-			SendMessageTimeout( hwnd, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 30000, NULL );
+			if( dwProcessId == lParam )
+				SendMessageTimeout( hwnd, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 30000, NULL );
 
-		return TRUE;
+			return TRUE;
+		}
+
 	}
 
 
@@ -28,7 +33,7 @@ namespace OreOreLib
 
 		if( WaitForSingleObject( pInfo.hProcess, timeout_interval ) == WAIT_TIMEOUT )
 		{
-			EnumWindows( &SendWMCloseMsg, pInfo.dwProcessId );
+			EnumWindows( &detail::SendWMCloseMsg, pInfo.dwProcessId );
 			// force termination if app cannot be closed.
 			if( WaitForSingleObject( pInfo.hProcess, timeout_interval ) == WAIT_TIMEOUT )
 				TerminateProcess( pInfo.hProcess, 0 );
@@ -46,7 +51,7 @@ namespace OreOreLib
 
 		if( WaitForSingleObject( exInfo.hProcess, timeout_interval ) == WAIT_TIMEOUT )
 		{
-			EnumWindows( &SendWMCloseMsg, (LPARAM)exInfo.hwnd );
+			EnumWindows( &detail::SendWMCloseMsg, (LPARAM)exInfo.hwnd );
 			// force termination if app cannot be closed.
 			if( WaitForSingleObject( exInfo.hProcess, timeout_interval ) == WAIT_TIMEOUT )
 				TerminateProcess( exInfo.hProcess, 0 );

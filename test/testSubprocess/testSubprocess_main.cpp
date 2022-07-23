@@ -34,29 +34,25 @@ int main()
 	//	system( "taskkill /F /IM notepad.exe >nul 2>&1" );
 	//}
 
-	{
-		//=================== プロセスハンドル使って起動/終了をコントロールする場合 ================//
+	//{
+	//	//=================== プロセスハンドル使って起動/終了をコントロールする場合 ================//
 
-		// ShellExecuteEx
-		SHELLEXECUTEINFO exInfo ={ 0 };
-		exInfo.cbSize = sizeof( SHELLEXECUTEINFO );
-		exInfo.fMask = SEE_MASK_NOCLOSEPROCESS;//SEE_MASK_DEFAULT;//
-		exInfo.lpVerb = L"open";
-		exInfo.lpFile = L"D:/ProgramData/Anaconda3/python.exe";//L"c:/windows/notepad.exe";
-		exInfo.lpParameters = L"test.py";
-		exInfo.nShow = SW_NORMAL;
+	//	// ShellExecuteEx
+	//	SHELLEXECUTEINFO exInfo = { 0 };
+	//	exInfo.cbSize = sizeof( SHELLEXECUTEINFO );
+	//	exInfo.fMask = SEE_MASK_NOCLOSEPROCESS;//SEE_MASK_DEFAULT;//
+	//	exInfo.lpVerb = L"open";
+	//	exInfo.lpFile = L"D:/ProgramData/Anaconda3/python.exe";//L"c:/windows/notepad.exe";
+	//	exInfo.lpParameters = L"test.py";
+	//	exInfo.nShow = SW_NORMAL;
 
-		ShellExecuteEx( &exInfo );// ShellExecute( 0, L"open", L"c:\\windows\\notepad.exe", 0, 0, SW_SHOW );
-		cout << exInfo.hProcess << endl;
+	//	ShellExecuteEx( &exInfo );// ShellExecute( 0, L"open", L"c:\\windows\\notepad.exe", 0, 0, SW_SHOW );
+	//	cout << exInfo.hProcess << endl;
 
-		Sleep( 5000 );
+	//	Sleep( 5000 );
 
-		// これでプロセス生きてるかどうか分かる
-		cout << (WAIT_TIMEOUT==WaitForSingleObject( exInfo.hProcess, 0 )) << endl;
-
-		OreOreLib::CloseProcess( exInfo );
-		//TerminateProcess( exInfo.hProcess, 1 );
-	}
+	//	OreOreLib::CloseProcess( exInfo );
+	//}
 
 	//{
 	//	//=================== CreateProcess/CloseHandle使って起動/終了をコントロールする場合 ================//
@@ -74,7 +70,7 @@ int main()
 	//		NULL,
 	//		NULL,
 	//		FALSE,
-	//		0,
+	//		CREATE_NEW_CONSOLE,
 	//		NULL,
 	//		NULL,
 	//		&sInfo,
@@ -89,12 +85,65 @@ int main()
 	//	{
 	//		Sleep( 5000 );
 
-	//		//cout << ( WAIT_TIMEOUT==WaitForSingleObject( pInfo.hProcess, 0 ) ) << endl;
 	//		OreOreLib::CloseProcess( pInfo );
-	//		//TerminateProcess( pInfo.hProcess, 1 );
 	//	}
 
 	//}
+
+	//{
+	//	//=================== TODO: PyQtアプリの起動/終了を試してみる ================//
+	//
+	//	PROCESS_INFORMATION pInfo = { 0 };
+	//	STARTUPINFO sInfo = { 0 };
+	//	sInfo.cb = sizeof( sInfo );
+	//
+	//	//wchar_t commandline[] = L"notepad.exe test.py";
+	//	wchar_t commandline[] = L"D:/ProgramData/Anaconda3/envs/testpyqt/python.exe D:/Repository/DC/dc/dc_0_0_1/__main__.py";
+
+	//	auto ret = CreateProcess(
+	//		NULL,
+	//		commandline,
+	//		NULL,
+	//		NULL,
+	//		FALSE,
+	//		CREATE_NEW_CONSOLE,
+	//		NULL,
+	//		NULL,
+	//		&sInfo,
+	//		&pInfo
+	//	);
+
+	//	if( ret == 0 )
+	//	{
+	//		cout << GetLastError() << endl;
+	//	}
+	//	else
+	//	{
+	//		Sleep( 7000 );
+
+	//		OreOreLib::CloseProcess( pInfo );
+	//	}
+	//}
+
+	{
+		//=================== プロセスハンドル使って起動/終了をコントロールする場合 ================//
+
+		// ShellExecuteEx
+		SHELLEXECUTEINFO exInfo = { 0 };
+		exInfo.cbSize = sizeof( SHELLEXECUTEINFO );
+		exInfo.fMask = SEE_MASK_NOCLOSEPROCESS;//SEE_MASK_DEFAULT;//
+		exInfo.lpVerb = L"open";
+		exInfo.lpFile = L"D:/ProgramData/Anaconda3/envs/testpyqt/python.exe";
+		exInfo.lpParameters = L"D:/Repository/DC/dc/dc_0_0_1/__main__.py";
+		exInfo.nShow = SW_NORMAL;
+
+		ShellExecuteEx( &exInfo );// ShellExecute( 0, L"open", L"c:\\windows\\notepad.exe", 0, 0, SW_SHOW );
+		cout << exInfo.hProcess << endl;
+
+		Sleep( 5000 );
+
+		OreOreLib::CloseProcess( exInfo );
+	}
 
 
 	return 0;
