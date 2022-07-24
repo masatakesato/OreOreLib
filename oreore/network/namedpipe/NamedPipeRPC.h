@@ -316,7 +316,7 @@ public:
 
 	PipeClientRPC()
 		: m_PipeName()
-		, m_PipeHandle()
+		, m_PipeHandle( INVALID_HANDLE_VALUE )
 	{
 
 	}
@@ -330,6 +330,9 @@ public:
 
 	void Connect( const charstring& pipe_name )
 	{
+		if( m_PipeHandle != INVALID_HANDLE_VALUE )
+			return;
+
 		m_PipeName = pipe_name;
 		// https://programtalk.com/vs4/python/7855/conveyor/src/main/python/conveyor/address.py/
 		// Establish pipe connection

@@ -39,6 +39,17 @@ public:
 		std::unordered_map<charstring, int> d{ {"Key", 55555} };
 		tcout << d[string] << tendl;
 	}
+
+
+
+	HalfDuplexRPCNode* m_refNode = nullptr;
+
+
+	void ConnectSender( const charstring& out_pipe_name )
+	{
+		m_refNode->Connect( out_pipe_name );
+	}
+
 };
 
 
@@ -51,11 +62,14 @@ int main()
 	auto proc = Procedure();
 	auto node = HalfDuplexRPCNode( g_InPipeName );
 
+	proc.m_refNode = &node;
+
 	//node.BindProcInstance( proc );
 	node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
 	node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
 	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
 	node.BindFunc( "Str", [&proc]( const charstring& string ){ return proc.Str( string ); } );
+	node.BindFunc( "ConnectSender", [&proc]( const charstring& out_pipe_name ){ return proc.ConnectSender( out_pipe_name ); } );
 
 	if( !node.StartListen() )
 		return 0;

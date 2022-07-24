@@ -107,6 +107,12 @@ int main()
 		else if( input_text=="connect" )
 			node.Connect( g_OutPipeName );
 
+		else if( input_text=="handshake" )
+		{
+			node.Connect( g_OutPipeName );// Connect Node1 to Node2 
+			node.Call( "ConnectSender", g_InPipeName );// Connect from
+		}
+
 		else if( input_text=="startlisten" )
 			node.StartListen();
 

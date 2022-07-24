@@ -15,6 +15,7 @@
 // https://stackoverflow.com/questions/33526534/run-python-script-from-c
 
 #include	<oreore/sys/win/SystemHelperFuncs.h>
+#include	<oreore/common/TString.h>
 
 #include <windows.h>
 #include <iostream>
@@ -25,7 +26,8 @@ int main()
 {
 	auto procId = GetCurrentProcessId();
 	cout << "testSubprocess_main... " << procId << endl;
-
+	
+	cout << to_string( procId ) << endl;
 
 	//{
 	//	//=================== アプリケーション名で起動/終了をコントロールする場合 =================//
@@ -66,11 +68,12 @@ int main()
 		sInfo.cb = sizeof( sInfo );
 
 		//wchar_t commandline[] = L"notepad.exe test.py";
-		wchar_t commandline[] = L"D:/ProgramData/Anaconda3/python.exe test.py";
+		//wchar_t commandline[] = L"D:/ProgramData/Anaconda3/python.exe test.py -ppid 3333";
+		tstring commandline = _T("D:/ProgramData/Anaconda3/python.exe test.py -ppid ") + to_tstring( procId );
 
 		auto ret = CreateProcess(
 			NULL,//L"c:\\Windows\\System32\\notepad.exe",
-			commandline,
+			(TCHAR*)( commandline.c_str() ),//commandline,
 			NULL,
 			NULL,
 			FALSE,
