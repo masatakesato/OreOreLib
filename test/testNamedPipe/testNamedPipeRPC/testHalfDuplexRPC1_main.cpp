@@ -1,5 +1,6 @@
 ﻿#include	<iostream>
 
+#include	<oreore/memory/ReferenceWrapper.h>
 #include    <oreore/network/namedpipe/HalfDuplexRPCNode.h>
 #include	<oreore/extra/MsgpackAdaptor.h>
 
@@ -11,6 +12,9 @@ const charstring g_OutPipeName = "\\\\.\\pipe\\Bar";
 class Procedure
 {
 public:
+
+	//Procedure( )
+
 
 	void NoReturn()
 	{
@@ -41,14 +45,16 @@ public:
 	}
 
 
-
-	HalfDuplexRPCNode* m_refNode = nullptr;
-
-
 	void ConnectSender( const charstring& out_pipe_name )
 	{
 		m_refNode->Connect( out_pipe_name );
 	}
+
+
+//private:
+
+	OreOreLib::ReferenceWrapper<HalfDuplexRPCNode>	m_refNode;// = nullptr;
+
 
 };
 
@@ -62,7 +68,7 @@ int main()
 	auto proc = Procedure();
 	auto node = HalfDuplexRPCNode( g_InPipeName );
 
-	proc.m_refNode = &node;
+	proc.m_refNode = node;
 
 	//node.BindProcInstance( proc );
 	node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
