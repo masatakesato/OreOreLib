@@ -335,12 +335,12 @@ public:
 		Disconnect();
 
 		m_PipeName = pipe_name;
-		// https://programtalk.com/vs4/python/7855/conveyor/src/main/python/conveyor/address.py/
-
+		
+		// Establish pipe connection
 		uint32 trials = 0;
 		while( trials++ < m_MaxTrials )
 		{
-			// Establish pipe connection
+			// https://programtalk.com/vs4/python/7855/conveyor/src/main/python/conveyor/address.py/
 			m_PipeHandle = CreateFileA(
 				m_PipeName.c_str(),//r'\\.\pipe\Foo',
 				GENERIC_READ | GENERIC_WRITE,
@@ -355,6 +355,7 @@ public:
 
 			Sleep( 15 );// sleep 15ms
 		}
+
 		// Check error after file creation
 		auto err = GetLastError();
 		if( err > 0 )
