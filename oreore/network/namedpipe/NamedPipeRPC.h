@@ -330,22 +330,31 @@ public:
 
 	void Connect( const charstring& pipe_name )
 	{
-		if( m_PipeHandle != INVALID_HANDLE_VALUE )
-			return;
+		//if( m_PipeHandle != INVALID_HANDLE_VALUE )
+		//	return;
+		Disconnect();
 
 		m_PipeName = pipe_name;
 		// https://programtalk.com/vs4/python/7855/conveyor/src/main/python/conveyor/address.py/
-		// Establish pipe connection
-		m_PipeHandle = CreateFileA(
-			m_PipeName.c_str(),//r'\\.\pipe\Foo',
-			GENERIC_READ | GENERIC_WRITE,
-			0,
-			nullptr,
-			OPEN_EXISTING,
-			0,
-			nullptr
-		);
 
+		uint32 trials = 0;
+		while( trials++ < m_MaxTrials )
+		{
+			// Establish pipe connection
+			m_PipeHandle = CreateFileA(
+				m_PipeName.c_str(),//r'\\.\pipe\Foo',
+				GENERIC_READ | GENERIC_WRITE,
+				0,
+				nullptr,
+				OPEN_EXISTING,
+				0,
+				nullptr
+			);
+			if( m_PipeHandle != INVALID_HANDLE_VALUE )
+				break;
+
+			Sleep( 15 );// sleep 15ms
+		}
 		// Check error after file creation
 		auto err = GetLastError();
 		if( err > 0 )
@@ -370,8 +379,10 @@ public:
 	{
 		if( m_PipeHandle != INVALID_HANDLE_VALUE )
 		{
-			DisconnectNamedPipe ( m_PipeHandle );
+			DisconnectNamedPipe( m_PipeHandle );
+//WaitForInputIdle( m_PipeHandle, INFINITE );
 			CloseHandle( m_PipeHandle );
+			
 		}
 
 		m_PipeHandle = INVALID_HANDLE_VALUE;
@@ -382,11 +393,11 @@ public:
 	template <typename... Args >
 	msgpack::object_handle Call( charstring const& proc_name, Args ...args )
 	{
-		uint32 trial = 0;
+		uint32 trials = 0;
 		int numrcv;
 		msgpack::object_handle oh;
 
-		while( trial < m_MaxTrials )
+		while( trials < m_MaxTrials )
 		{
 			try
 			{
@@ -415,11 +426,11 @@ public:
 			}
 			catch( const SendMessageException& e )
 			{
-				tcout << _T( "PipeClientRPC::Call()...SendMessageException occured.... trial: " ) << trial << _T( ", " ) << e.what() << tendl;
-				trial++;
+				tcout << _T( "PipeClientRPC::Call()...SendMessageException occured.... trials: " ) << trials << _T( ", " ) << e.what() << tendl;
+				trials++;
 			}
 
-		}// end of while( trial < self.__m_MaxTrials )
+		}// end of while( trials < self.__m_MaxTrials )
 
 		return oh;//nullptr;
 

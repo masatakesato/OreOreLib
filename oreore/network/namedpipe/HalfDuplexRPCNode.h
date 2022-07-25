@@ -7,6 +7,8 @@
 
 #include	"NamedPipeRPC.h"
 
+#include	"../../memory/ReferenceWrapper.h"
+
 
 
 class HalfDuplexRPCNode
@@ -158,6 +160,58 @@ private:
 #endif
 	}
 };
+
+
+
+class RemoteProcedureBase
+{
+public:
+
+	RemoteProcedureBase( const HalfDuplexRPCNode& node )
+	{
+		m_refNode = const_cast<HalfDuplexRPCNode&>( node );
+	}
+
+
+	virtual ~RemoteProcedureBase()
+	{
+		//m_refNode.Reset();
+	}
+
+
+	void Connect( const charstring& out_pipe_name )
+	{
+		try
+		{
+			m_refNode->Connect( out_pipe_name );
+		}
+		catch( const std::exception& e )
+		{
+			tcout << e.what() << tendl;
+		}
+	}
+
+
+	void Disconnect()
+	{
+		try
+		{
+			m_refNode->Disconnect();
+		}
+		catch( const std::exception& e )
+		{
+			tcout << e.what() << tendl;
+		}
+	}
+
+
+
+protected:
+
+	OreOreLib::ReferenceWrapper<HalfDuplexRPCNode>	m_refNode;
+
+};
+
 
 
 #endif // !HALF_DUPLEX_RPC_NODE_H

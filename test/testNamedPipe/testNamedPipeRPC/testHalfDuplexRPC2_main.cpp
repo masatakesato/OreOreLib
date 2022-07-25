@@ -8,26 +8,32 @@ const charstring g_OutPipeName = "\\\\.\\pipe\\Foo";
 
 
 
-class Procedure
+class RemoteProcedure : public RemoteProcedureBase
 {
 public:
 
+	RemoteProcedure( const HalfDuplexRPCNode& node )
+		: RemoteProcedureBase( node )
+	{
+	}
+
+
 	void NoReturn()
 	{
-		tcout << _T( "Procedure::NoReturn()...\n" );
+		tcout << _T( "RemoteProcedure::NoReturn()...\n" );
 	}
 
 
 	charstring Test()
 	{
-		tcout << _T( "Procedure::Test()...\n" );
+		tcout << _T( "RemoteProcedure::Test()...\n" );
 		return "OK...";
 	}
 
 
 	int Add( int a, int b )
 	{
-		tcout << _T( "Procedure::Add( " ) << a << _T( ", " ) << b << _T( ")\n" );
+		tcout << _T( "RemoteProcedure::Add( " ) << a << _T( ", " ) << b << _T( ")\n" );
 		return a + b;
 	}
 
@@ -39,7 +45,7 @@ public:
 template< typename T, typename IndexType >
 void TestMemoryTransfer( const OreOreExtra::MemoryMsgpkImpl<T, IndexType>& arr )//const OreOreExtra::ArrayMsgpkImpl<T, IndexType>& arr )
 {
-	tcout << _T( "TestMemoryTransfer()...\n" );
+	tcout << _T( "RemoteProcedure::TestMemoryTransfer()...\n" );
 
 	for( auto& v : arr )
 		tcout << v << tendl;
@@ -50,7 +56,7 @@ void TestMemoryTransfer( const OreOreExtra::MemoryMsgpkImpl<T, IndexType>& arr )
 template< typename T, typename IndexType >
 OreOreExtra::ArrayMsgpkImpl<T, IndexType> TestArrayTransfer( OreOreExtra::ArrayMsgpkImpl<T, IndexType>& arr )
 {
-	tcout << _T( "TestArrayTransfer()...\n" );
+	tcout << _T( "RemoteProcedure::TestArrayTransfer()...\n" );
 
 	OreOreExtra::ArrayMsgpkImpl<T, IndexType> out;
 	out.Init(5);
@@ -65,7 +71,7 @@ OreOreExtra::ArrayMsgpkImpl<T, IndexType> TestArrayTransfer( OreOreExtra::ArrayM
 template< typename T, sizeType Size, typename IndexType >
 void TestStaticArrayTransfer( const OreOreExtra::StaticArrayMsgpkImpl<T, Size, IndexType>& arr )
 {
-	tcout << _T( "TestStaticArrayTransfer()...\n" );
+	tcout << _T( "RemoteProcedure::TestStaticArrayTransfer()...\n" );
 
 	for( auto& v : arr )
 		tcout << v << tendl;
@@ -79,13 +85,15 @@ int main()
 {
 	SetConsoleTitleA( g_InPipeName.c_str() );
 
-	auto proc = Procedure();
 	auto node = HalfDuplexRPCNode( g_InPipeName );
 
+	auto proc = RemoteProcedure( node );
 	node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
 	node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
 	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
 	node.BindFunc( "TestArrayTransfer", &TestArrayTransfer<int, uint32> );
+	node.BindFunc( "Connect", [&proc]( const charstring& out_pipe_name ){ return proc.Connect( out_pipe_name ); } );
+	node.BindFunc( "Disconnect", [&proc]{ return proc.Disconnect(); } );
 
 	if( !node.StartListen() )
 		return 0;
@@ -101,17 +109,17 @@ int main()
 		if( input_text == "quit" )
 			break;
 
-		else if( input_text=="disconnect" )
-			node.Disconnect();
-
-		else if( input_text=="connect" )
+		else if( input_text=="connectto" )
 			node.Connect( g_OutPipeName );
 
-		else if( input_text=="handshake" )
-		{
-			node.Connect( g_OutPipeName );// Connect Node1 to Node2 
-			node.Call( "ConnectSender", g_InPipeName );// Connect from
-		}
+		else if( input_text=="disconnectto" )
+			node.Disconnect();
+
+		else if( input_text=="connectfrom" )
+			node.Call( "Connect", g_InPipeName );// Connect from
+
+		else if( input_text=="disconnectfrom" )
+			node.Call( "Disconnect" );
 
 		else if( input_text=="startlisten" )
 			node.StartListen();
