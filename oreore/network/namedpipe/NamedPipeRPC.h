@@ -381,9 +381,7 @@ public:
 		if( m_PipeHandle != INVALID_HANDLE_VALUE )
 		{
 			DisconnectNamedPipe( m_PipeHandle );
-//WaitForInputIdle( m_PipeHandle, INFINITE );
-			CloseHandle( m_PipeHandle );
-			
+			CloseHandle( m_PipeHandle );	
 		}
 
 		m_PipeHandle = INVALID_HANDLE_VALUE;
