@@ -8,7 +8,6 @@
 
 #include    "../../common/TString.h"
 #include    "../../memory/Memory.h"
-#include	"../../memory/SharedPtr.h"
 
 #include    "../SocketException.h"
 #include	"../Dispatcher.h"	
@@ -98,12 +97,23 @@ class PipeServerRPC
 {
 public:
 
+	PipeServerRPC()
+		: m_IsListening( false )
+		, m_PipeHandle( INVALID_HANDLE_VALUE )
+		//, self.__m_Serializer = Serializer( pack_encoding=None, unpack_encoding=None )
+		//, m_Dispatcher( new Dispatcher )
+		, m_NotifyReady( false )
+	{
+
+	}
+
+
 	PipeServerRPC( const charstring& pipe_name )
 		: m_IsListening( false )
 		, m_PipeName( pipe_name )
 		, m_PipeHandle( INVALID_HANDLE_VALUE )
 		//, self.__m_Serializer = Serializer( pack_encoding=None, unpack_encoding=None )
-		, m_Dispatcher( new Dispatcher )
+		//, m_Dispatcher( new Dispatcher )
 		, m_NotifyReady( false )
 	{
 
@@ -115,17 +125,37 @@ public:
 		ReleasePipe();
 	}
 
+
+	bool SetPipeName( const charstring& pipe_name )
+	{
+		if( m_IsListening )
+		{
+			tcout << _T( "Set pipen mame aborted: Stop listening before rename.\n" );
+			return false;
+		}
+
+		m_PipeName	= pipe_name;
+
+		return true;
+	}
+
 	
 	template <typename F>
 	void BindFunc( const charstring& name, F func )
 	{
-		m_Dispatcher->BindFunc<F>( name, func );
+		m_Dispatcher.BindFunc<F>( name, func );
 	}
 
 
 	bool InitPipe()
 	{
 		tcout << _T( "PipeServerRPC::InitPipe()...\n" );
+
+		if( m_PipeName.empty() )
+		{
+			tcout << _T( "Aborting pipe creation: No name specified.\n" );
+			return false;
+		}
 
 		// Disconnect existing named pipe
 		ReleasePipe();
@@ -263,7 +293,7 @@ m_NotifyReady = false;
 					break;
 
 				// Do something
-				auto oh = m_Dispatcher->Dispatch( raw_message );
+				auto oh = m_Dispatcher.Dispatch( raw_message );
 
 				// Send back result to client
 				msgpack::sbuffer sbuf;
@@ -299,9 +329,9 @@ private:
 	bool		m_IsListening;
 	charstring	m_PipeName;
 	HANDLE		m_PipeHandle;
-	OreOreLib::SharedPtr<Dispatcher>	m_Dispatcher;
+	Dispatcher	m_Dispatcher;
 
-std::mutex	m_Mutex;
+	std::mutex				m_Mutex;
 	std::condition_variable	m_CvReady;
 	bool					m_NotifyReady;
 

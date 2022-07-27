@@ -13,9 +13,17 @@ class RemoteProcedure : public RemoteProcedureBase
 {
 public:
 
-	RemoteProcedure( const HalfDuplexRPCNode& node )
+	RemoteProcedure( HalfDuplexRPCNode& node )
 		: RemoteProcedureBase( node )
 	{
+
+		node.BindFunc( "NoReturn", [this]{ NoReturn(); } );
+		node.BindFunc( "Test", [this]{ return Test(); } );
+		node.BindFunc( "Add", [this]( int a, int b ){ return Add( a, b ); } );
+		node.BindFunc( "Str", [this]( const charstring& string ){ return Str( string ); } );
+		//node.BindFunc( "Connect", [this]( const charstring& out_pipe_name ){ return Connect( out_pipe_name ); } );
+		//node.BindFunc( "Disconnect", [this]{ return Disconnect(); } );
+
 	}
 
 
@@ -56,15 +64,16 @@ int main()
 {
 	SetConsoleTitleA( g_InPipeName.c_str() );
 
-	auto node = HalfDuplexRPCNode( g_InPipeName );
+	auto node = HalfDuplexRPCNode();// g_InPipeName );
+	node.SetPipeName( g_InPipeName );
 	
 	auto proc = RemoteProcedure( node );
-	node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
-	node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
-	node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
-	node.BindFunc( "Str", [&proc]( const charstring& string ){ return proc.Str( string ); } );
-	node.BindFunc( "Connect", [&proc]( const charstring& out_pipe_name ){ return proc.Connect( out_pipe_name ); } );
-	node.BindFunc( "Disconnect", [&proc]{ return proc.Disconnect(); } );
+	//node.BindFunc( "NoReturn", [&proc]{ proc.NoReturn(); } );
+	//node.BindFunc( "Test", [&proc]{ return proc.Test(); } );
+	//node.BindFunc( "Add", [&proc]( int a, int b ){ return proc.Add( a, b ); } );
+	//node.BindFunc( "Str", [&proc]( const charstring& string ){ return proc.Str( string ); } );
+	//node.BindFunc( "Connect", [&proc]( const charstring& out_pipe_name ){ return proc.Connect( out_pipe_name ); } );
+	//node.BindFunc( "Disconnect", [&proc]{ return proc.Disconnect(); } );
 
 	if( !node.StartListen() )
 		return 0;

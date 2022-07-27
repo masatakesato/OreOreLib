@@ -15,6 +15,13 @@ class HalfDuplexRPCNode
 {
 public:
 
+	HalfDuplexRPCNode()
+		//: m_Receiver( in_pipe_name )
+		//, m_Sender()
+	{
+
+	}
+
 	HalfDuplexRPCNode( const charstring& in_pipe_name )
 		: m_Receiver( in_pipe_name )
 		//, m_Sender()
@@ -26,6 +33,12 @@ public:
 	virtual ~HalfDuplexRPCNode()
 	{
 		StopListen();
+	}
+
+
+	bool SetPipeName( const charstring& in_pipe_name )
+	{
+		return m_Receiver.SetPipeName( in_pipe_name );
 	}
 
 
@@ -167,9 +180,18 @@ class RemoteProcedureBase
 {
 public:
 
-	RemoteProcedureBase( const HalfDuplexRPCNode& node )
+	//RemoteProcedureBase()
+	//{
+
+	//}
+
+
+	RemoteProcedureBase( HalfDuplexRPCNode& node )
 	{
-		m_refNode = const_cast<HalfDuplexRPCNode&>( node );
+		m_refNode = node;
+		m_refNode->BindFunc( "Connect", [this]( const charstring& out_pipe_name ){ return Connect( out_pipe_name ); } );
+		m_refNode->BindFunc( "Disconnect", [this]{ return Disconnect(); } );
+		//BindNode( node );
 	}
 
 
@@ -177,6 +199,28 @@ public:
 	{
 		//m_refNode.Reset();
 	}
+
+
+	bool BindNode( HalfDuplexRPCNode& node )
+	{
+		if( m_refNode.IsNull() )
+		{
+			m_refNode = node;
+			m_refNode->BindFunc( "Connect", [this]( const charstring& out_pipe_name ){ return Connect( out_pipe_name ); } );
+			m_refNode->BindFunc( "Disconnect", [this]{ return Disconnect(); } );
+
+			return true;
+		}
+
+		return false;
+	}
+
+
+
+
+protected:
+
+	OreOreLib::ReferenceWrapper<HalfDuplexRPCNode>	m_refNode;
 
 
 	void Connect( const charstring& out_pipe_name )
@@ -203,12 +247,6 @@ public:
 			tcout << e.what() << tendl;
 		}
 	}
-
-
-
-protected:
-
-	OreOreLib::ReferenceWrapper<HalfDuplexRPCNode>	m_refNode;
 
 };
 
