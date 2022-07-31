@@ -115,28 +115,28 @@ int main()
 
 		else if( input_text=="testrpc" )
 		{
-			//try
-			//{
-			//	auto result = node.Call( "Add", 4, 6 );
-			//	result->type != msgpack::type::object_type::NIL
-			//		? (tcout << result->as<int>() << tendl)
-			//		: (tcout << "None\n");
-			//}
-			//catch( TCHAR *e )
-			//{
-			//	tcout << e << tendl;
-			//}
-
-			OreOreLib::Array<int> arr ={ 1, 2, 3, 4 };
-
-			auto result = node.Call( "TestArrayTransfer", OreOreExtra::CastToMsgpk( arr ) );
-
-			if( result->type != msgpack::type::object_type::NIL )
+			try
 			{
-				auto ret = result->as<OreOreExtra::ArrayMsgpk<int>>();
-				
+				// C++同士なら大丈夫.pythonサーバーだと32bit足切りされてエラー
+				auto result = node.Call( "Add64", (uint64)2147483648, (uint64)6 );
+				result->type != msgpack::type::object_type::NIL
+					? (tcout << result->as<uint64>() << tendl)
+					: (tcout << "None\n");
 			}
-				//tcout << result->as<int>() << tendl;
+			catch( TCHAR *e )
+			{
+				tcout << e << tendl;
+			}
+
+			//OreOreLib::Array<int> arr ={ 1, 2, 3, 4 };
+
+			//auto result = node.Call( "TestArrayTransfer", OreOreExtra::CastToMsgpk( arr ) );
+
+			//if( result->type != msgpack::type::object_type::NIL )
+			//{
+			//	auto ret = result->as<OreOreExtra::ArrayMsgpk<int>>();
+			//	
+			//}
 
 		}
 			

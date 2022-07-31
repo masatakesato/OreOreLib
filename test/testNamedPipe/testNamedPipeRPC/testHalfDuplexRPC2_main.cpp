@@ -60,6 +60,7 @@ public:
 		node.BindFunc( "NoReturn", [this]{ NoReturn(); } );
 		node.BindFunc( "Test", [this]{ return Test(); } );
 		node.BindFunc( "Add", [this]( int a, int b ){ return Add( a, b ); } );
+		node.BindFunc( "Add64", [this]( uint64 a, uint64 b ){ return Add64( a, b ); } );
 		node.BindFunc( "TestArrayTransfer", &TestArrayTransfer<int, uint32> );
 		//node.BindFunc( "Connect", [this]( const charstring& out_pipe_name ){ return Connect( out_pipe_name ); } );
 		//node.BindFunc( "Disconnect", [this]{ return Disconnect(); } );
@@ -82,6 +83,13 @@ public:
 	int Add( int a, int b )
 	{
 		tcout << _T( "RemoteProcedure::Add( " ) << a << _T( ", " ) << b << _T( ")\n" );
+		return a + b;
+	}
+
+
+	uint64 Add64( uint64 a, uint64 b )
+	{
+		tcout << _T( "RemoteProcedure::Add64( " ) << a << _T( ", " ) << b << _T( ")\n" );
 		return a + b;
 	}
 
